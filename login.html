@@ -2,32 +2,261 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Login Admin</title>
+<title>Command Center Access</title>
+
+<style>
+
+body{
+margin:0;
+font-family:monospace;
+background:#020702;
+color:#00ff9c;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+overflow:hidden;
+}
+
+/* RADAR BACKGROUND */
+
+body::before{
+content:"";
+position:absolute;
+width:1400px;
+height:1400px;
+border-radius:50%;
+border:2px solid rgba(0,255,120,0.15);
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+animation:spin 30s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:translate(-50%,-50%) rotate(0deg);}
+100%{transform:translate(-50%,-50%) rotate(360deg);}
+}
+
+/* RADAR SWEEP FULL SCREEN */
+
+.radar{
+position:absolute;
+width:2000px;
+height:2000px;
+background:conic-gradient(
+rgba(0,255,0,0.4) 0deg,
+rgba(0,255,0,0.1) 30deg,
+transparent 90deg
+);
+border-radius:50%;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+animation:radarSweep 5s linear infinite;
+}
+
+@keyframes radarSweep{
+0%{transform:translate(-50%,-50%) rotate(0deg);}
+100%{transform:translate(-50%,-50%) rotate(360deg);}
+}
+
+/* LOGIN CARD */
+
+.card{
+width:380px;
+padding:40px;
+background:#081208;
+border-radius:10px;
+border:1px solid rgba(0,255,120,0.3);
+box-shadow:0 0 30px rgba(0,255,120,0.2);
+text-align:center;
+z-index:2;
+}
+
+/* TITLE */
+
+.title{
+font-size:22px;
+margin-bottom:20px;
+letter-spacing:2px;
+}
+
+/* RETINA SCAN */
+
+.scan{
+margin:20px auto;
+width:120px;
+height:120px;
+border-radius:50%;
+border:2px solid #00ff9c;
+position:relative;
+overflow:hidden;
+}
+
+.scan::after{
+content:"";
+position:absolute;
+width:100%;
+height:3px;
+background:#00ff9c;
+top:0;
+animation:scan 2s infinite;
+}
+
+@keyframes scan{
+0%{top:0}
+100%{top:120px}
+}
+
+/* INPUT */
+
+input{
+width:100%;
+padding:12px;
+border:none;
+border-radius:5px;
+background:#0f1a0f;
+color:#00ff9c;
+border:1px solid rgba(0,255,120,0.4);
+outline:none;
+}
+
+/* BUTTON */
+
+button{
+margin-top:20px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:5px;
+background:#00ff9c;
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* TERMINAL */
+
+#terminal{
+margin-top:15px;
+font-size:14px;
+height:60px;
+}
+
+.granted{
+color:#00ff9c;
+font-weight:bold;
+}
+
+.denied{
+color:red;
+font-weight:bold;
+}
+
+/* LOADING */
+
+.loading{
+display:none;
+margin-top:15px;
+}
+
+.spinner{
+width:60px;
+height:60px;
+border-radius:50%;
+border:2px solid #00ff9c;
+margin:auto;
+animation:spin 2s linear infinite;
+}
+
+</style>
 </head>
-<body style="background:#0f1a0f; color:white; text-align:center; font-family:Arial; padding-top:100px;">
 
-<h2>LOGIN ADMIN (silahkan masukan password dengan benar)</h2>
+<body>
 
-<input type="password" id="pass" placeholder="Masukkan Password">
-<br><br>
-<button onclick="login()">Masuk</button>
+<div class="radar"></div>
 
-<p id="error" style="color:red;"></p>
+<div class="card">
+
+<div class="title">COMMAND CENTER LOGIN</div>
+
+<div class="scan"></div>
+
+<input type="password" id="pass" placeholder="Enter Security Code">
+
+<button onclick="login()">AUTHENTICATE</button>
+
+<div id="terminal"></div>
+
+<div class="loading" id="loading">
+<div class="spinner"></div>
+</div>
+
+</div>
+
+<audio id="grantedSound">
+<source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
+
+<audio id="deniedSound">
+<source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
 
 <script>
-const PASSWORD = "rabekaojokendor2026"; // 🔥 GANTI PASSWORD DISINI
 
-function login() {
-  const input = document.getElementById("pass").value;
+const PASSWORD="rabekaojokendor2026";
 
-  if (input === PASSWORD) {
-    localStorage.setItem("auth", "true");
-    window.location.href = "dashboard.html";
-  } else {
-    document.getElementById("error").innerText =
-      "Password salah!";
-  }
+function typeText(text,element,speed=40){
+let i=0;
+element.innerHTML="";
+function typing(){
+if(i<text.length){
+element.innerHTML+=text.charAt(i);
+i++;
+setTimeout(typing,speed);
 }
+}
+typing();
+}
+
+function login(){
+
+const input=document.getElementById("pass").value;
+const terminal=document.getElementById("terminal");
+const loading=document.getElementById("loading");
+
+typeText("> SCANNING BIOMETRIC AUTHORIZATION...",terminal);
+
+loading.style.display="block";
+
+setTimeout(()=>{
+
+loading.style.display="none";
+
+if(input===PASSWORD){
+
+document.getElementById("grantedSound").play();
+
+typeText("> ACCESS GRANTED\n> OPENING COMMAND CENTER...",terminal);
+
+setTimeout(()=>{
+localStorage.setItem("auth","true");
+window.location.href="dashboard.html";
+},2000);
+
+}else{
+
+document.getElementById("deniedSound").play();
+
+typeText("> ACCESS DENIED\n> SECURITY ALERT",terminal);
+
+}
+
+},2500);
+
+}
+
 </script>
 
 </body>
