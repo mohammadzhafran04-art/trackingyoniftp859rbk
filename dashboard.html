@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html> 
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Command Center</title> 
+<title>Command Center Tactical Map</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -16,8 +16,6 @@ background:#071207;
 color:white;
 overflow:hidden;
 }
-
-/* RADAR BACKGROUND */
 
 body::before{
 content:"";
@@ -38,8 +36,6 @@ pointer-events:none;
 100%{transform:translate(-50%,-50%) rotate(360deg);}
 }
 
-/* RADAR SWEEP */
-
 .radar-sweep{
 position:fixed;
 width:1200px;
@@ -47,11 +43,7 @@ height:1200px;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
-background:conic-gradient(
-rgba(0,255,0,0.3) 0deg,
-rgba(0,255,0,0.1) 30deg,
-transparent 60deg
-);
+background:conic-gradient(rgba(0,255,0,0.35) 0deg,rgba(0,255,0,0.15) 40deg,transparent 90deg);
 border-radius:50%;
 animation:radarSweep 6s linear infinite;
 pointer-events:none;
@@ -123,7 +115,6 @@ margin-top:5px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -143,8 +134,6 @@ window.location.href="login.html";
 
 <div class="container">
 
-<!-- LEFT PANEL -->
-
 <div class="panel">
 
 <h3>Statistik</h3>
@@ -161,11 +150,7 @@ window.location.href="login.html";
 
 </div>
 
-<!-- MAP -->
-
 <div id="map"></div>
-
-<!-- RIGHT PANEL -->
 
 <div class="panel">
 
@@ -206,17 +191,15 @@ appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
-/* MAP MODE */
-
 const map=L.map("map").setView([-2,118],5);
 
-const normal=L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-);
+let autoZoom=true;
 
-const satelit=L.tileLayer(
-"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-);
+map.on("zoomstart",()=>{autoZoom=false});
+map.on("dragstart",()=>{autoZoom=false});
+
+const normal=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+const satelit=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}");
 
 normal.addTo(map);
 
@@ -231,8 +214,6 @@ let radar={}
 let history={}
 let allData={}
 let bounds=L.latLngBounds()
-
-/* MARKER GERAK HALUS */
 
 function moveSmooth(marker,newLatLng){
 
@@ -257,13 +238,9 @@ requestAnimationFrame(animate)
 
 }
 
-/* FORMAT TIME */
-
 function formatTime(t){
-
 if(!t) return "-"
 return new Date(t).toLocaleTimeString()
-
 }
 
 function render(){
@@ -330,8 +307,6 @@ markers[nama].setPopupContent(popup)
 
 }
 
-/* HISTORY */
-
 history[nama].push([lat,lon])
 
 const item=document.createElement("div")
@@ -369,8 +344,11 @@ document.getElementById("totalAnggota").innerText="Total : "+total
 document.getElementById("onlineAnggota").innerText="Online : "+online
 document.getElementById("offlineAnggota").innerText="Offline : "+offline
 
-if(bounds.isValid()){
-map.fitBounds(bounds,{padding:[40,40]})
+if(bounds.isValid() && autoZoom){
+map.fitBounds(bounds,{
+padding:[40,40],
+maxZoom:16
+})
 }
 
 }
@@ -393,5 +371,3 @@ document.getElementById("searchNama").addEventListener("input",render)
 
 </body>
 </html>
-
-
