@@ -9,72 +9,72 @@
 
 <style>
 body {
-  font-family: Arial;
-  text-align:center;
-  background:#0f1b0f;
-  color:white;
-  margin:0;
+font-family: Arial;
+text-align:center;
+background:#0f1b0f;
+color:white;
+margin:0;
 }
 
 .header {
-  background:#1c2b1c;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+background:#1c2b1c;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
 .logout-btn {
-  background:#b30000;
-  color:white;
-  border:none;
-  padding:8px 15px;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
+background:#b30000;
+color:white;
+border:none;
+padding:8px 15px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
 }
 
 .logout-btn:hover {
-  background:#ff0000;
+background:#ff0000;
 }
 
 #map {
-  height: 500px;
-  margin:20px;
-  border-radius:12px;
+height:500px;
+margin:20px;
+border-radius:12px;
 }
 
 #listContainer {
-  margin:20px;
-  padding:15px;
-  background:#1c2b1c;
-  border-radius:10px;
+margin:20px;
+padding:15px;
+background:#1c2b1c;
+border-radius:10px;
 }
 
 #searchNama {
-  padding:8px;
-  width:60%;
-  border-radius:6px;
-  border:none;
-  margin-bottom:15px;
+padding:8px;
+width:60%;
+border-radius:6px;
+border:none;
+margin-bottom:15px;
 }
 
 .nama-item {
-  background:#2e442e;
-  margin:5px;
-  padding:10px;
-  border-radius:6px;
-  cursor:pointer;
-  text-align:left;
+background:#2e442e;
+margin:5px;
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+text-align:left;
 }
 
 .nama-item:hover {
-  background:#3f5f3f;
+background:#3f5f3f;
 }
 
 .update-time {
-  font-size:12px;
-  color:#90ee90;
+font-size:12px;
+color:#90ee90;
 }
 </style>
 </head>
@@ -83,27 +83,27 @@ body {
 
 <script>
 if (localStorage.getItem("auth") !== "true") {
-  window.location.href = "login.html";
+window.location.href = "login.html";
 }
 </script>
 
 <div class="header">
-  <h3>🪖 Dashboard Semua Anggota</h3>
-  <button class="logout-btn" onclick="logout()">Logout</button>
+<h3>🪖 Dashboard Semua Anggota</h3>
+<button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
 <div id="map"></div>
 
 <div id="listContainer">
-  <h3>Daftar Anggota Aktif</h3>
-  <input type="text" id="searchNama" placeholder="Cari nama anggota...">
-  <div id="listAnggota"></div>
+<h3>Daftar Anggota Aktif</h3>
+<input type="text" id="searchNama" placeholder="Cari nama anggota...">
+<div id="listAnggota"></div>
 </div>
 
 <script>
 function logout(){
-  localStorage.removeItem("auth");
-  window.location.href = "login.html";
+localStorage.removeItem("auth");
+window.location.href = "login.html";
 }
 </script>
 
@@ -113,19 +113,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-  authDomain: "real-time-location-30d91.firebaseapp.com",
-  databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "real-time-location-30d91",
-  storageBucket: "real-time-location-30d91.firebasestorage.app",
-  messagingSenderId: "1092565406651",
-  appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+authDomain: "real-time-location-30d91.firebaseapp.com",
+databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "real-time-location-30d91",
+storageBucket: "real-time-location-30d91.firebasestorage.app",
+messagingSenderId: "1092565406651",
+appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const map = L.map('map').setView([-2, 118], 5);
+const map = L.map('map').setView([-2,118],5);
 
 const normalMap = L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -147,106 +147,129 @@ let paths = {};
 let allData = {};
 let bounds = L.latLngBounds();
 
+
+/* MARKER GERAK HALUS */
+function moveMarkerSmooth(marker,newLatLng){
+
+const duration = 1000;
+const start = marker.getLatLng();
+const startTime = performance.now();
+
+function animate(time){
+
+const progress = Math.min((time - startTime)/duration,1);
+
+const lat = start.lat + (newLatLng[0] - start.lat) * progress;
+const lng = start.lng + (newLatLng[1] - start.lng) * progress;
+
+marker.setLatLng([lat,lng]);
+
+if(progress < 1){
+requestAnimationFrame(animate);
+}
+
+}
+
+requestAnimationFrame(animate);
+
+}
+
+
 function formatWaktu(timestamp){
-  if(!timestamp) return "Tidak tersedia";
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString();
+if(!timestamp) return "Tidak tersedia";
+const date = new Date(timestamp);
+return date.toLocaleTimeString();
 }
 
-function renderList() {
+function renderList(){
 
-  const listDiv = document.getElementById("listAnggota");
-  const keyword = document.getElementById("searchNama").value.toLowerCase();
+const listDiv = document.getElementById("listAnggota");
+const keyword = document.getElementById("searchNama").value.toLowerCase();
 
-  listDiv.innerHTML = "";
+listDiv.innerHTML = "";
+bounds = L.latLngBounds();
 
-  bounds = L.latLngBounds();
+Object.keys(allData).forEach((nama)=>{
 
-  Object.keys(allData).forEach((nama) => {
+if(!nama.toLowerCase().includes(keyword)) return;
 
-    if (!nama.toLowerCase().includes(keyword)) return;
+const lat = allData[nama].latitude;
+const lon = allData[nama].longitude;
+const alamat = allData[nama].alamat || "Alamat belum tersedia";
+const waktu = formatWaktu(allData[nama].waktu);
 
-    const lat = allData[nama].latitude;
-    const lon = allData[nama].longitude;
-    const alamat = allData[nama].alamat || "Alamat belum tersedia";
-    const waktu = formatWaktu(allData[nama].waktu);
+bounds.extend([lat,lon]);
 
-    bounds.extend([lat, lon]);
+const popupContent = `
+<b>${nama}</b><br><br>
+📍 ${alamat}<br><br>
+🧭 ${lat}, ${lon}<br><br>
+🕒 Terakhir Update: ${waktu}<br><br>
+<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">
+Buka di Google Maps
+</a>
+`;
 
-    const popupContent = `
-      <b>${nama}</b><br><br>
-      📍 ${alamat}<br><br>
-      🧭 ${lat}, ${lon}<br><br>
-      🕒 Terakhir Update: ${waktu}<br><br>
-      <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">
-        Buka di Google Maps
-      </a>
-    `;
+if(!markers[nama]){
 
-    if (!markers[nama]) {
+markers[nama] = L.marker([lat,lon])
+.addTo(map)
+.bindPopup(popupContent);
 
-      markers[nama] = L.marker([lat, lon])
-        .addTo(map)
-        .bindPopup(popupContent);
+markers[nama].on("click",()=>{
+map.setView([lat,lon],15);
+});
 
-      markers[nama].on("click", () => {
-        map.setView([lat, lon], 15);
-      });
+paths[nama] = L.polyline([[lat,lon]],{
+color:"lime",
+weight:4
+}).addTo(map);
 
-      paths[nama] = L.polyline([[lat, lon]], {
-        color: "lime",
-        weight: 4
-      }).addTo(map);
+}else{
 
-    } else {
+moveMarkerSmooth(markers[nama],[lat,lon]);
 
-      markers[nama]
-        .setLatLng([lat, lon])
-        .setPopupContent(popupContent);
+markers[nama].setPopupContent(popupContent);
 
-      paths[nama].addLatLng([lat, lon]);
-    }
-
-    const item = document.createElement("div");
-
-    item.className = "nama-item";
-
-    item.innerHTML = `
-      <strong>${nama}</strong><br>
-      <span class="update-time">Update: ${waktu}</span>
-    `;
-
-    item.onclick = () => {
-
-      map.setView([lat, lon], 15);
-
-      markers[nama].openPopup();
-
-    };
-
-    listDiv.appendChild(item);
-
-  });
-
-  if (bounds.isValid()) {
-    map.fitBounds(bounds, { padding: [50,50] });
-  }
+paths[nama].addLatLng([lat,lon]);
 
 }
 
-onValue(ref(db, "live"), (snapshot) => {
+const item = document.createElement("div");
 
-  const data = snapshot.val();
+item.className = "nama-item";
 
-  if (!data) return;
+item.innerHTML = `
+<strong>${nama}</strong><br>
+<span class="update-time">Update: ${waktu}</span>
+`;
 
-  allData = data;
+item.onclick = ()=>{
+map.setView([lat,lon],15);
+markers[nama].openPopup();
+};
 
-  renderList();
+listDiv.appendChild(item);
 
 });
 
-document.getElementById("searchNama").addEventListener("input", renderList);
+if(bounds.isValid()){
+map.fitBounds(bounds,{padding:[50,50]});
+}
+
+}
+
+onValue(ref(db,"live"),(snapshot)=>{
+
+const data = snapshot.val();
+if(!data) return;
+
+allData = data;
+renderList();
+
+});
+
+document.getElementById("searchNama").addEventListener("input",renderList);
 
 </script>
 
