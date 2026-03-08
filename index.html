@@ -1,205 +1,373 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistem Monitoring Satuan</title>
+
+<title>Monitoring Lokasi Satuan</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background-color: #0f1a0f;
-  color: #e0e0e0;
+
+body{
+margin:0;
+font-family:'Orbitron',sans-serif;
+background: radial-gradient(circle at top,#0c1a0c,#050805);
+color:white;
+overflow:hidden;
 }
 
-.header {
-  background-color: #1b2b1b;
-  padding: 15px;
-  text-align: center;
-  font-weight: bold;
-  letter-spacing: 1px;
-  border-bottom: 2px solid #3a5f3a;
+/* HEADER */
+
+.header{
+background:linear-gradient(90deg,#0c200c,#132c13);
+padding:18px;
+text-align:center;
+font-size:18px;
+letter-spacing:2px;
+border-bottom:1px solid #00ff00;
+box-shadow:0 0 10px #00ff00;
 }
 
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 85vh;
+/* CONTAINER */
+
+.container{
+height:90vh;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-.card {
-  background: #182618;
-  padding: 30px;
-  border-radius: 10px;
-  width: 350px;
-  box-shadow: 0 0 25px rgba(0,255,0,0.15);
-  border: 1px solid #3a5f3a;
+/* CARD */
+
+.card{
+
+background:rgba(15,25,15,0.9);
+padding:35px;
+width:360px;
+border-radius:15px;
+
+border:1px solid #00ff00;
+
+box-shadow:
+0 0 15px #00ff00,
+0 0 40px rgba(0,255,0,0.2);
+
+backdrop-filter: blur(10px);
+
+animation:fade 1s ease;
+
 }
 
-h2 {
-  text-align: center;
-  color: #7CFC00;
-  margin-bottom: 20px;
+@keyframes fade{
+from{opacity:0; transform:translateY(20px);}
+to{opacity:1;}
 }
 
-input {
-  width: 100%;
-  padding: 12px;
-  background: #101a10;
-  border: 1px solid #3a5f3a;
-  color: #7CFC00;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  font-size: 16px;
+h2{
+text-align:center;
+color:#7CFC00;
+margin-bottom:25px;
 }
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: #2e5e2e;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+/* INPUT */
+
+input{
+width:100%;
+padding:14px;
+background:#0a120a;
+border:1px solid #00ff00;
+border-radius:8px;
+color:#7CFC00;
+font-size:15px;
+margin-bottom:18px;
+outline:none;
 }
 
-#status {
-  margin-top: 15px;
-  font-weight: bold;
-  color: #7CFC00;
-  text-align: center;
-  font-size: 14px;
+input:focus{
+box-shadow:0 0 8px #00ff00;
 }
 
-.online-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: lime;
-  border-radius: 50%;
-  margin-left: 5px;
-  box-shadow: 0 0 10px lime;
+/* BUTTON */
+
+button{
+
+width:100%;
+padding:14px;
+background:linear-gradient(90deg,#0f7a0f,#00ff00);
+border:none;
+border-radius:8px;
+
+font-weight:bold;
+letter-spacing:1px;
+
+cursor:pointer;
+
+transition:0.3s;
+
 }
 
-.footer {
-  text-align: center;
-  font-size: 12px;
-  padding: 10px;
-  color: #888;
+button:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 12px #00ff00;
+
 }
+
+/* STATUS */
+
+#status{
+
+margin-top:20px;
+
+text-align:center;
+
+font-size:14px;
+
+color:#7CFC00;
+
+}
+
+/* ONLINE DOT */
+
+.online-dot{
+
+display:inline-block;
+
+width:10px;
+
+height:10px;
+
+background:lime;
+
+border-radius:50%;
+
+margin-left:5px;
+
+box-shadow:0 0 10px lime;
+
+animation:pulse 1s infinite;
+
+}
+
+@keyframes pulse{
+
+0%{opacity:1;}
+
+50%{opacity:0.4;}
+
+100%{opacity:1;}
+
+}
+
+/* FOOTER */
+
+.footer{
+
+position:absolute;
+
+bottom:10px;
+
+width:100%;
+
+text-align:center;
+
+font-size:11px;
+
+color:#888;
+
+letter-spacing:1px;
+
+}
+
 </style>
+
 </head>
 
 <body>
 
 <div class="header">
-  SISTEM MONITORING LOKASI SATUAN YON TP 859/RBK
+
+🛰 SISTEM MONITORING LOKASI SATUAN YONIF TP 859/RBK
+
 </div>
 
+
 <div class="container">
-  <div class="card">
-    <h2>TRACKING ANGGOTA YONIF TP 859/RBK</h2>
 
-    <input type="text" id="nama" placeholder="Masukkan Nama / Panggilan">
-    <button onclick="mulaiTracking()">AKTIFKAN TRACKING</button>
+<div class="card">
 
-    <div id="status"></div>
-  </div>
+<h2>TRACKING ANGGOTA</h2>
+
+<input type="text" id="nama" placeholder="Masukkan Nama / Panggilan">
+
+<button onclick="mulaiTracking()">
+
+AKTIFKAN TRACKING
+
+</button>
+
+<div id="status"></div>
+
+</div>
+
 </div>
 
 <div class="footer">
-  Internal Use Only - Secure Tracking System
+
+Internal Use Only • Secure Military Tracking System
+
 </div>
+
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-  authDomain: "real-time-location-30d91.firebaseapp.com",
-  databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "real-time-location-30d91",
-  storageBucket: "real-time-location-30d91.firebasestorage.app",
-  messagingSenderId: "1092565406651",
-  appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+
+apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+
+authDomain: "real-time-location-30d91.firebaseapp.com",
+
+databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId: "real-time-location-30d91",
+
+storageBucket: "real-time-location-30d91.firebasestorage.app",
+
+messagingSenderId: "1092565406651",
+
+appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+
 };
 
+
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 
-window.mulaiTracking = function () {
 
-  const nama = document.getElementById("nama").value;
+window.mulaiTracking = function(){
 
-  if (!nama) {
-    alert("Masukkan identitas anggota");
-    return;
-  }
 
-  document.getElementById("status").innerText = "Mengaktifkan GPS...";
+const nama = document.getElementById("nama").value;
 
-  navigator.geolocation.watchPosition(
 
-    async function(position) {
+if(!nama){
 
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+alert("Masukkan identitas anggota");
 
-      // ambil alamat
-      let alamatLengkap = "Lokasi tidak diketahui";
+return;
 
-      try{
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-        );
+}
 
-        const data = await response.json();
-        alamatLengkap = data.display_name;
 
-      }catch(err){
-        console.log("Gagal ambil alamat");
-      }
+document.getElementById("status").innerText="Mengaktifkan GPS...";
 
-      // kirim ke firebase
-      await set(ref(db, "live/" + nama), {
-  latitude: lat,
-  longitude: lon,
-  alamat: alamatLengkap,
 
-  // tambahan realtime tracking
-  speed: Math.round(speed * 3.6), // m/s → km/h
-  accuracy: accuracy,
-  last_update: new Date().toLocaleTimeString(),
+navigator.geolocation.watchPosition(
 
-  waktu: Date.now(),
-  status: "ONLINE"
+
+async function(position){
+
+
+const lat = position.coords.latitude;
+
+const lon = position.coords.longitude;
+
+const speed = position.coords.speed || 0;
+
+const accuracy = position.coords.accuracy;
+
+
+let alamatLengkap="Lokasi tidak diketahui";
+
+
+try{
+
+
+const response = await fetch(
+
+`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+
+);
+
+
+const data = await response.json();
+
+alamatLengkap = data.display_name;
+
+
+}catch(err){
+
+console.log("Gagal ambil alamat");
+
+}
+
+
+await set(ref(db,"live/"+nama),{
+
+
+latitude:lat,
+
+longitude:lon,
+
+alamat:alamatLengkap,
+
+
+speed:Math.round(speed*3.6),
+
+accuracy:accuracy,
+
+last_update:new Date().toLocaleTimeString(),
+
+
+waktu:Date.now(),
+
+status:"ONLINE"
+
 });
 
-      document.getElementById("status").innerHTML =
-        "STATUS: ONLINE <span class='online-dot'></span>";
 
-    },
+document.getElementById("status").innerHTML=
 
-    function(error) {
-      alert("GPS Error: " + error.message);
-    },
+"STATUS ONLINE <span class='online-dot'></span>";
 
-    {
-      enableHighAccuracy: true,
-      maximumAge: 0,   // jangan pakai cache lokasi
-      timeout: 5000
-    }
 
-  );
+},
+
+
+function(error){
+
+alert("GPS Error: "+error.message);
+
+},
+
+
+{
+
+enableHighAccuracy:true,
+
+maximumAge:0,
+
+timeout:5000
+
+}
+
+
+);
+
 
 };
 
 </script>
+
 
 </body>
 </html>
