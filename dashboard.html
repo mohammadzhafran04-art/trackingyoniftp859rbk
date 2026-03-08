@@ -8,50 +8,67 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body {
-font-family: Arial;
-text-align:center;
-background:#0f1b0f;
+
+body{
+font-family:Arial;
+background:#081208;
 color:white;
 margin:0;
+overflow:hidden;
 }
 
-.header {
-background:#1c2b1c;
+/* RADAR BACKGROUND */
+
+body::before{
+content:"";
+position:fixed;
+width:900px;
+height:900px;
+border-radius:50%;
+border:2px solid rgba(0,255,0,0.15);
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+animation:radarSpin 20s linear infinite;
+pointer-events:none;
+}
+
+@keyframes radarSpin{
+0%{transform:translate(-50%,-50%) rotate(0deg);}
+100%{transform:translate(-50%,-50%) rotate(360deg);}
+}
+
+.header{
+background:#102110;
 padding:15px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 }
 
-.logout-btn {
+.logout-btn{
 background:#b30000;
 color:white;
 border:none;
 padding:8px 15px;
 border-radius:6px;
 cursor:pointer;
-font-weight:bold;
 }
 
-.logout-btn:hover {
-background:#ff0000;
-}
-
-#map {
-height:500px;
+#map{
+height:520px;
 margin:20px;
 border-radius:12px;
 }
 
-#listContainer {
+#listContainer{
 margin:20px;
 padding:15px;
-background:#1c2b1c;
+background:#132613;
 border-radius:10px;
 }
 
-#searchNama {
+#searchNama{
 padding:8px;
 width:60%;
 border-radius:6px;
@@ -59,51 +76,55 @@ border:none;
 margin-bottom:15px;
 }
 
-.nama-item {
-background:#2e442e;
+.nama-item{
+background:#203820;
 margin:5px;
 padding:10px;
 border-radius:6px;
 cursor:pointer;
-text-align:left;
 }
 
-.nama-item:hover {
-background:#3f5f3f;
+.nama-item:hover{
+background:#2e4f2e;
 }
 
-.update-time {
+.update-time{
 font-size:12px;
 color:#90ee90;
 }
+
 </style>
 </head>
 
 <body>
 
 <script>
-if (localStorage.getItem("auth") !== "true") {
-window.location.href = "login.html";
+if(localStorage.getItem("auth") !== "true"){
+window.location.href="login.html";
 }
 </script>
 
 <div class="header">
-<h3>🪖 Dashboard Semua Anggota</h3>
+<h3>🛰 Tactical Command Map</h3>
 <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
 <div id="map"></div>
 
 <div id="listContainer">
+
 <h3>Daftar Anggota Aktif</h3>
+
 <input type="text" id="searchNama" placeholder="Cari nama anggota...">
+
 <div id="listAnggota"></div>
+
 </div>
 
 <script>
 function logout(){
 localStorage.removeItem("auth");
-window.location.href = "login.html";
+window.location.href="login.html";
 }
 </script>
 
@@ -112,59 +133,60 @@ window.location.href = "login.html";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig = {
-apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-authDomain: "real-time-location-30d91.firebaseapp.com",
-databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-projectId: "real-time-location-30d91",
-storageBucket: "real-time-location-30d91.firebasestorage.app",
-messagingSenderId: "1092565406651",
-appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+const firebaseConfig={
+apiKey:"AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+authDomain:"real-time-location-30d91.firebaseapp.com",
+databaseURL:"https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"real-time-location-30d91",
+storageBucket:"real-time-location-30d91.firebasestorage.app",
+messagingSenderId:"1092565406651",
+appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
 
-const map = L.map('map').setView([-2,118],5);
+const map=L.map("map").setView([-2,118],5);
 
-const normalMap = L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+const normal=L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 );
 
-const satelliteMap = L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+const satelit=L.tileLayer(
+"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 );
 
-normalMap.addTo(map);
+normal.addTo(map);
 
 L.control.layers({
-"Map Normal": normalMap,
-"Satelit": satelliteMap
+"Normal":normal,
+"Satelit":satelit
 }).addTo(map);
 
-let markers = {};
-let paths = {};
-let allData = {};
-let bounds = L.latLngBounds();
-
+let markers={};
+let paths={};
+let radar={};
+let allData={};
+let bounds=L.latLngBounds();
 
 /* MARKER GERAK HALUS */
-function moveMarkerSmooth(marker,newLatLng){
 
-const duration = 1000;
-const start = marker.getLatLng();
-const startTime = performance.now();
+function moveSmooth(marker,newLatLng){
+
+const start=marker.getLatLng();
+const duration=800;
+const startTime=performance.now();
 
 function animate(time){
 
-const progress = Math.min((time - startTime)/duration,1);
+const progress=Math.min((time-startTime)/duration,1);
 
-const lat = start.lat + (newLatLng[0] - start.lat) * progress;
-const lng = start.lng + (newLatLng[1] - start.lng) * progress;
+const lat=start.lat+(newLatLng[0]-start.lat)*progress;
+const lng=start.lng+(newLatLng[1]-start.lng)*progress;
 
 marker.setLatLng([lat,lng]);
 
-if(progress < 1){
+if(progress<1){
 requestAnimationFrame(animate);
 }
 
@@ -174,102 +196,119 @@ requestAnimationFrame(animate);
 
 }
 
+/* FORMAT WAKTU */
 
 function formatWaktu(timestamp){
-if(!timestamp) return "Tidak tersedia";
-const date = new Date(timestamp);
-return date.toLocaleTimeString();
+
+if(!timestamp)return "-";
+
+const d=new Date(timestamp);
+
+return d.toLocaleTimeString();
+
 }
 
-function renderList(){
+/* RENDER DATA */
 
-const listDiv = document.getElementById("listAnggota");
-const keyword = document.getElementById("searchNama").value.toLowerCase();
+function render(){
 
-listDiv.innerHTML = "";
-bounds = L.latLngBounds();
+const list=document.getElementById("listAnggota");
+const keyword=document.getElementById("searchNama").value.toLowerCase();
 
-Object.keys(allData).forEach((nama)=>{
+list.innerHTML="";
+bounds=L.latLngBounds();
 
-if(!nama.toLowerCase().includes(keyword)) return;
+Object.keys(allData).forEach(nama=>{
 
-const lat = allData[nama].latitude;
-const lon = allData[nama].longitude;
-const alamat = allData[nama].alamat || "Alamat belum tersedia";
-const waktu = formatWaktu(allData[nama].waktu);
+if(!nama.toLowerCase().includes(keyword))return;
+
+const lat=allData[nama].latitude;
+const lon=allData[nama].longitude;
+const alamat=allData[nama].alamat||"-";
+const waktu=formatWaktu(allData[nama].waktu);
 
 bounds.extend([lat,lon]);
 
-const popupContent = `
-<b>${nama}</b><br><br>
-📍 ${alamat}<br><br>
-🧭 ${lat}, ${lon}<br><br>
-🕒 Terakhir Update: ${waktu}<br><br>
+const popup=`
+<b>${nama}</b><br>
+📍 ${alamat}<br>
+🕒 ${waktu}<br>
 <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">
-Buka di Google Maps
+Google Maps
 </a>
 `;
 
 if(!markers[nama]){
 
-markers[nama] = L.marker([lat,lon])
-.addTo(map)
-.bindPopup(popupContent);
+markers[nama]=L.marker([lat,lon]).addTo(map).bindPopup(popup);
 
-markers[nama].on("click",()=>{
-map.setView([lat,lon],15);
-});
-
-paths[nama] = L.polyline([[lat,lon]],{
+paths[nama]=L.polyline([[lat,lon]],{
 color:"lime",
-weight:4
+weight:3
+}).addTo(map);
+
+/* RADAR LINGKARAN */
+
+radar[nama]=L.circle([lat,lon],{
+radius:60,
+color:"lime",
+fillOpacity:0.1
 }).addTo(map);
 
 }else{
 
-moveMarkerSmooth(markers[nama],[lat,lon]);
+moveSmooth(markers[nama],[lat,lon]);
 
-markers[nama].setPopupContent(popupContent);
+markers[nama].setPopupContent(popup);
 
 paths[nama].addLatLng([lat,lon]);
 
+radar[nama].setLatLng([lat,lon]);
+
 }
 
-const item = document.createElement("div");
+/* LIST ANGGOTA */
 
-item.className = "nama-item";
+const item=document.createElement("div");
 
-item.innerHTML = `
+item.className="nama-item";
+
+item.innerHTML=`
 <strong>${nama}</strong><br>
-<span class="update-time">Update: ${waktu}</span>
+<span class="update-time">Update : ${waktu}</span>
 `;
 
-item.onclick = ()=>{
+item.onclick=()=>{
 map.setView([lat,lon],15);
 markers[nama].openPopup();
 };
 
-listDiv.appendChild(item);
+list.appendChild(item);
 
 });
 
 if(bounds.isValid()){
-map.fitBounds(bounds,{padding:[50,50]});
+map.fitBounds(bounds,{padding:[40,40]});
 }
 
 }
 
-onValue(ref(db,"live"),(snapshot)=>{
+/* REALTIME FIREBASE */
 
-const data = snapshot.val();
-if(!data) return;
+onValue(ref(db,"live"),snapshot=>{
 
-allData = data;
-renderList();
+const data=snapshot.val();
+
+if(!data)return;
+
+allData=data;
+
+render();
 
 });
 
-document.getElementById("searchNama").addEventListener("input",renderList);
+document.getElementById("searchNama")
+.addEventListener("input",render);
 
 </script>
 
