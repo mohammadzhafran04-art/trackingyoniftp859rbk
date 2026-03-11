@@ -8,7 +8,9 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00ff41">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092215.png">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -24,6 +26,8 @@
         button { width: 100%; padding: 15px; background: var(--neon); color: #000; border: none; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; }
         button:disabled { background: #1a331a; color: #004400; cursor: not-allowed; }
         .status-box { font-size: 11px; margin-top: 10px; border-top: 1px solid rgba(0,255,65,0.2); padding-top: 10px; line-height: 1.6; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
@@ -55,9 +59,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- CONFIG FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
         authDomain: "real-time-location-30d91.firebaseapp.com",
@@ -72,40 +75,52 @@
     const db = getDatabase(app);
     let wakeLock = null;
 
-    // Cek apakah dibuka lewat aplikasi terinstall (PWA)
     if (window.matchMedia('(display-mode: standalone)').matches) {
         document.getElementById('pwa-text').innerText = "APP_MODE: INSTALLED_APP";
         document.getElementById('pwa-text').style.color = "var(--neon)";
     }
 
-    // Fungsi WakeLock (Anti-Sleep)
     async function activateWakeLock() {
         if ('wakeLock' in navigator) {
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
                 document.getElementById('wakelock-text').innerText = "WAKE_LOCK: ACTIVE";
                 document.getElementById('wakelock-text').style.color = "var(--neon)";
-            } catch (err) { console.log(err); }
+            } catch (err) { console.log("WakeLock Error: " + err.message); }
         }
     }
+
+    // Panggil ulang WakeLock jika tab kembali dibuka
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await activateWakeLock();
+        }
+    });
 
     const map = L.map('map', { zoomControl: false }).setView([0,0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     let marker = L.circleMarker([0, 0], {radius: 8, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 1}).addTo(map);
 
     document.getElementById("btnAktif").onclick = async () => {
-        const nama = document.getElementById("nama").value;
+        const nama = document.getElementById("nama").value.trim().toUpperCase();
         if (!nama) return alert("REQUIRED: CALLSIGN");
 
-        // Jalankan audio hening agar OS tidak mematikan browser
         document.getElementById('silentMode').play();
-        
-        // Aktifkan WakeLock
         await activateWakeLock();
 
         document.getElementById("btnAktif").disabled = true;
         document.getElementById("btnAktif").innerText = "UPLINK_LIVE";
-        document.getElementById("stat-text").innerHTML = 'SYSTEM: <span style="color:var(--neon)">ONLINE</span>';
+        document.getElementById("btnAktif").classList.add("blink");
+
+        // Deteksi Koneksi Firebase
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            if (snap.val() === true) {
+                document.getElementById('stat-text').innerHTML = 'SYSTEM: <span style="color:var(--neon)">ONLINE</span>';
+            } else {
+                document.getElementById('stat-text').innerHTML = 'SYSTEM: <span style="color:orange">RECONNECTING...</span>';
+            }
+        });
 
         navigator.geolocation.watchPosition((pos) => {
             const { latitude, longitude, speed } = pos.coords;
@@ -119,18 +134,19 @@
             update(ref(db, "live/" + nama), {
                 lat: latitude, lon: longitude, speed: kmh, waktu: Date.now(), status: "ACTIVE"
             });
-        }, (err) => alert("GPS ERROR: " + err.message), { 
+        }, (err) => {
+            console.error(err);
+        }, { 
             enableHighAccuracy: true,
-            maximumAge: 0
+            maximumAge: 0,
+            timeout: 10000
         });
     };
 
-    // --- REGISTER SERVICE WORKER ---
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
     }
 
-    // Battery Monitor
     if(navigator.getBattery) {
         navigator.getBattery().then(bat => {
             const up = () => document.getElementById('bat-val').innerText = `BAT: ${Math.round(bat.level*100)}%`;
