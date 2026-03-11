@@ -57,8 +57,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
+    // Menambahkan 'remove' dalam import
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -94,13 +95,34 @@
         });
     }
 
-    // Fixed Logout Function
+    // DISCONNECT & CLEANUP FUNCTION
     document.getElementById("btn-logout").onclick = () => {
+        const nama = document.getElementById("nama").value;
+        
+        if (nama) {
+            // Memberi tanda sedang proses cleanup
+            document.getElementById("btn-logout").innerText = "CLEANING...";
+            
+            // Menghapus data dari Firebase sehingga hilang dari dashboard
+            remove(ref(db, "live/" + nama))
+                .then(() => {
+                    executeExit();
+                })
+                .catch((err) => {
+                    console.error("Cleanup Error:", err);
+                    executeExit(); // Tetap pindah halaman meski gagal hapus
+                });
+        } else {
+            executeExit();
+        }
+    };
+
+    function executeExit() {
         document.body.style.filter = "brightness(0) blur(20px)";
         setTimeout(() => {
             window.location.href = "https://mohammadzhafran04-art.github.io/trackingyoniftp859rbk/login.html";
         }, 800);
-    };
+    }
 
     // SOS Toggle
     document.getElementById("btnSos").onclick = () => {
