@@ -17,6 +17,7 @@
         input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--neon); padding: 10px; color: var(--neon); font-family: 'Orbitron', sans-serif; margin-bottom: 10px; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
         button { flex: 2; padding: 12px; background: var(--neon); color: black; border: none; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; }
+        button:disabled { background: #333; color: #666; cursor: not-allowed; }
         .sos-btn { flex: 1; background: transparent; color: var(--danger); border: 1px solid var(--danger); }
         .logout-idx { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 5px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; }
         #info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 11px; }
@@ -57,7 +58,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
-    // Menambahkan 'remove' dalam import
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -75,6 +75,7 @@
     const db = getDatabase(app);
 
     let isSOS = false;
+    let watchId = null; 
     let userBattery = "N/A";
     const sirenAudio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
     sirenAudio.loop = true;
@@ -95,34 +96,29 @@
         });
     }
 
-    // DISCONNECT & CLEANUP FUNCTION
-    document.getElementById("btn-logout").onclick = () => {
+    // FIX: FUNGSI DISCONNECT (Hapus Data & Berhenti Lacak)
+    document.getElementById("btn-logout").onclick = async () => {
         const nama = document.getElementById("nama").value;
-        
-        if (nama) {
-            // Memberi tanda sedang proses cleanup
-            document.getElementById("btn-logout").innerText = "CLEANING...";
+        if (!nama) return alert("Callsign tidak aktif.");
+
+        if (confirm("Hapus data tracking dan disconnect?")) {
+            // 1. Matikan GPS
+            if (watchId) navigator.geolocation.clearWatch(watchId);
             
-            // Menghapus data dari Firebase sehingga hilang dari dashboard
-            remove(ref(db, "live/" + nama))
-                .then(() => {
-                    executeExit();
-                })
-                .catch((err) => {
-                    console.error("Cleanup Error:", err);
-                    executeExit(); // Tetap pindah halaman meski gagal hapus
-                });
-        } else {
-            executeExit();
+            // 2. Hapus dari Firebase
+            try {
+                await remove(ref(db, "live/" + nama));
+                
+                // 3. Notifikasi
+                alert("ANDA TELAH LOGOUT DARI TRACKER");
+                
+                // 4. Reset halaman tanpa pindah file
+                location.reload(); 
+            } catch (err) {
+                alert("Gagal menghapus data: " + err.message);
+            }
         }
     };
-
-    function executeExit() {
-        document.body.style.filter = "brightness(0) blur(20px)";
-        setTimeout(() => {
-            window.location.href = "https://mohammadzhafran04-art.github.io/trackingyoniftp859rbk/login.html";
-        }, 800);
-    }
 
     // SOS Toggle
     document.getElementById("btnSos").onclick = () => {
@@ -162,8 +158,8 @@
             }
         });
 
-        // Geolocation Watcher
-        navigator.geolocation.watchPosition((pos) => {
+        // Simpan GPS ke watchId
+        watchId = navigator.geolocation.watchPosition((pos) => {
             const { latitude, longitude, speed, accuracy } = pos.coords;
             const kmh = Math.round(speed * 3.6 || 0);
             
@@ -173,6 +169,7 @@
             document.getElementById('coord-val').innerText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
             document.getElementById('speed-val').innerText = `${kmh} KM/H`;
             document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
+            document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
 
             update(ref(db, "live/" + nama), {
                 lat: latitude, 
@@ -184,11 +181,12 @@
             });
         }, (err) => {
             console.error("GPS Error:", err);
+            alert("Aktifkan GPS Anda!");
         }, { enableHighAccuracy: true });
 
         document.getElementById("btnAktif").innerText = "UPLINK ACTIVE";
-        document.getElementById("btnAktif").style.background = "#fff";
         document.getElementById("btnAktif").disabled = true;
+        document.getElementById("nama").disabled = true; // Kunci nama saat aktif
     };
 </script>
 </body>
