@@ -34,7 +34,8 @@ function sendTrackingData(data, type = 'pageview') {
         timeOnPage: Date.now() - TRACKING_CONFIG.sessionStart
     };
 
-    // Simpan ke localStorage
+    // SIMPAN KE LOCALSTORAGE - Ini yang terpenting!
+    // Data akan tersimpan就算 tab ditutup
     let history = JSON.parse(localStorage.getItem('userTrackingHistory') || '[]');
     history.push(payload);
     
@@ -44,8 +45,42 @@ function sendTrackingData(data, type = 'pageview') {
     localStorage.setItem('userTrackingHistory', JSON.stringify(history));
     localStorage.setItem('lastTrackingData', JSON.stringify(payload));
     
+    // SIMPAN TRACKING ID ke localStorage - agar bisa identification user lama
+    localStorage.setItem('userTrackingId', TRACKING_CONFIG.trackingId);
+    localStorage.setItem('lastVisit', Date.now());
+    
     console.log('📊 Tracking:', type, payload);
     console.log('📊 Total history:', history.length);
+}
+
+// Fungsi fingerprint untuk identification user
+function getFingerprint() {
+    const fp = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        platform: navigator.platform,
+        screenSize: `${window.screen.width}x${window.screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        cores: navigator.hardwareConcurrency,
+        memory: navigator.deviceMemory,
+        plugins: navigator.plugins.length,
+        doNotTrack: navigator.doNotTrack
+    };
+    return btoa(JSON.stringify(fp)).substring(0, 50);
+}
+
+// Cek jika user sudah pernah datang sebelumnya
+function checkReturningUser() {
+    const lastVisit = localStorage.getItem('lastVisit');
+    const savedId = localStorage.getItem('userTrackingId');
+    const fingerprint = getFingerprint();
+    
+    if (lastVisit) {
+        const hoursSinceLastVisit = (Date.now() - parseInt(lastVisit)) / (1000 * 60 * 60);
+        console.log(`👋 Welcome back! Last visit: ${hoursSinceLastVisit.toFixed(1)} hours ago`);
+        console.log(`🔑 Your User ID: ${savedId || TRACKING_CONFIG.trackingId}`);
+        console.log(`🔍 Fingerprint: ${fingerprint}`);
+    }
 }
 
 // Fungsi untuk melacak saat pengguna Maus Keluar (mouse leave window)
