@@ -10,7 +10,7 @@
             --neon: #00ff9c;
             --danger: #ff003c;
             --bg: #020804;
-            --panel: rgba(5, 20, 10, 0.9);
+            --panel: rgba(5, 20, 10, 0.85);
         }
 
         body {
@@ -26,7 +26,7 @@
             perspective: 1000px;
         }
 
-        /* AMBIENT BACKGROUND GRID */
+        /* AMBIENT BACKGROUND */
         .grid-bg {
             position: absolute;
             width: 200%;
@@ -36,7 +36,7 @@
                 linear-gradient(90deg, rgba(0, 255, 156, 0.05) 1px, transparent 1px);
             background-size: 50px 50px;
             transform: rotateX(60deg) translateY(-20%);
-            animation: gridMove 15s linear infinite;
+            animation: gridMove 10s linear infinite;
             z-index: 0;
         }
 
@@ -45,16 +45,15 @@
             100% { background-position: 0 50px; }
         }
 
-        /* TRANSITION OVERLAY (HYPER-JUMP) */
+        /* TRANSITION OVERLAY */
         #warp-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #fff 0%, var(--neon) 50%, #000 100%);
+            background: white;
             opacity: 0;
             pointer-events: none;
             z-index: 9999;
-            transition: opacity 0.6s ease-in, transform 0.8s ease-in;
-            transform: scale(0.5);
+            transition: opacity 0.8s ease-in;
         }
 
         /* LOGIN CARD */
@@ -63,28 +62,27 @@
             padding: 40px;
             background: var(--panel);
             border: 1px solid var(--neon);
-            box-shadow: 0 0 50px rgba(0, 255, 156, 0.2), inset 0 0 20px rgba(0, 255, 156, 0.1);
+            box-shadow: 0 0 50px rgba(0, 255, 156, 0.15), inset 0 0 20px rgba(0, 255, 156, 0.1);
             backdrop-filter: blur(15px);
             text-align: center;
             z-index: 10;
             position: relative;
-            transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
         }
 
         .title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 16px;
+            font-size: 18px;
             letter-spacing: 4px;
             margin-bottom: 30px;
             text-transform: uppercase;
             text-shadow: 0 0 10px var(--neon);
         }
 
-        /* BIO-SCANNER ANIMATION */
+        /* BIO-SCANNER */
         .scanner-container {
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto 30px;
             border: 1px solid rgba(0, 255, 156, 0.3);
             position: relative;
@@ -120,28 +118,29 @@
             to { transform: rotate(360deg); }
         }
 
-        /* INPUT */
+        /* INPUT FIELD */
         .input-group {
             margin-bottom: 20px;
+            position: relative;
         }
 
         input {
             width: 100%;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(0, 255, 156, 0.3);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 156, 0.2);
             color: var(--neon);
             font-family: 'Orbitron', sans-serif;
             text-align: center;
             letter-spacing: 5px;
             outline: none;
             box-sizing: border-box;
-            font-size: 14px;
+            transition: 0.3s;
         }
 
         input:focus {
             border-color: var(--neon);
-            box-shadow: 0 0 15px rgba(0, 255, 156, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 156, 0.2);
         }
 
         /* BUTTON */
@@ -156,51 +155,38 @@
             cursor: pointer;
             transition: 0.3s;
             clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-            letter-spacing: 2px;
         }
 
         button:hover {
             filter: brightness(1.2);
-            box-shadow: 0 0 25px var(--neon);
-            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--neon);
         }
 
-        /* TERMINAL LOG */
+        /* STATUS TERMINAL */
         #terminal {
-            margin-top: 25px;
-            font-size: 11px;
-            height: 45px;
+            margin-top: 20px;
+            font-size: 12px;
+            height: 40px;
             color: rgba(0, 255, 156, 0.7);
             border-top: 1px solid rgba(0, 255, 156, 0.1);
             padding-top: 15px;
-            line-height: 1.5;
         }
 
         .alert-success { color: var(--neon); font-weight: bold; }
-        .alert-error { color: var(--danger); text-shadow: 0 0 5px var(--danger); animation: blink 0.3s infinite; }
+        .alert-error { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
 
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
+        /* LOADING SPINNER */
         #loader {
             display: none;
-            width: 15px;
-            height: 15px;
+            width: 20px;
+            height: 20px;
             border: 2px solid var(--bg);
             border-top: 2px solid var(--neon);
             border-radius: 50%;
             margin: 10px auto;
-            animation: spin 0.6s linear infinite;
+            animation: rotate 0.6s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-10px); }
-            40% { transform: translateX(10px); }
-            60% { transform: translateX(-10px); }
-            80% { transform: translateX(10px); }
-        }
     </style>
 </head>
 <body>
@@ -209,26 +195,27 @@
 <div class="grid-bg"></div>
 
 <div class="card" id="loginCard">
-    <div class="title">UNIT AUTHENTICATION</div>
+    <div class="title">Security Node 859</div>
 
     <div class="scanner-container">
         <div class="retina-ring"></div>
         <div class="scan-line"></div>
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3;">
-            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                <circle cx="12" cy="12" r="3"/>
             </svg>
         </div>
     </div>
 
     <div class="input-group">
-        <input type="password" id="pass" placeholder="SECURITY_CODE" autocomplete="off">
+        <input type="password" id="pass" placeholder="SECRET_CODE" autocomplete="off">
     </div>
 
-    <button onclick="authProcess()">INITIALIZE UPLINK</button>
+    <button onclick="authProcess()">INITIALIZE LOGIN</button>
     
     <div id="loader"></div>
-    <div id="terminal">> SYSTEM_READY...<br>> AWAITING CREDENTIALS</div>
+    <div id="terminal">> SYSTEM_READY...</div>
 </div>
 
 <script>
@@ -245,50 +232,49 @@
     async function authProcess() {
         const input = document.getElementById("pass").value;
         
-        // Mulai Proses Login
+        // UI Feedback
         log("ESTABLISHING ENCRYPTED LINK...");
         loader.style.display = "block";
         
-        // Delay simulasi koneksi
-        await new Promise(r => setTimeout(r, 1800));
+        await new Promise(r => setTimeout(r, 1500));
 
         if (input === SECRET) {
             log("IDENTITY VERIFIED. ACCESS GRANTED.", "alert-success");
             loader.style.display = "none";
             
-            await new Promise(r => setTimeout(r, 600));
+            await new Promise(r => setTimeout(r, 800));
             
-            // EFEK TRANSISI HYPER-JUMP
+            // TRANSISI MODERN (Hyper-Jump Effect)
             overlay.style.opacity = "1";
-            overlay.style.transform = "scale(3)";
-            
-            card.style.transform = "translateZ(800px) rotateX(20deg)";
+            card.style.transform = "translateZ(500px) scale(0)";
+            card.style.transition = "1s ease-in";
             card.style.opacity = "0";
 
             setTimeout(() => {
-                // Simpan status login
-                localStorage.setItem("auth_859", "true");
-                // Pindah ke index.html (Tracker Anda)
-                window.location.href = "index.html"; 
-            }, 800);
+                localStorage.setItem("auth", "true");
+                window.location.href = "dashboard.html";
+            }, 1000);
 
         } else {
             log("AUTHENTICATION FAILURE. ALERT SENT.", "alert-error");
             loader.style.display = "none";
             
-            // Efek Getar jika salah
-            card.style.animation = "shake 0.5s cubic-bezier(.36,.07,.19,.97) both";
-            setTimeout(() => card.style.animation = "", 500);
-            document.getElementById("pass").value = "";
+            // Shake effect
+            card.style.animation = "shake 0.4s";
+            setTimeout(() => card.style.animation = "", 400);
         }
     }
 
-    // Izinkan tekan Enter untuk Login
-    document.getElementById("pass").addEventListener("keyup", function(event) {
-        if (event.key === "Enter") {
-            authProcess();
+    // Shake Animation CSS
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
-    });
+    `;
+    document.head.appendChild(style);
 </script>
 
 </body>
