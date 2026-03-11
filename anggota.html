@@ -75,11 +75,13 @@
     const db = getDatabase(app);
     let wakeLock = null;
 
+    // Deteksi Mode Aplikasi (PWA)
     if (window.matchMedia('(display-mode: standalone)').matches) {
         document.getElementById('pwa-text').innerText = "APP_MODE: INSTALLED_APP";
         document.getElementById('pwa-text').style.color = "var(--neon)";
     }
 
+    // Fungsi Mencegah HP Tidur
     async function activateWakeLock() {
         if ('wakeLock' in navigator) {
             try {
@@ -90,7 +92,7 @@
         }
     }
 
-    // Panggil ulang WakeLock jika tab kembali dibuka
+    // Re-aktifkan WakeLock otomatis jika user balik ke aplikasi
     document.addEventListener('visibilitychange', async () => {
         if (wakeLock !== null && document.visibilityState === 'visible') {
             await activateWakeLock();
@@ -105,6 +107,7 @@
         const nama = document.getElementById("nama").value.trim().toUpperCase();
         if (!nama) return alert("REQUIRED: CALLSIGN");
 
+        // Jalankan Trik Background
         document.getElementById('silentMode').play();
         await activateWakeLock();
 
@@ -112,7 +115,7 @@
         document.getElementById("btnAktif").innerText = "UPLINK_LIVE";
         document.getElementById("btnAktif").classList.add("blink");
 
-        // Deteksi Koneksi Firebase
+        // Monitor Koneksi Real-time
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
             if (snap.val() === true) {
@@ -122,6 +125,7 @@
             }
         });
 
+        // Tracking GPS Utama
         navigator.geolocation.watchPosition((pos) => {
             const { latitude, longitude, speed } = pos.coords;
             const kmh = Math.round(speed * 3.6 || 0);
@@ -143,10 +147,14 @@
         });
     };
 
+    // --- REGISTER SERVICE WORKER (PWA) ---
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
+        navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("SW Registered Successfully"))
+        .catch((err) => console.log("SW Registration Failed", err));
     }
 
+    // Monitor Baterai
     if(navigator.getBattery) {
         navigator.getBattery().then(bat => {
             const up = () => document.getElementById('bat-val').innerText = `BAT: ${Math.round(bat.level*100)}%`;
