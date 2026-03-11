@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Tracking Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        button.danger { background: #f44336; }
+        button.danger:hover { background: #da190b; }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 5px;
+            display: none;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 User Tracking Demo</h1>
+        
+        <div class="info">
+            <strong>Cara Penggunaan:</strong><br>
+            1. Buka halaman ini di browser<br>
+            2. Buka DevTools (F12) → Console untuk melihat tracking<br>
+            3. Coba: minimize window, switch tab, atau keluar dari halaman<br>
+            4. Klik tombol "Lihat Data Tracking" untuk melihat data
+        </div>
+
+<button onclick="showTrackingData()">📊 Lihat Data Tracking</button>
+        <button onclick="clearTrackingData()" class="danger">🗑️ Hapus Data</button>
+        <button onclick="startCamera()">📷 Aktifkan Kamera</button>
+        <button onclick="stopCamera()" class="danger">📷 Matikan Kamera</button>
+        <button onclick="showPhoto()">📷 Lihat Foto</button>
+
+        <div id="result">
+            <h3>Data Tracking:</h3>
+            <pre id="trackingDisplay"></pre>
+        </div>
+    </div>
+
+    <!-- Include Tracker Script -->
+    <script src="tracker.js"></script>
+
+    <script>
+        function showTrackingData() {
+            const history = JSON.parse(localStorage.getItem('userTrackingHistory') || '[]');
+            const lastData = localStorage.getItem('lastTrackingData');
+            
+            let display = '';
+            
+            if (history.length > 0) {
+                display += '=== SEMUA HISTORY (' + history.length + ' events) ===\n\n';
+                history.forEach((item, index) => {
+                    display += `${index + 1}. [${item.eventType}] ${new Date(item.timestamp).toLocaleTimeString()}\n`;
+                    display += `   Halaman: ${item.pageUrl}\n`;
+                    display += `   Waktu di halaman: ${item.timeOnPage}ms\n\n`;
+                });
+            }
+            
+            if (lastData) {
+                const last = JSON.parse(lastData);
+                display += '\n=== DATA TERAKHIR ===\n';
+                display += JSON.stringify(last, null, 2);
+            }
+            
+            if (display === '') {
+                display = 'Belum ada data tracking. Coba lakukan sesuatu di halaman ini!';
+            }
+            
+            document.getElementById('trackingDisplay').textContent = display;
+            document.getElementById('result').style.display = 'block';
+        }
+        
+function clearTrackingData() {
+            localStorage.removeItem('userTrackingHistory');
+            localStorage.removeItem('lastTrackingData');
+            alert('Data tracking berhasil dihapus!');
+            document.getElementById('result').style.display = 'none';
+        }
+        
+        function showPhoto() {
+            const photo = localStorage.getItem('userPhoto');
+            if (photo) {
+                const win = window.open('', '_blank');
+                win.document.write('<img src="' + photo + '" style="max-width:100%;">');
+                win.document.title = 'Foto User';
+            } else {
+                alert('Belum ada foto. Klik "Aktifkan Kamera" dulu!');
+            }
+        }
+    </script>
+</body>
+</html>
+
