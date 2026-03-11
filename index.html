@@ -1,327 +1,347 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>  
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Monitoring - YONIF TP 859/RBK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
-<title>Monitoring Lokasi Satuan</title>
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --dark-green: #003b00;
+            --bg-black: #050a05;
+            --glow: 0 0 15px rgba(0, 255, 65, 0.4);
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+        body {
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-black);
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--neon-green);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-<style>
+        /* Scanline Effect */
+        body::after {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
 
-body{
-margin:0;
-font-family:'Orbitron',sans-serif;
-background:#030703;
-color:white;
-overflow:hidden;
-}
+        .header {
+            background: rgba(0, 20, 0, 0.9);
+            padding: 20px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            border-bottom: 2px solid var(--neon-green);
+            box-shadow: var(--glow);
+            letter-spacing: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
 
-body::before{
-content:"";
-position:absolute;
-width:800px;
-height:800px;
-border-radius:50%;
-border:1px solid rgba(0,255,0,0.2);
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-animation:radar 8s linear infinite;
-}
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
 
-@keyframes radar{
-0%{transform:translate(-50%,-50%) rotate(0deg);}
-100%{transform:translate(-50%,-50%) rotate(360deg);}
-}
+        /* Radar Animation */
+        .radar-circle {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border: 1px solid var(--dark-green);
+            border-radius: 50%;
+            pointer-events: none;
+        }
 
-.header{
-background:linear-gradient(90deg,#071a07,#0e2c0e);
-padding:18px;
-text-align:center;
-font-size:18px;
-letter-spacing:2px;
-border-bottom:1px solid #00ff00;
-box-shadow:0 0 10px #00ff00;
-}
+        .radar-sweep {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: conic-gradient(from 0deg, rgba(0, 255, 65, 0.2), transparent 40%);
+            top: 50%; left: 50%;
+            transform-origin: top left;
+            animation: sweep 4s linear infinite;
+            border-radius: 0 0 0 100%;
+        }
 
-.container{
-height:90vh;
-display:flex;
-justify-content:center;
-align-items:center;
-}
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-.card{
-background:rgba(15,25,15,0.95);
-padding:35px;
-width:360px;
-border-radius:15px;
-border:1px solid #00ff00;
-box-shadow:0 0 20px #00ff00,0 0 50px rgba(0,255,0,0.2);
-backdrop-filter: blur(10px);
-}
+        .card {
+            background: rgba(5, 15, 5, 0.85);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--neon-green);
+            border-radius: 5px;
+            box-shadow: var(--glow), inset 0 0 20px rgba(0,255,0,0.1);
+            backdrop-filter: blur(8px);
+            z-index: 5;
+            position: relative;
+        }
 
-h2{
-text-align:center;
-color:#7CFC00;
-margin-bottom:25px;
-}
+        .card::before {
+            content: "SECURE LINK STABLISHED";
+            position: absolute;
+            top: 5px; left: 10px;
+            font-size: 10px;
+            opacity: 0.6;
+        }
 
-input{
-width:100%;
-padding:14px;
-background:#061006;
-border:1px solid #00ff00;
-border-radius:8px;
-color:#7CFC00;
-font-size:15px;
-margin-bottom:18px;
-}
+        h2 {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
 
-button{
-width:100%;
-padding:14px;
-background:linear-gradient(90deg,#0f7a0f,#00ff00);
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-}
+        input {
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            background: rgba(0, 40, 0, 0.3);
+            border: 1px solid var(--dark-green);
+            border-left: 4px solid var(--neon-green);
+            color: var(--neon-green);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 18px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.3s;
+        }
 
-#status{
-margin-top:20px;
-text-align:center;
-font-size:14px;
-color:#7CFC00;
-}
+        input:focus {
+            border-color: var(--neon-green);
+            background: rgba(0, 60, 0, 0.5);
+        }
 
-#info{
-margin-top:15px;
-font-size:12px;
-line-height:1.6;
-text-align:center;
-color:#9cff9c;
-}
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--neon-green);
+            color: black;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
 
-.online-dot{
-display:inline-block;
-width:10px;
-height:10px;
-background:lime;
-border-radius:50%;
-margin-left:5px;
-box-shadow:0 0 10px lime;
-}
+        button:hover {
+            background: #fff;
+            box-shadow: 0 0 20px #fff;
+        }
 
-.footer{
-position:absolute;
-bottom:10px;
-width:100%;
-text-align:center;
-font-size:11px;
-color:#888;
-}
+        button:active { transform: scale(0.98); }
 
-</style>
+        #status {
+            margin-top: 25px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        #info {
+            margin-top: 15px;
+            background: rgba(0, 255, 65, 0.05);
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.8;
+            border: 1px dashed var(--dark-green);
+        }
+
+        .online-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; box-shadow: 0 0 10px var(--neon-green); }
+            50% { opacity: 0.3; box-shadow: none; }
+            100% { opacity: 1; box-shadow: 0 0 10px var(--neon-green); }
+        }
+
+        .footer {
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            background: rgba(0,0,0,0.5);
+            border-top: 1px solid var(--dark-green);
+            color: #555;
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="header">
-🛰 SISTEM MONITORING LOKASI SATUAN YONIF TP 859/RBK
+    🛰 YONIF TP 859/RBK COMMAND CENTER
 </div>
 
 <div class="container">
-<div class="card">
+    <div class="radar-circle"></div>
+    <div class="radar-sweep"></div>
 
-<h2>TRACKING ANGGOTA YONIF TP 859/RBK</h2>
+    <div class="card">
+        <h2>FIELD UNIT TRACKING</h2>
+        
+        <input type="text" id="nama" placeholder="CALLSIGN / NAMA UNIT" autocomplete="off">
 
-<input type="text" id="nama" placeholder="Masukkan Nama / Panggilan">
+        <button onclick="mulaiTracking()">
+            INITIALIZE TRACKING
+        </button>
 
-<button onclick="mulaiTracking()">
-AKTIFKAN TRACKING
-</button>
-
-<div id="status"></div>
-<div id="info"></div>
-
-</div>
+        <div id="status">READY FOR UPLINK...</div>
+        <div id="info">Waiting for satellite connection...</div>
+    </div>
 </div>
 
 <div class="footer">
-Internal Use Only • Secure Military Tracking System
+    CLASSIFIED DOCUMENT • ENCRYPTED GEOLOCATION SYSTEM • 2026
 </div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+        authDomain: "real-time-location-30d91.firebaseapp.com",
+        databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "real-time-location-30d91",
+        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        messagingSenderId: "1092565406651",
+        appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+    };
 
-const firebaseConfig = {
-apiKey:"AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-authDomain:"real-time-location-30d91.firebaseapp.com",
-databaseURL:"https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-projectId:"real-time-location-30d91",
-storageBucket:"real-time-location-30d91.firebasestorage.app",
-messagingSenderId:"1092565406651",
-appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    let lastLocation = null;
+    let wakeLock = null;
 
-let lastLocation = null;
-let wakeLock = null;
+    async function aktifkanWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request("screen");
+                console.log("System Keep-Alive: ACTIVE");
+            }
+        } catch (err) {
+            console.log("WakeLock Error:", err);
+        }
+    }
 
-/* AKTIFKAN WAKE LOCK */
+    window.mulaiTracking = function() {
+        const nama = document.getElementById("nama").value;
+        if (!nama) {
+            alert("IDENTITAS UNIT DIPERLUKAN!");
+            return;
+        }
 
-async function aktifkanWakeLock(){
+        aktifkanWakeLock();
+        document.getElementById("status").innerText = "CONNECTING TO SATELLITE...";
 
-try{
+        navigator.geolocation.watchPosition(
+            async function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const speed = position.coords.speed || 0;
+                const accuracy = position.coords.accuracy;
 
-wakeLock = await navigator.wakeLock.request("screen");
-console.log("WakeLock aktif");
+                let alamatLengkap = "Coordinating...";
 
-}catch(err){
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await response.json();
+                    alamatLengkap = data.display_name;
+                } catch (err) {
+                    console.log("Geocode bypass");
+                }
 
-console.log("WakeLock gagal:",err);
+                lastLocation = { lat, lon, alamatLengkap };
 
-}
+                if (navigator.onLine) {
+                    await set(ref(db, "live/" + nama), {
+                        latitude: lat,
+                        longitude: lon,
+                        alamat: alamatLengkap,
+                        speed: Math.round(speed * 3.6),
+                        accuracy: accuracy,
+                        last_update: new Date().toLocaleTimeString(),
+                        waktu: Date.now(),
+                        status: "ACTIVE"
+                    });
+                }
 
-}
+                document.getElementById("status").innerHTML = 
+                    "UNIT STATUS: ACTIVE <span class='online-dot'></span>";
 
-window.mulaiTracking=function(){
+                document.getElementById("info").innerHTML = `
+                    <div style="color:white; border-bottom: 1px solid #333; margin-bottom: 5px;">DATA STREAM:</div>
+                    <b>COORD:</b> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                    <b>VELOCITY:</b> ${Math.round(speed * 3.6)} KM/H<br>
+                    <b>PRECISION:</b> ±${accuracy.toFixed(1)} METER<br>
+                    <b>NET:</b> ${navigator.onLine ? "ENCRYPTED" : "OFFLINE"}
+                `;
+            },
+            function(error) {
+                document.getElementById("status").innerText = "SIGNAL LOST: " + error.message;
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 10000
+            }
+        );
+    };
 
-const nama=document.getElementById("nama").value;
+    // Re-sync on internet return
+    window.addEventListener("online", async () => {
+        const nama = document.getElementById("nama").value;
+        if (lastLocation && nama) {
+            await set(ref(db, "live/" + nama), {
+                ...lastLocation,
+                waktu: Date.now(),
+                status: "ACTIVE"
+            });
+        }
+    });
 
-if(!nama){
-alert("Masukkan identitas anggota");
-return;
-}
-
-aktifkanWakeLock();
-
-document.getElementById("status").innerText="Mengaktifkan GPS...";
-
-navigator.geolocation.watchPosition(
-
-async function(position){
-
-const lat=position.coords.latitude;
-const lon=position.coords.longitude;
-const speed=position.coords.speed||0;
-const accuracy=position.coords.accuracy;
-
-let alamatLengkap="Lokasi tidak diketahui";
-
-try{
-
-const response=await fetch(
-`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-);
-
-const data=await response.json();
-alamatLengkap=data.display_name;
-
-}catch(err){
-console.log("Gagal ambil alamat");
-}
-
-lastLocation={
-lat,lon,alamatLengkap
-};
-
-if(navigator.onLine){
-
-await set(ref(db,"live/"+nama),{
-
-latitude:lat,
-longitude:lon,
-alamat:alamatLengkap,
-speed:Math.round(speed*3.6),
-accuracy:accuracy,
-last_update:new Date().toLocaleTimeString(),
-waktu:Date.now(),
-status:"ONLINE"
-
-});
-
-}
-
-document.getElementById("status").innerHTML=
-"STATUS ONLINE <span class='online-dot'></span>";
-
-document.getElementById("info").innerHTML=`
-
-📍 ${lat.toFixed(5)} , ${lon.toFixed(5)} <br>
-⚡ SPEED : ${Math.round(speed*3.6)} km/h <br>
-🎯 GPS ACCURACY : ${accuracy} m <br>
-🌐 NETWORK : ${navigator.onLine ? "ONLINE" : "OFFLINE"}
-
-`;
-
-},
-
-function(error){
-alert("GPS Error : "+error.message);
-},
-
-{
-enableHighAccuracy:true,
-maximumAge:0,
-timeout:5000
-}
-
-);
-
-};
-
-/* AUTO RECONNECT INTERNET */
-
-window.addEventListener("online", async () => {
-
-if(lastLocation){
-
-const nama=document.getElementById("nama").value;
-
-await set(ref(db,"live/"+nama),{
-
-latitude:lastLocation.lat,
-longitude:lastLocation.lon,
-alamat:lastLocation.alamatLengkap,
-waktu:Date.now(),
-status:"ONLINE"
-
-});
-
-console.log("Lokasi terkirim ulang setelah internet kembali");
-
-}
-
-});
-
-/* WAKELOCK AKTIF KEMBALI JIKA LAYAR NYALA */
-
-document.addEventListener("visibilitychange", async () => {
-
-if(document.visibilityState === "visible" && wakeLock !== null){
-
-try{
-
-wakeLock = await navigator.wakeLock.request("screen");
-
-}catch(err){
-
-console.log(err);
-
-}
-
-}
-
-});
-
+    document.addEventListener("visibilitychange", async () => {
+        if (document.visibilityState === "visible" && wakeLock !== null) {
+            aktifkanWakeLock();
+        }
+    });
 </script>
 
 </body>
