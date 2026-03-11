@@ -10,7 +10,7 @@
             --neon: #00ff9c;
             --danger: #ff003c;
             --bg: #020804;
-            --panel: rgba(5, 20, 10, 0.85);
+            --panel: rgba(5, 20, 10, 0.9);
         }
 
         body {
@@ -26,7 +26,19 @@
             perspective: 1000px;
         }
 
-        /* AMBIENT BACKGROUND */
+        /* TACTICAL OVERLAY (Efek Garis TV Jadul) */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 20;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* GRID BACKGROUND */
         .grid-bg {
             position: absolute;
             width: 200%;
@@ -34,18 +46,17 @@
             background-image: 
                 linear-gradient(rgba(0, 255, 156, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 255, 156, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-size: 40px 40px;
             transform: rotateX(60deg) translateY(-20%);
-            animation: gridMove 10s linear infinite;
+            animation: gridMove 12s linear infinite;
             z-index: 0;
         }
 
         @keyframes gridMove {
             0% { background-position: 0 0; }
-            100% { background-position: 0 50px; }
+            100% { background-position: 0 40px; }
         }
 
-        /* TRANSITION OVERLAY */
         #warp-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -62,8 +73,8 @@
             padding: 40px;
             background: var(--panel);
             border: 1px solid var(--neon);
-            box-shadow: 0 0 50px rgba(0, 255, 156, 0.15), inset 0 0 20px rgba(0, 255, 156, 0.1);
-            backdrop-filter: blur(15px);
+            box-shadow: 0 0 40px rgba(0, 255, 156, 0.1);
+            backdrop-filter: blur(10px);
             text-align: center;
             z-index: 10;
             position: relative;
@@ -72,45 +83,57 @@
 
         .title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 18px;
-            letter-spacing: 4px;
+            font-size: 16px;
+            letter-spacing: 5px;
             margin-bottom: 30px;
-            text-transform: uppercase;
             text-shadow: 0 0 10px var(--neon);
         }
 
-        /* BIO-SCANNER */
+        /* UPGRADED BIO-SCANNER */
         .scanner-container {
             width: 140px;
             height: 140px;
             margin: 0 auto 30px;
-            border: 1px solid rgba(0, 255, 156, 0.3);
             position: relative;
-            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .retina-ring {
+            position: absolute;
             width: 100%;
             height: 100%;
-            border: 2px dashed var(--neon);
+            border: 2px solid rgba(0, 255, 156, 0.1);
             border-radius: 50%;
-            animation: rotate 10s linear infinite;
+        }
+
+        /* Lingkaran Loading yang akan berputar & terisi */
+        .progress-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top: 3px solid var(--neon);
+            border-radius: 50%;
+            transition: 0.3s;
+            animation: rotate 2s linear infinite;
+            display: none; /* muncul saat login */
         }
 
         .scan-line {
             position: absolute;
-            width: 100%;
+            width: 90%;
             height: 2px;
             background: var(--neon);
             box-shadow: 0 0 15px var(--neon);
             top: 0;
-            left: 0;
-            animation: scanning 2.5s ease-in-out infinite;
+            animation: scanning 3s ease-in-out infinite;
         }
 
         @keyframes scanning {
-            0%, 100% { top: 0%; opacity: 0; }
-            50% { top: 100%; opacity: 1; }
+            0%, 100% { top: 10%; opacity: 0; }
+            50% { top: 90%; opacity: 1; }
         }
 
         @keyframes rotate {
@@ -118,24 +141,19 @@
             to { transform: rotate(360deg); }
         }
 
-        /* INPUT FIELD */
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
+        /* INPUT */
         input {
             width: 100%;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(0, 255, 156, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 156, 0.3);
             color: var(--neon);
             font-family: 'Orbitron', sans-serif;
             text-align: center;
             letter-spacing: 5px;
             outline: none;
             box-sizing: border-box;
-            transition: 0.3s;
+            margin-bottom: 20px;
         }
 
         input:focus {
@@ -146,47 +164,41 @@
         /* BUTTON */
         button {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             background: var(--neon);
             color: #000;
             border: none;
             font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+            transition: 0.2s;
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
         }
 
-        button:hover {
-            filter: brightness(1.2);
-            box-shadow: 0 0 20px var(--neon);
+        button:active {
+            transform: scale(0.96);
         }
 
-        /* STATUS TERMINAL */
+        /* TERMINAL */
         #terminal {
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 12px;
-            height: 40px;
-            color: rgba(0, 255, 156, 0.7);
+            min-height: 20px;
+            color: rgba(0, 255, 156, 0.6);
             border-top: 1px solid rgba(0, 255, 156, 0.1);
             padding-top: 15px;
         }
 
-        .alert-success { color: var(--neon); font-weight: bold; }
-        .alert-error { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
+        .alert-error { color: var(--danger); }
+        .alert-success { color: #fff; text-shadow: 0 0 10px var(--neon); }
 
-        /* LOADING SPINNER */
-        #loader {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--bg);
-            border-top: 2px solid var(--neon);
-            border-radius: 50%;
-            margin: 10px auto;
-            animation: rotate 0.6s linear infinite;
+        /* ERROR SHAKE */
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
-
     </style>
 </head>
 <body>
@@ -195,60 +207,77 @@
 <div class="grid-bg"></div>
 
 <div class="card" id="loginCard">
-    <div class="title">Security Node 859</div>
+    <div class="title">CORE AUTHENTICATION</div>
 
     <div class="scanner-container">
         <div class="retina-ring"></div>
+        <div class="progress-ring" id="ring"></div>
         <div class="scan-line"></div>
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3;">
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
-                <circle cx="12" cy="12" r="3"/>
-            </svg>
-        </div>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+            <path d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z"/>
+            <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/>
+            <path d="M17 16c0-2.8-2.2-5-5-5s-5 2.2-5 5"/>
+        </svg>
     </div>
 
-    <div class="input-group">
-        <input type="password" id="pass" placeholder="SECRET_CODE" autocomplete="off">
-    </div>
+    <input type="password" id="pass" placeholder="PASSCODE" autocomplete="off" autofocus>
 
-    <button onclick="authProcess()">INITIALIZE LOGIN</button>
+    <button onclick="authProcess()" id="btnMain">INITIALIZE UPLINK</button>
     
-    <div id="loader"></div>
-    <div id="terminal">> SYSTEM_READY...</div>
+    <div id="terminal">> AWAITING_INPUT...</div>
 </div>
 
 <script>
     const SECRET = "rabekaojokendor2026";
     const term = document.getElementById("terminal");
-    const loader = document.getElementById("loader");
-    const overlay = document.getElementById("warp-overlay");
+    const ring = document.getElementById("ring");
     const card = document.getElementById("loginCard");
+    const passInput = document.getElementById("pass");
 
     function log(msg, type = '') {
         term.innerHTML = `<span class="${type}">> ${msg}</span>`;
     }
 
-    async function authProcess() {
-        const input = document.getElementById("pass").value;
-        
-        // UI Feedback
-        log("ESTABLISHING ENCRYPTED LINK...");
-        loader.style.display = "block";
-        
-        await new Promise(r => setTimeout(r, 1500));
+    // Suara Beep Sederhana
+    function beep(f, d) {
+        const a = new (window.AudioContext || window.webkitAudioContext)();
+        const o = a.createOscillator();
+        const g = a.createGain();
+        o.type = "sine";
+        o.frequency.value = f;
+        g.gain.value = 0.1;
+        o.connect(g);
+        g.connect(a.destination);
+        o.start();
+        o.stop(a.currentTime + d);
+    }
 
-        if (input === SECRET) {
-            log("IDENTITY VERIFIED. ACCESS GRANTED.", "alert-success");
-            loader.style.display = "none";
+    passInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") authProcess();
+    });
+
+    async function authProcess() {
+        const val = passInput.value;
+        if(!val) return;
+
+        // Start Loading UI
+        ring.style.display = "block";
+        log("SCANNING BIOMETRICS...");
+        beep(800, 0.1);
+
+        await new Promise(r => setTimeout(r, 2000));
+
+        if (val === SECRET) {
+            log("ACCESS GRANTED. SYNCING...", "alert-success");
+            beep(1200, 0.2);
             
             await new Promise(r => setTimeout(r, 800));
             
-            // TRANSISI MODERN (Hyper-Jump Effect)
-            overlay.style.opacity = "1";
-            card.style.transform = "translateZ(500px) scale(0)";
-            card.style.transition = "1s ease-in";
+            // Warp Transition
+            document.getElementById("warp-overlay").style.opacity = "1";
+            card.style.transform = "scale(2) translateZ(500px)";
             card.style.opacity = "0";
+            card.style.transition = "1s ease-in";
 
             setTimeout(() => {
                 localStorage.setItem("auth", "true");
@@ -256,25 +285,16 @@
             }, 1000);
 
         } else {
-            log("AUTHENTICATION FAILURE. ALERT SENT.", "alert-error");
-            loader.style.display = "none";
-            
-            // Shake effect
-            card.style.animation = "shake 0.4s";
-            setTimeout(() => card.style.animation = "", 400);
+            log("CREDENTIAL_ERROR. ACCESS DENIED.", "alert-error");
+            beep(200, 0.3);
+            ring.style.display = "none";
+            card.classList.add("shake");
+            setTimeout(() => {
+                card.classList.remove("shake");
+                passInput.value = "";
+            }, 400);
         }
     }
-
-    // Shake Animation CSS
-    const style = document.createElement('style');
-    style.innerHTML = `
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-    `;
-    document.head.appendChild(style);
 </script>
 
 </body>
