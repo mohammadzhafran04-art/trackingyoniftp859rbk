@@ -4,140 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>859/RBK - CYBER TACTICAL DASHBOARD</title>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --neon: #00f2ff;
-            --danger: #ff0055;
-            --warning: #ffcc00;
-            --bg-dark: #010808;
-            --panel-bg: rgba(2, 12, 12, 0.96);
-            --border: rgba(0, 242, 255, 0.2);
-        }
-
-        body {
-            margin: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg-dark);
-            color: var(--neon); overflow: hidden; height: 100vh;
-        }
-
-        .crt-effect {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 3px; z-index: 10000; pointer-events: none;
-        }
-
-        .header {
-            height: 55px; background: #001010; border-bottom: 2px solid var(--neon);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-        }
-
-        .container {
-            display: grid; grid-template-columns: 320px 1fr 320px;
-            height: calc(100vh - 57px);
-        }
-
-        .panel {
-            background: var(--panel-bg); border-right: 1px solid var(--border);
-            padding: 15px; overflow-y: auto; display: flex; flex-direction: column;
-        }
-
+        :root { --neon: #00f2ff; --danger: #ff0055; --warning: #ffcc00; --bg-dark: #010808; --panel-bg: rgba(2, 12, 12, 0.96); --border: rgba(0, 242, 255, 0.2); }
+        body { margin: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg-dark); color: var(--neon); overflow: hidden; height: 100vh; }
+        .crt-effect { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 3px; z-index: 10000; pointer-events: none; }
+        .header { height: 55px; background: #001010; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .container { display: grid; grid-template-columns: 320px 1fr 320px; height: calc(100vh - 57px); }
+        .panel { background: var(--panel-bg); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
         #map { height: 100%; background: #000; filter: brightness(0.9) contrast(1.1) saturate(0.2) hue-rotate(140deg) invert(0.95); }
-
-        .unit-card {
-            background: rgba(0, 242, 255, 0.03); border: 1px solid var(--border);
-            margin-bottom: 12px; padding: 12px; cursor: pointer; position: relative;
-            clip-path: polygon(0 0, 95% 0, 100% 20%, 100% 100%, 5% 100%, 0 80%);
-        }
-
+        .unit-card { background: rgba(0, 242, 255, 0.03); border: 1px solid var(--border); margin-bottom: 12px; padding: 12px; cursor: pointer; position: relative; clip-path: polygon(0 0, 95% 0, 100% 20%, 100% 100%, 5% 100%, 0 80%); transition: 0.3s; }
         .unit-card.active { background: rgba(0, 242, 255, 0.15); border-color: var(--neon); }
         .unit-card.sos { border-color: var(--danger); background: rgba(255, 0, 85, 0.2); animation: pulse-red 0.8s infinite; }
-
-        .map-controls {
-            position: absolute; top: 70px; right: 340px; z-index: 1000;
-            display: flex; flex-direction: column; gap: 5px;
-        }
-
-        .map-btn {
-            background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon);
-            padding: 8px; cursor: pointer; font-family: 'Orbitron'; font-size: 10px;
-        }
-
-        .map-btn:hover { background: var(--neon); color: black; }
-
-        .hud-overlay {
-            position: absolute; bottom: 20px; left: 340px; z-index: 1000;
-            background: rgba(0,0,0,0.8); padding: 10px; border: 1px solid var(--border);
-            font-family: 'Share Tech Mono'; font-size: 11px;
-        }
-
-        .cmd-input {
-            width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--neon);
-            color: var(--neon); padding: 10px; font-family: 'Share Tech Mono';
-            margin-top: 10px; box-sizing: border-box;
-        }
-
-        .cmd-btn {
-            width: 100%; background: var(--neon); color: #000; border: none;
-            padding: 10px; margin-top: 5px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
-        }
-
+        .logout-btn { background: linear-gradient(45deg, #ff0055, #880022); color: white; border: none; padding: 5px 15px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
+        .shutdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 99999; display: none; flex-direction: column; justify-content: center; align-items: center; font-family: 'Orbitron'; color: var(--neon); }
+        .map-controls { position: absolute; top: 70px; right: 340px; z-index: 1000; display: flex; flex-direction: column; gap: 5px; }
+        .map-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 8px; cursor: pointer; font-size: 10px; }
+        .cmd-input { width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 10px; font-family: 'Share Tech Mono'; margin-top: 10px; box-sizing: border-box; }
+        .cmd-btn { width: 100%; background: var(--neon); color: #000; border: none; padding: 10px; margin-top: 5px; font-weight: bold; cursor: pointer; }
+        .siren-btn { background: #ffaa00 !important; color: black !important; margin-top: 5px; }
         @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .out-of-range { color: var(--danger); animation: pulse-red 0.8s infinite; }
-        #logs { font-size: 10px; height: 150px; overflow: hidden; font-family: monospace; color: rgba(0, 242, 255, 0.5); }
+        #logs { font-size: 10px; height: 150px; overflow-y: auto; font-family: monospace; color: rgba(0, 242, 255, 0.5); }
     </style>
 </head>
 <body>
 
-<div class="crt-effect"></div>
+<div id="shutdown" class="shutdown-overlay">
+    <div>TERMINATING_CONNECTION...</div>
+    <div style="margin-top:20px; width:200px; height:2px; background:#222;"><div id="bar" style="width:0%; height:100%; background:var(--neon);"></div></div>
+</div>
 
+<div class="crt-effect"></div>
 <div class="header">
-    <div style="font-family:'Orbitron'; letter-spacing:2px; font-weight:bold">YONIF 859/RBK COMMAND CENTER</div>
-    <div style="display:flex; gap:20px; align-items:center">
-        <span id="sat-status" style="font-size:12px; color:var(--neon)">🛰 SAT-LINK: ACTIVE</span>
-        <div id="clock" style="font-family:'Share Tech Mono'; background:#000; padding:5px 15px; border:1px solid var(--border)">00:00:00</div>
+    <div style="font-family:'Orbitron'; letter-spacing:2px; font-weight:bold">YONIF 859/RBK HQ</div>
+    <div style="display:flex; gap:15px; align-items:center">
+        <div id="clock" style="font-family:'Share Tech Mono'">00:00:00</div>
+        <button class="logout-btn" onclick="window.triggerLogout()">SECURE_LOGOUT</button>
     </div>
 </div>
 
 <div class="container">
     <div class="panel">
-        <div style="font-family:'Orbitron'; font-size:11px; color:rgba(0,242,255,0.5); margin-bottom:15px">SQUADRON_MANIFEST.v2</div>
-        <input type="text" id="search" placeholder="FILTER CALLSIGN..." style="width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); padding:10px; color:var(--neon); font-family:'Share Tech Mono'; margin-bottom:15px">
+        <div style="font-size:11px; opacity:0.5; margin-bottom:10px">SQUAD_MANIFEST</div>
+        <input type="text" id="search" placeholder="FILTER..." style="width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); padding:8px; color:var(--neon); margin-bottom:15px">
         <div id="listAnggota"></div>
     </div>
-
     <div style="position:relative">
         <div id="map"></div>
-        
         <div class="map-controls">
             <button class="map-btn" onclick="window.setMap('sat')">SATELLITE</button>
             <button class="map-btn" onclick="window.setMap('tact')">TERRAIN</button>
         </div>
-
-        <div class="hud-overlay">
-            HQ_COORD: 2.5489° S, 118.0149° E <br>
-            AOR_RADIUS: 5000M | ENCRYPTION: AES_256
-        </div>
     </div>
-
-    <div class="panel" style="border-right:none; border-left:1px solid var(--border)">
-        <div style="font-family:'Orbitron'; font-size:11px; color:rgba(0,242,255,0.5); margin-bottom:15px">DATA_STREAM_ANALYSIS</div>
-        <div id="detailBox">
-            <div style="text-align:center; padding-top:100px; opacity:0.3">SELECT TARGET FOR DATA UPLINK</div>
-        </div>
-        
+    <div class="panel" style="border-left:1px solid var(--border)">
+        <div style="font-size:11px; opacity:0.5; margin-bottom:10px">DATA_ANALYSIS</div>
+        <div id="detailBox"><div style="text-align:center; padding-top:100px; opacity:0.3">AWAITING TARGET</div></div>
         <div style="margin-top:auto">
-            <div style="font-family:'Orbitron'; font-size:10px; margin-bottom:5px">SYSTEM_LOGS</div>
             <div id="logs"></div>
         </div>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -154,7 +83,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     const map = L.map('map', {zoomControl: false}).setView([-2.5489, 118.0149], 13);
     const tiles = {
         sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
@@ -162,23 +90,30 @@
     };
     tiles.sat.addTo(map);
 
-    window.setMap = (type) => {
-        Object.values(tiles).forEach(t => map.removeLayer(t));
-        tiles[type].addTo(map);
+    window.setMap = (t) => { Object.values(tiles).forEach(l => map.removeLayer(l)); tiles[t].addTo(map); };
+
+    let allData = {}, markers = {}, selectedId = null;
+    const HQ = [-2.5489, 118.0149];
+    L.circle(HQ, {radius: 5000, color: '#00f2ff', weight: 1, fillOpacity: 0.05}).addTo(map);
+
+    window.triggerLogout = () => {
+        const ov = document.getElementById('shutdown');
+        const bar = document.getElementById('bar');
+        ov.style.display = 'flex';
+        let w = 0;
+        const itv = setInterval(() => {
+            w += 10; bar.style.width = w + '%';
+            if(w>=100) { clearInterval(itv); window.location.href="https://mohammadzhafran04-art.github.io/trackingyoniftp859rbk/login.html"; }
+        }, 80);
     };
 
-    const HQ_COORD = [-2.5489, 118.0149];
-    L.circle(HQ_COORD, {radius: 5000, color: '#00f2ff', weight: 1, fillOpacity: 0.05}).addTo(map);
-
-    let markers = {}, paths = {}, allData = {}, selectedId = null;
-
-    window.sendCommand = (nama) => {
-        const cmd = document.getElementById("cmdInput").value;
-        if(!cmd) return;
-        update(ref(db, `live/${nama}`), { command: cmd });
+    window.sendCommand = (n, customCmd = null) => {
+        const val = customCmd || document.getElementById("cmdInput").value;
+        if(!val) return;
+        update(ref(db, `live/${n}`), { command: val });
         const l = document.getElementById('logs');
-        l.innerHTML = `> [${new Date().toLocaleTimeString()}] CMD_SENT: ${nama} -> ${cmd}<br>` + l.innerHTML;
-        document.getElementById("cmdInput").value = "";
+        l.innerHTML = `> [${new Date().toLocaleTimeString()}] CMD: ${val} -> ${n}<br>` + l.innerHTML;
+        if(!customCmd) document.getElementById("cmdInput").value = "";
     };
 
     function getDist(lat1, lon1, lat2, lon2) {
@@ -191,100 +126,42 @@
 
     function render() {
         const list = document.getElementById("listAnggota");
-        const keyword = document.getElementById("search").value.toLowerCase();
         list.innerHTML = "";
-
         Object.keys(allData).forEach(nama => {
-            const data = allData[nama];
-            const lat = data.lat; const lon = data.lon;
-            if(!lat || !lon) return;
+            const d = allData[nama];
+            if(!d.lat) return;
+            const latency = Date.now() - (d.waktu || 0);
+            const isOnline = latency < 40000;
+            const dist = getDist(HQ[0], HQ[1], d.lat, d.lon);
+            
+            if(!markers[nama]) markers[nama] = L.circleMarker([d.lat, d.lon], {radius: 8, color: '#fff', weight: 2, fillOpacity: 1}).addTo(map);
+            markers[nama].setLatLng([d.lat, d.lon]).setStyle({fillColor: d.status === "DANGER_SOS" ? "#f05" : (isOnline ? "#0f2" : "#444")});
 
-            const isOnline = (Date.now() - (data.waktu || 0)) < 40000;
-            const dist = getDist(HQ_COORD[0], HQ_COORD[1], lat, lon);
-            const isOutOfRange = dist > 5000;
-
-            if(!markers[nama]) {
-                markers[nama] = L.circleMarker([lat, lon], {radius: 10, color: '#fff', weight: 2, fillOpacity: 1}).addTo(map);
-                paths[nama] = L.polyline([[lat, lon]], {color: '#00f2ff', weight: 2, opacity: 0.5, dashArray: '5, 10'}).addTo(map);
-                const l = document.getElementById('logs');
-                l.innerHTML = `> TARGET_ACQUIRED: ${nama}<br>` + l.innerHTML;
-            } else {
-                markers[nama].setLatLng([lat, lon]);
-                markers[nama].setStyle({fillColor: data.status === "DANGER_SOS" ? "#ff0055" : (isOnline ? "#00f2ff" : "#444")});
-                let p = paths[nama].getLatLngs();
-                if(p.length > 20) p.shift();
-                p.push([lat, lon]);
-                paths[nama].setLatLngs(p);
-            }
-
-            if(nama.toLowerCase().includes(keyword)) {
-                const item = document.createElement("div");
-                item.className = `unit-card ${selectedId === nama ? 'active' : ''} ${data.status === 'DANGER_SOS' ? 'sos' : ''}`;
-                item.innerHTML = `
-                    <div style="display:flex; justify-content:space-between">
-                        <b>${nama.toUpperCase()}</b>
-                        <span style="font-size:10px">${isOnline ? 'LOCKED' : 'LOST'}</span>
-                    </div>
-                    <div style="margin-top:8px; font-size:11px; display:flex; justify-content:space-between">
-                        <span>SPD: ${data.speed || 0} KM/H</span>
-                        <span class="${isOutOfRange ? 'out-of-range' : ''}">DST: ${dist}M</span>
-                    </div>
-                `;
-                item.onclick = () => {
-                    selectedId = nama;
-                    map.flyTo([lat, lon], 17);
-                    showDetail(nama, data, dist);
-                    render();
-                };
-                list.appendChild(item);
-            }
+            const item = document.createElement("div");
+            item.className = `unit-card ${selectedId === nama ? 'active' : ''} ${d.status === 'DANGER_SOS' ? 'sos' : ''}`;
+            item.innerHTML = `<b>${nama}</b> <span style="font-size:9px; color:${isOnline?'#0f2':'#f05'}">${isOnline?'ONLINE':'OFFLINE'}</span><br>
+                              <small>LATENCY: ${latency}ms | DIST: ${dist}m</small>`;
+            item.onclick = () => { selectedId = nama; map.flyTo([d.lat, d.lon], 16); showDetail(nama, d, dist); render(); };
+            list.appendChild(item);
         });
     }
 
-    function showDetail(nama, data, dist) {
+    function showDetail(n, d, dist) {
         document.getElementById("detailBox").innerHTML = `
-            <div style="border:1px solid var(--neon); padding:15px; background:rgba(0,242,255,0.05); clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);">
-                <div style="font-family:Orbitron; font-size:20px">${nama}</div>
-                <div style="font-size:10px; opacity:0.6; margin-bottom:10px">OBJECT_ID: ${Date.now()}</div>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px">
-                    <div style="border:1px solid rgba(0,242,255,0.2); padding:5px">
-                        <label style="font-size:8px; display:block; opacity:0.5">LAT</label>${data.lat.toFixed(6)}
-                    </div>
-                    <div style="border:1px solid rgba(0,242,255,0.2); padding:5px">
-                        <label style="font-size:8px; display:block; opacity:0.5">LON</label>${data.lon.toFixed(6)}
-                    </div>
+            <div style="border:1px solid var(--neon); padding:10px; background:rgba(0,242,255,0.05);">
+                <div style="font-size:18px">${n}</div>
+                <div style="font-size:11px; margin:10px 0">SPD: ${d.speed}KM/H | BAT: ${d.battery} | DST: ${dist}M</div>
+                <input type="text" id="cmdInput" class="cmd-input" placeholder="Message...">
+                <button class="cmd-btn" onclick="sendCommand('${n}')">SEND TEXT</button>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px">
+                    <button class="cmd-btn siren-btn" onclick="sendCommand('${n}', 'ALARM_ON')">SIREN ON</button>
+                    <button class="cmd-btn" style="background:#444;color:white" onclick="sendCommand('${n}', 'ALARM_OFF')">SIREN OFF</button>
                 </div>
-                
-                <div style="margin-top:10px; font-size:12px">
-                    <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #111">
-                        <span>VELOCITY</span><span>${data.speed || 0} KM/H</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #111">
-                        <span>BATTERY</span><span>${data.battery || '--'}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #111">
-                        <span>DIST_HQ</span><span class="${dist > 5000 ? 'out-of-range' : ''}">${dist}M</span>
-                    </div>
-                </div>
-
-                <div style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px">
-                    <label style="font-family:Orbitron; font-size:10px; color:var(--neon)">SEND COMMAND</label>
-                    <input type="text" id="cmdInput" class="cmd-input" placeholder="...">
-                    <button class="cmd-btn" onclick="sendCommand('${nama}')">EXECUTE</button>
-                </div>
-            </div>
-        `;
+            </div>`;
     }
 
-    onValue(ref(db, "live"), snap => {
-        if(snap.val()) { allData = snap.val(); render(); }
-    });
-
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
-    }, 1000);
+    onValue(ref(db, "live"), s => { if(s.val()){ allData = s.val(); render(); } });
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 </script>
-
 </body>
 </html>
