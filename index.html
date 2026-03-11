@@ -3,68 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPLINK - 859/RBK</title>
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00ff41">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092215.png">
-
+    <title>Tactical Command - 859/RBK</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
     <style>
-        :root { --neon: #00ff41; --danger: #ff003c; --bg: #010a01; }
-        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { padding: 15px; border-bottom: 1px solid var(--neon); background: rgba(0,15,0,0.9); display: flex; justify-content: space-between; align-items: center; }
-        .container { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow-y: auto; }
-        #map { width: 100%; min-height: 180px; border: 1px solid var(--neon); filter: brightness(0.6) hue-rotate(85deg) invert(0.9); }
-        .card { background: rgba(0, 40, 0, 0.3); border: 1px solid var(--neon); padding: 15px; backdrop-filter: blur(5px); }
-        input { width: 100%; background: #000; border: 1px solid var(--neon); padding: 12px; color: var(--neon); margin-bottom: 10px; box-sizing: border-box; text-align: center; font-family: 'Orbitron'; outline: none; }
-        button { width: 100%; padding: 15px; background: var(--neon); color: #000; border: none; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; margin-bottom: 5px; }
-        button:disabled { background: #1a331a; color: #004400; }
-        .status-box { font-size: 11px; margin-top: 10px; border-top: 1px solid rgba(0,255,65,0.2); padding-top: 10px; }
-        #webcam { width: 100%; border: 1px solid var(--neon); margin-top: 10px; display: none; background: #000; }
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        :root { --neon: #00ff41; --danger: #ff003c; --bg: #020802; --glass: rgba(0, 30, 0, 0.7); }
+        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: 0.8s filter ease; }
+        body::before { content: ""; position: absolute; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 1000; }
+        .header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon); background: rgba(0,20,0,0.9); z-index: 1100; }
+        .container { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow-y: auto; z-index: 100; }
+        .card { background: var(--glass); border: 1px solid var(--neon); padding: 20px; backdrop-filter: blur(10px); position: relative; }
+        #map { width: 100%; height: 200px; border: 1px solid var(--neon); filter: brightness(0.8) hue-rotate(80deg) invert(1); }
+        input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--neon); padding: 10px; color: var(--neon); font-family: 'Orbitron', sans-serif; margin-bottom: 10px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { flex: 2; padding: 12px; background: var(--neon); color: black; border: none; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; }
+        button:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .sos-btn { flex: 1; background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .logout-idx { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 5px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; }
+        #info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 11px; }
+        .info-box { background: rgba(0,255,0,0.05); padding: 5px 8px; border: 1px solid rgba(0,255,0,0.2); }
+        .label { color: rgba(0,255,0,0.5); font-size: 9px; display: block; }
+        .command-alert { background: #ffcc00; color: #000; padding: 10px; margin-bottom: 10px; font-weight: bold; text-align: center; animation: blink 0.5s infinite; border: 2px solid black; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } }
+        .emergency-active { animation: dangerAlert 0.5s infinite alternate !important; background: rgba(150, 0, 0, 0.9) !important; }
+        @keyframes dangerAlert { from { border-color: var(--danger); } to { border-color: #fff; } }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="font-family:'Orbitron'; font-size:12px;">UNIT_UPLINK_v3.0</div>
-    <div id="bat-val">BAT: --%</div>
+    <div style="font-family: 'Orbitron'; font-size: 11px;">CORE: 859/RBK</div>
+    <button class="logout-idx" id="btn-logout">DISCONNECT</button>
+    <div style="font-size: 11px;"><span id="bat-val">BAT: --%</span></div>
 </div>
 
 <div class="container">
     <div id="map"></div>
-    
-    <div class="card">
-        <input type="text" id="nama" placeholder="CALLSIGN_ANGGOTA">
-        <button id="btnAktif">ESTABLISH PERSISTENT UPLINK</button>
-        
-        <video id="webcam" autoplay playsinline></video>
-        <canvas id="canvas" style="display:none;"></canvas>
-
-        <div class="status-box">
-            <div id="stat-text">SYSTEM: <span style="color:red">OFFLINE</span></div>
-            <div id="pos-text">COORD: 0.00000, 0.00000</div>
-            <div id="wakelock-text" style="color: grey;">WAKE_LOCK: INACTIVE</div>
-            <div id="cam-text" style="color: grey;">VISUAL: DISABLED</div>
+    <div class="card" id="mainCard">
+        <div id="command-display"></div>
+        <input type="text" id="nama" placeholder="ENTER CALLSIGN">
+        <div class="btn-group">
+            <button id="btnAktif">ACTIVATE UPLINK</button>
+            <button class="sos-btn" id="btnSos">SOS</button>
+        </div>
+        <div id="info-panel">
+            <div class="info-box"><span class="label">COORDINATES</span><span id="coord-val">0, 0</span></div>
+            <div class="info-box"><span class="label">SPEED</span><span id="speed-val">0 KM/H</span></div>
+            <div class="info-box"><span class="label">STATUS</span><span id="status-text">IDLE</span></div>
+            <div class="info-box"><span class="label">ACCURACY</span><span id="acc-val">0 M</span></div>
         </div>
     </div>
 </div>
 
-<audio id="silentMode" loop>
-    <source src="https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3" type="audio/mp3">
-</audio>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -78,83 +73,121 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let wakeLock = null;
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
 
-    async function activateWakeLock() {
-        if ('wakeLock' in navigator) {
-            try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                document.getElementById('wakelock-text').innerText = "WAKE_LOCK: ACTIVE";
-                document.getElementById('wakelock-text').style.color = "var(--neon)";
-            } catch (err) { console.log(err); }
-        }
-    }
+    let isSOS = false;
+    let watchId = null; 
+    let userBattery = "N/A";
+    const sirenAudio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+    sirenAudio.loop = true;
 
-    async function startCamera() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: 320 } 
-            });
-            video.srcObject = stream;
-            video.style.display = "block";
-            document.getElementById('cam-text').innerText = "VISUAL: STREAMING";
-            document.getElementById('cam-text').style.color = "var(--neon)";
-        } catch (err) {
-            document.getElementById('cam-text').innerText = "VISUAL: ERROR/DENIED";
-        }
-    }
-
-    function captureAndUpload(nama) {
-        if (video.srcObject) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64Img = canvas.toDataURL('image/jpeg', 0.4); // Kompresi agar ringan
-            update(ref(db, "live/" + nama), { visual: base64Img });
-        }
-    }
-
-    const map = L.map('map', { zoomControl: false }).setView([0,0], 2);
+    const map = L.map('map').setView([-2.5489, 118.0149], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    let marker = L.circleMarker([0, 0], {radius: 8, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 1}).addTo(map);
+    let marker = L.circleMarker([0, 0], {radius: 10, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 0.8}).addTo(map);
 
-    document.getElementById("btnAktif").onclick = async () => {
-        const nama = document.getElementById("nama").value.trim().toUpperCase();
-        if (!nama) return alert("REQUIRED: CALLSIGN");
-
-        document.getElementById('silentMode').play();
-        await activateWakeLock();
-        await startCamera();
-
-        document.getElementById("btnAktif").disabled = true;
-        document.getElementById("btnAktif").innerText = "UPLINK_LIVE";
-        document.getElementById("btnAktif").classList.add("blink");
-
-        onValue(ref(db, ".info/connected"), (snap) => {
-            document.getElementById('stat-text').innerHTML = snap.val() ? 
-                'SYSTEM: <span style="color:var(--neon)">ONLINE</span>' : 
-                'SYSTEM: <span style="color:orange">RECONNECTING...</span>';
+    // Battery Monitor
+    if(navigator.getBattery) {
+        navigator.getBattery().then(bat => {
+            const updateBat = () => {
+                userBattery = Math.round(bat.level * 100) + "%";
+                document.getElementById('bat-val').innerText = `BAT: ${userBattery}`;
+            };
+            updateBat();
+            bat.onlevelchange = updateBat;
         });
+    }
 
-        navigator.geolocation.watchPosition((pos) => {
-            const { latitude, longitude, speed } = pos.coords;
-            marker.setLatLng([latitude, longitude]);
-            map.setView([latitude, longitude], 16);
-            document.getElementById('pos-text').innerText = `COORD: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    // FIX: FUNGSI DISCONNECT (Hapus Data & Berhenti Lacak)
+    document.getElementById("btn-logout").onclick = async () => {
+        const nama = document.getElementById("nama").value;
+        if (!nama) return alert("Callsign tidak aktif.");
 
-            update(ref(db, "live/" + nama), {
-                lat: latitude, lon: longitude, speed: Math.round(speed * 3.6 || 0), waktu: Date.now()
-            });
-
-            captureAndUpload(nama); // Kirim foto tiap kali posisi berubah
-        }, null, { enableHighAccuracy: true });
+        if (confirm("Hapus data tracking dan disconnect?")) {
+            // 1. Matikan GPS
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            
+            // 2. Hapus dari Firebase
+            try {
+                await remove(ref(db, "live/" + nama));
+                
+                // 3. Notifikasi
+                alert("ANDA TELAH LOGOUT DARI TRACKER");
+                
+                // 4. Reset halaman tanpa pindah file
+                location.reload(); 
+            } catch (err) {
+                alert("Gagal menghapus data: " + err.message);
+            }
+        }
     };
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
+    // SOS Toggle
+    document.getElementById("btnSos").onclick = () => {
+        isSOS = !isSOS;
+        const nama = document.getElementById("nama").value || "UNKNOWN";
+        update(ref(db, "live/" + nama), { status: isSOS ? "DANGER_SOS" : "ACTIVE" });
+        document.getElementById("mainCard").classList.toggle('emergency-active', isSOS);
+        document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
+    };
+
+    // Activation & Tracking
+    document.getElementById("btnAktif").onclick = async () => {
+        const nama = document.getElementById("nama").value;
+        if (!nama) return alert("INPUT CALLSIGN!");
+
+        // Remote Command Listener
+        onValue(ref(db, "live/" + nama + "/command"), (snap) => {
+            const cmd = snap.val();
+            if(cmd && cmd !== "") {
+                if(cmd === "ALARM_ON") {
+                    sirenAudio.play();
+                    document.getElementById("mainCard").classList.add('emergency-active');
+                    if(navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+                } else if(cmd === "ALARM_OFF") {
+                    sirenAudio.pause();
+                    document.getElementById("mainCard").classList.remove('emergency-active');
+                } else {
+                    document.getElementById("command-display").innerHTML = `<div class="command-alert">HQ COMMAND: ${cmd}</div>`;
+                    const speech = new SpeechSynthesisUtterance(cmd);
+                    window.speechSynthesis.speak(speech);
+                    
+                    setTimeout(() => {
+                        update(ref(db, "live/" + nama), { command: "" });
+                        document.getElementById("command-display").innerHTML = "";
+                    }, 10000);
+                }
+            }
+        });
+
+        // Simpan GPS ke watchId
+        watchId = navigator.geolocation.watchPosition((pos) => {
+            const { latitude, longitude, speed, accuracy } = pos.coords;
+            const kmh = Math.round(speed * 3.6 || 0);
+            
+            marker.setLatLng([latitude, longitude]);
+            map.setView([latitude, longitude], 16);
+            
+            document.getElementById('coord-val').innerText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            document.getElementById('speed-val').innerText = `${kmh} KM/H`;
+            document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
+            document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
+
+            update(ref(db, "live/" + nama), {
+                lat: latitude, 
+                lon: longitude, 
+                speed: kmh, 
+                battery: userBattery,
+                status: isSOS ? "DANGER_SOS" : "ACTIVE", 
+                waktu: Date.now()
+            });
+        }, (err) => {
+            console.error("GPS Error:", err);
+            alert("Aktifkan GPS Anda!");
+        }, { enableHighAccuracy: true });
+
+        document.getElementById("btnAktif").innerText = "UPLINK ACTIVE";
+        document.getElementById("btnAktif").disabled = true;
+        document.getElementById("nama").disabled = true; // Kunci nama saat aktif
+    };
 </script>
 </body>
 </html>
