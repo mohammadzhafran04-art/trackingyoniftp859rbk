@@ -1,11 +1,11 @@
 /**
  * User Tracking Script
  * Melacak pengguna ketika keluar dari website
+ *Versi Simple - Simpan ke localStorage dan console
  */
 
 // Konfigurasi pelacakan
 const TRACKING_CONFIG = {
-    endpoint: '/api/track', // Endpoint untuk mengirim data
     trackingId: 'user_' + Math.random().toString(36).substr(2, 9),
     sessionStart: Date.now()
 };
@@ -25,7 +25,7 @@ let trackingData = {
     onlineStatus: navigator.onLine
 };
 
-// Fungsi untuk mengirim data pelacakan menggunakan Beacon API
+// Fungsi untuk menyimpan data pelacakan ke localStorage
 function sendTrackingData(data, type = 'pageview') {
     const payload = {
         ...data,
@@ -34,20 +34,18 @@ function sendTrackingData(data, type = 'pageview') {
         timeOnPage: Date.now() - TRACKING_CONFIG.sessionStart
     };
 
-    // Menggunakan Beacon API (paling可靠 untuk saat unload)
-    if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-        navigator.sendBeacon(TRACKING_CONFIG.endpoint, blob);
-        console.log('Tracking data sent via Beacon:', payload);
-    } else {
-        // Fallback ke fetch
-        fetch(TRACKING_CONFIG.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            keepalive: true
-        }).catch(err => console.error('Tracking error:', err));
-    }
+    // Simpan ke localStorage
+    let history = JSON.parse(localStorage.getItem('userTrackingHistory') || '[]');
+    history.push(payload);
+    
+    // Batasi hanya 50 data terakhir
+    if (history.length > 50) history = history.slice(-50);
+    
+    localStorage.setItem('userTrackingHistory', JSON.stringify(history));
+    localStorage.setItem('lastTrackingData', JSON.stringify(payload));
+    
+    console.log('📊 Tracking:', type, payload);
+    console.log('📊 Total history:', history.length);
 }
 
 // Fungsi untuk melacak saat pengguna Maus Keluar (mouse leave window)
