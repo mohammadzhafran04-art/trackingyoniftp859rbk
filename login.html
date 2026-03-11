@@ -1,262 +1,280 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Command Center Access</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>859/RBK - Secure Authentication</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon: #00ff9c;
+            --danger: #ff003c;
+            --bg: #020804;
+            --panel: rgba(5, 20, 10, 0.85);
+        }
 
-<style>
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--neon);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 1000px;
+        }
 
-body{
-margin:0;
-font-family:monospace;
-background:#020702;
-color:#00ff9c;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-overflow:hidden;
-}
+        /* AMBIENT BACKGROUND */
+        .grid-bg {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 156, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 156, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: rotateX(60deg) translateY(-20%);
+            animation: gridMove 10s linear infinite;
+            z-index: 0;
+        }
 
-/* RADAR BACKGROUND */
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
 
-body::before{
-content:"";
-position:absolute;
-width:1400px;
-height:1400px;
-border-radius:50%;
-border:2px solid rgba(0,255,120,0.15);
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-animation:spin 30s linear infinite;
-}
+        /* TRANSITION OVERLAY */
+        #warp-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.8s ease-in;
+        }
 
-@keyframes spin{
-0%{transform:translate(-50%,-50%) rotate(0deg);}
-100%{transform:translate(-50%,-50%) rotate(360deg);}
-}
+        /* LOGIN CARD */
+        .card {
+            width: 360px;
+            padding: 40px;
+            background: var(--panel);
+            border: 1px solid var(--neon);
+            box-shadow: 0 0 50px rgba(0, 255, 156, 0.15), inset 0 0 20px rgba(0, 255, 156, 0.1);
+            backdrop-filter: blur(15px);
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+        }
 
-/* RADAR SWEEP FULL SCREEN */
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--neon);
+        }
 
-.radar{
-position:absolute;
-width:2000px;
-height:2000px;
-background:conic-gradient(
-rgba(0,255,0,0.4) 0deg,
-rgba(0,255,0,0.1) 30deg,
-transparent 90deg
-);
-border-radius:50%;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-animation:radarSweep 5s linear infinite;
-}
+        /* BIO-SCANNER */
+        .scanner-container {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 30px;
+            border: 1px solid rgba(0, 255, 156, 0.3);
+            position: relative;
+            padding: 10px;
+        }
 
-@keyframes radarSweep{
-0%{transform:translate(-50%,-50%) rotate(0deg);}
-100%{transform:translate(-50%,-50%) rotate(360deg);}
-}
+        .retina-ring {
+            width: 100%;
+            height: 100%;
+            border: 2px dashed var(--neon);
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+        }
 
-/* LOGIN CARD */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--neon);
+            box-shadow: 0 0 15px var(--neon);
+            top: 0;
+            left: 0;
+            animation: scanning 2.5s ease-in-out infinite;
+        }
 
-.card{
-width:380px;
-padding:40px;
-background:#081208;
-border-radius:10px;
-border:1px solid rgba(0,255,120,0.3);
-box-shadow:0 0 30px rgba(0,255,120,0.2);
-text-align:center;
-z-index:2;
-}
+        @keyframes scanning {
+            0%, 100% { top: 0%; opacity: 0; }
+            50% { top: 100%; opacity: 1; }
+        }
 
-/* TITLE */
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-.title{
-font-size:22px;
-margin-bottom:20px;
-letter-spacing:2px;
-}
+        /* INPUT FIELD */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
 
-/* RETINA SCAN */
+        input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 156, 0.2);
+            color: var(--neon);
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            letter-spacing: 5px;
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
 
-.scan{
-margin:20px auto;
-width:120px;
-height:120px;
-border-radius:50%;
-border:2px solid #00ff9c;
-position:relative;
-overflow:hidden;
-}
+        input:focus {
+            border-color: var(--neon);
+            box-shadow: 0 0 15px rgba(0, 255, 156, 0.2);
+        }
 
-.scan::after{
-content:"";
-position:absolute;
-width:100%;
-height:3px;
-background:#00ff9c;
-top:0;
-animation:scan 2s infinite;
-}
+        /* BUTTON */
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--neon);
+            color: #000;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+        }
 
-@keyframes scan{
-0%{top:0}
-100%{top:120px}
-}
+        button:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px var(--neon);
+        }
 
-/* INPUT */
+        /* STATUS TERMINAL */
+        #terminal {
+            margin-top: 20px;
+            font-size: 12px;
+            height: 40px;
+            color: rgba(0, 255, 156, 0.7);
+            border-top: 1px solid rgba(0, 255, 156, 0.1);
+            padding-top: 15px;
+        }
 
-input{
-width:100%;
-padding:12px;
-border:none;
-border-radius:5px;
-background:#0f1a0f;
-color:#00ff9c;
-border:1px solid rgba(0,255,120,0.4);
-outline:none;
-}
+        .alert-success { color: var(--neon); font-weight: bold; }
+        .alert-error { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
 
-/* BUTTON */
+        /* LOADING SPINNER */
+        #loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg);
+            border-top: 2px solid var(--neon);
+            border-radius: 50%;
+            margin: 10px auto;
+            animation: rotate 0.6s linear infinite;
+        }
 
-button{
-margin-top:20px;
-width:100%;
-padding:12px;
-border:none;
-border-radius:5px;
-background:#00ff9c;
-color:black;
-font-weight:bold;
-cursor:pointer;
-}
-
-/* TERMINAL */
-
-#terminal{
-margin-top:15px;
-font-size:14px;
-height:60px;
-}
-
-.granted{
-color:#00ff9c;
-font-weight:bold;
-}
-
-.denied{
-color:red;
-font-weight:bold;
-}
-
-/* LOADING */
-
-.loading{
-display:none;
-margin-top:15px;
-}
-
-.spinner{
-width:60px;
-height:60px;
-border-radius:50%;
-border:2px solid #00ff9c;
-margin:auto;
-animation:spin 2s linear infinite;
-}
-
-</style>
+    </style>
 </head>
-
 <body>
 
-<div class="radar"></div>
+<div id="warp-overlay"></div>
+<div class="grid-bg"></div>
 
-<div class="card">
+<div class="card" id="loginCard">
+    <div class="title">Security Node 859</div>
 
-<div class="title">COMMAND CENTER LOGIN</div>
+    <div class="scanner-container">
+        <div class="retina-ring"></div>
+        <div class="scan-line"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3;">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </div>
+    </div>
 
-<div class="scan"></div>
+    <div class="input-group">
+        <input type="password" id="pass" placeholder="SECRET_CODE" autocomplete="off">
+    </div>
 
-<input type="password" id="pass" placeholder="Enter Security Code">
-
-<button onclick="login()">AUTHENTICATE</button>
-
-<div id="terminal"></div>
-
-<div class="loading" id="loading">
-<div class="spinner"></div>
+    <button onclick="authProcess()">INITIALIZE LOGIN</button>
+    
+    <div id="loader"></div>
+    <div id="terminal">> SYSTEM_READY...</div>
 </div>
-
-</div>
-
-<audio id="grantedSound">
-<source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
-
-<audio id="deniedSound">
-<source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
 
 <script>
+    const SECRET = "rabekaojokendor2026";
+    const term = document.getElementById("terminal");
+    const loader = document.getElementById("loader");
+    const overlay = document.getElementById("warp-overlay");
+    const card = document.getElementById("loginCard");
 
-const PASSWORD="rabekaojokendor2026";
+    function log(msg, type = '') {
+        term.innerHTML = `<span class="${type}">> ${msg}</span>`;
+    }
 
-function typeText(text,element,speed=40){
-let i=0;
-element.innerHTML="";
-function typing(){
-if(i<text.length){
-element.innerHTML+=text.charAt(i);
-i++;
-setTimeout(typing,speed);
-}
-}
-typing();
-}
+    async function authProcess() {
+        const input = document.getElementById("pass").value;
+        
+        // UI Feedback
+        log("ESTABLISHING ENCRYPTED LINK...");
+        loader.style.display = "block";
+        
+        await new Promise(r => setTimeout(r, 1500));
 
-function login(){
+        if (input === SECRET) {
+            log("IDENTITY VERIFIED. ACCESS GRANTED.", "alert-success");
+            loader.style.display = "none";
+            
+            await new Promise(r => setTimeout(r, 800));
+            
+            // TRANSISI MODERN (Hyper-Jump Effect)
+            overlay.style.opacity = "1";
+            card.style.transform = "translateZ(500px) scale(0)";
+            card.style.transition = "1s ease-in";
+            card.style.opacity = "0";
 
-const input=document.getElementById("pass").value;
-const terminal=document.getElementById("terminal");
-const loading=document.getElementById("loading");
+            setTimeout(() => {
+                localStorage.setItem("auth", "true");
+                window.location.href = "dashboard.html";
+            }, 1000);
 
-typeText("> SCANNING BIOMETRIC AUTHORIZATION...",terminal);
+        } else {
+            log("AUTHENTICATION FAILURE. ALERT SENT.", "alert-error");
+            loader.style.display = "none";
+            
+            // Shake effect
+            card.style.animation = "shake 0.4s";
+            setTimeout(() => card.style.animation = "", 400);
+        }
+    }
 
-loading.style.display="block";
-
-setTimeout(()=>{
-
-loading.style.display="none";
-
-if(input===PASSWORD){
-
-document.getElementById("grantedSound").play();
-
-typeText("> ACCESS GRANTED\n> OPENING COMMAND CENTER...",terminal);
-
-setTimeout(()=>{
-localStorage.setItem("auth","true");
-window.location.href="dashboard.html";
-},2000);
-
-}else{
-
-document.getElementById("deniedSound").play();
-
-typeText("> ACCESS DENIED\n> SECURITY ALERT",terminal);
-
-}
-
-},2500);
-
-}
-
+    // Shake Animation CSS
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 
 </body>
