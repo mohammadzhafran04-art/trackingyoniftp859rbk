@@ -9,168 +9,47 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --neon: #00ff41;
-            --danger: #ff003c;
-            --bg: #020802;
-            --glass: rgba(0, 30, 0, 0.7);
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--neon);
-            font-family: 'Share Tech Mono', monospace;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        body::before {
-            content: "";
-            position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        .header {
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--neon);
-            background: rgba(0,20,0,0.9);
-            z-index: 1100;
-        }
-
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            gap: 10px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .card {
-            background: var(--glass);
-            border: 1px solid var(--neon);
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,255,65,0.1);
-        }
-
-        #map {
-            width: 100%;
-            height: 250px;
-            border: 1px solid var(--neon);
-            filter: brightness(0.8) hue-rotate(80deg) invert(1);
-        }
-
-        input {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--neon);
-            padding: 10px;
-            color: var(--neon);
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-
+        :root { --neon: #00ff41; --danger: #ff003c; --bg: #020802; --glass: rgba(0, 30, 0, 0.7); }
+        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body::before { content: ""; position: absolute; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 1000; }
+        .header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon); background: rgba(0,20,0,0.9); z-index: 1100; }
+        .container { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow-y: auto; z-index: 100; }
+        .card { background: var(--glass); border: 1px solid var(--neon); padding: 20px; backdrop-filter: blur(10px); position: relative; }
+        #map { width: 100%; height: 250px; border: 1px solid var(--neon); filter: brightness(0.8) hue-rotate(80deg) invert(1); }
+        input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--neon); padding: 10px; color: var(--neon); font-family: 'Orbitron', sans-serif; margin-bottom: 10px; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
-
-        button {
-            flex: 2;
-            padding: 12px;
-            background: var(--neon);
-            color: black;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        .sos-btn {
-            flex: 1;
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        #info-panel {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            font-size: 11px;
-        }
-
-        .info-box {
-            background: rgba(0,255,0,0.05);
-            padding: 5px 8px;
-            border: 1px solid rgba(0,255,0,0.2);
-        }
-
+        button { flex: 2; padding: 12px; background: var(--neon); color: black; border: none; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; }
+        .sos-btn { flex: 1; background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        #info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 11px; }
+        .info-box { background: rgba(0,255,0,0.05); padding: 5px 8px; border: 1px solid rgba(0,255,0,0.2); }
         .label { color: rgba(0,255,0,0.5); font-size: 9px; display: block; }
-
-        /* SOS & COMMAND CSS */
-        .emergency-active {
-            animation: dangerAlert 0.5s infinite alternate;
-            background: rgba(50, 0, 0, 0.8) !important;
-        }
-        
-        .command-alert {
-            background: #ffcc00;
-            color: #000;
-            padding: 10px;
-            margin-top: 10px;
-            font-weight: bold;
-            text-align: center;
-            border: 2px solid #000;
-            animation: blink 0.5s infinite;
-        }
-
-        @keyframes dangerAlert {
-            from { border-color: var(--danger); }
-            to { border-color: #fff; }
-        }
+        .command-alert { background: #ffcc00; color: #000; padding: 10px; margin-bottom: 10px; font-weight: bold; text-align: center; animation: blink 0.5s infinite; border: 2px solid black; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        .leaflet-container { background: #000 !important; }
+        .emergency-active { animation: dangerAlert 0.5s infinite alternate; background: rgba(50, 0, 0, 0.8) !important; }
+        @keyframes dangerAlert { from { border-color: var(--danger); } to { border-color: #fff; } }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div style="font-family: 'Orbitron'; font-size: 13px;">COMMAND_CORE: 859/RBK</div>
-    <div style="font-size: 11px;">
-        <span id="bat-val">BAT: --%</span> | <span id="net-val">NET: ONLINE</span>
-    </div>
+    <div style="font-size: 11px;"><span id="bat-val">BAT: --%</span></div>
 </div>
 
 <div class="container">
     <div id="map"></div>
-
     <div class="card" id="mainCard">
-        <input type="text" id="nama" placeholder="ENTER CALLSIGN" autocomplete="off">
-
-        <div class="btn-group">
-            <button onclick="mulaiTracking()">ACTIVATE UPLINK</button>
-            <button class="sos-btn" onclick="sendSOS()">SOS</button>
-        </div>
-
         <div id="command-display"></div>
-
+        <input type="text" id="nama" placeholder="ENTER CALLSIGN">
+        <div class="btn-group">
+            <button id="btnAktif">ACTIVATE UPLINK</button>
+            <button class="sos-btn" id="btnSos">SOS</button>
+        </div>
         <div id="info-panel">
             <div class="info-box"><span class="label">COORDINATES</span><span id="coord-val">0, 0</span></div>
             <div class="info-box"><span class="label">SPEED</span><span id="speed-val">0 KM/H</span></div>
-            <div class="info-box"><span class="label">ACCURACY</span><span id="acc-val">0 M</span></div>
             <div class="info-box"><span class="label">STATUS</span><span id="status-text">IDLE</span></div>
+            <div class="info-box"><span class="label">ACCURACY</span><span id="acc-val">0 M</span></div>
         </div>
     </div>
 </div>
@@ -178,6 +57,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
+    // --- SEMUA IMPORT HARUS DI ATAS ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -194,17 +74,15 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const map = L.map('map').setView([-2.5489, 118.0149], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-    let marker = L.circleMarker([0, 0], {
-        radius: 10, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 0.8
-    }).addTo(map);
-
     let isSOS = false;
     let userBattery = "N/A";
     let wakeLock = null;
 
+    const map = L.map('map').setView([-2.5489, 118.0149], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    let marker = L.circleMarker([0, 0], {radius: 10, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 0.8}).addTo(map);
+
+    // Battery
     if(navigator.getBattery) {
         navigator.getBattery().then(bat => {
             userBattery = Math.round(bat.level * 100) + "%";
@@ -212,33 +90,34 @@
         });
     }
 
-    window.sendSOS = function() {
+    // SOS Function
+    document.getElementById("btnSos").onclick = () => {
         isSOS = !isSOS;
-        const nama = document.getElementById("nama").value || "UNKNOWN_UNIT";
+        const nama = document.getElementById("nama").value || "UNKNOWN";
         update(ref(db, "live/" + nama), { status: isSOS ? "DANGER_SOS" : "ACTIVE" });
         document.getElementById("mainCard").classList.toggle('emergency-active', isSOS);
-    }
+    };
 
-    window.mulaiTracking = async function() {
+    // Tracking Function
+    document.getElementById("btnAktif").onclick = async () => {
         const nama = document.getElementById("nama").value;
         if (!nama) return alert("INPUT CALLSIGN!");
 
         try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
 
-        // LISTENER COMMAND DARI HQ
+        // Listen for Remote Commands
         onValue(ref(db, "live/" + nama + "/command"), (snap) => {
             const cmd = snap.val();
-            if(cmd) {
+            if(cmd && cmd !== "") {
                 if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                document.getElementById("command-display").innerHTML = `<div class="command-alert">HQ: ${cmd}</div>`;
-                
-                const speech = new SpeechSynthesisUtterance("Incoming Command: " + cmd);
+                document.getElementById("command-display").innerHTML = `<div class="command-alert">HQ COMMAND: ${cmd}</div>`;
+                const speech = new SpeechSynthesisUtterance("Command: " + cmd);
                 window.speechSynthesis.speak(speech);
-
+                
                 setTimeout(() => {
                     update(ref(db, "live/" + nama), { command: "" });
                     document.getElementById("command-display").innerHTML = "";
-                }, 15000);
+                }, 10000);
             }
         });
 
@@ -247,7 +126,7 @@
             const kmh = Math.round(speed * 3.6 || 0);
             const newPos = [latitude, longitude];
 
-            document.getElementById('coord-val').innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            document.getElementById('coord-val').innerText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
             document.getElementById('speed-val').innerText = `${kmh} KM/H`;
             document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
             document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
@@ -256,11 +135,13 @@
             map.setView(newPos, 16);
 
             update(ref(db, "live/" + nama), {
-                lat: latitude, lon: longitude, speed: kmh, accuracy: accuracy,
-                battery: userBattery, status: isSOS ? "DANGER_SOS" : "ACTIVE",
-                waktu: Date.now()
+                lat: latitude, lon: longitude, speed: kmh, battery: userBattery,
+                status: isSOS ? "DANGER_SOS" : "ACTIVE", waktu: Date.now()
             });
-        }, null, { enableHighAccuracy: true });
+        }, (err) => console.error(err), { enableHighAccuracy: true });
+        
+        document.getElementById("btnAktif").innerText = "UPLINK ACTIVE";
+        document.getElementById("btnAktif").style.background = "#fff";
     };
 </script>
 </body>
