@@ -27,7 +27,6 @@
             overflow: hidden;
         }
 
-        /* Scanline Overlay */
         body::before {
             content: "";
             position: absolute; width: 100%; height: 100%;
@@ -57,7 +56,6 @@
             z-index: 100;
         }
 
-        /* Card Section */
         .card {
             background: var(--glass);
             border: 1px solid var(--neon);
@@ -69,9 +67,9 @@
 
         #map {
             width: 100%;
-            height: 300px; /* Ukuran peta */
+            height: 250px;
             border: 1px solid var(--neon);
-            filter: brightness(0.8) hue-rotate(80deg) invert(1); /* Efek Peta Taktis Gelap */
+            filter: brightness(0.8) hue-rotate(80deg) invert(1);
         }
 
         input {
@@ -120,15 +118,28 @@
 
         .label { color: rgba(0,255,0,0.5); font-size: 9px; display: block; }
 
-        /* SOS Animation */
+        /* SOS & COMMAND CSS */
         .emergency-active {
             animation: dangerAlert 0.5s infinite alternate;
             background: rgba(50, 0, 0, 0.8) !important;
         }
-        @keyframes dangerAlert {
-            from { border-color: var(--danger); box-shadow: 0 0 5px var(--danger); }
-            to { border-color: #fff; box-shadow: 0 0 20px var(--danger); }
+        
+        .command-alert {
+            background: #ffcc00;
+            color: #000;
+            padding: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #000;
+            animation: blink 0.5s infinite;
         }
+
+        @keyframes dangerAlert {
+            from { border-color: var(--danger); }
+            to { border-color: #fff; }
+        }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } }
 
         .leaflet-container { background: #000 !important; }
     </style>
@@ -153,6 +164,8 @@
             <button class="sos-btn" onclick="sendSOS()">SOS</button>
         </div>
 
+        <div id="command-display"></div>
+
         <div id="info-panel">
             <div class="info-box"><span class="label">COORDINATES</span><span id="coord-val">0, 0</span></div>
             <div class="info-box"><span class="label">SPEED</span><span id="speed-val">0 KM/H</span></div>
@@ -166,7 +179,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -181,106 +194,74 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Initialize Map
-    const map = L.map('map').setView([-2.5489, 118.0149], 5); // Default Indonesia
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+    const map = L.map('map').setView([-2.5489, 118.0149], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let marker = L.circleMarker([0, 0], {
-        radius: 10,
-        fillColor: "#00ff41",
-        color: "#fff",
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.8
+        radius: 10, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 0.8
     }).addTo(map);
 
     let isSOS = false;
     let userBattery = "N/A";
     let wakeLock = null;
 
-    // Battery API
     if(navigator.getBattery) {
         navigator.getBattery().then(bat => {
-            const updateBat = () => {
-                userBattery = Math.round(bat.level * 100) + "%";
-                document.getElementById('bat-val').innerText = `BAT: ${userBattery}`;
-            };
-            updateBat();
-            bat.addEventListener('levelchange', updateBat);
+            userBattery = Math.round(bat.level * 100) + "%";
+            document.getElementById('bat-val').innerText = `BAT: ${userBattery}`;
         });
     }
 
-    // SOS Logic
     window.sendSOS = function() {
         isSOS = !isSOS;
         const nama = document.getElementById("nama").value || "UNKNOWN_UNIT";
-        const card = document.getElementById("mainCard");
-        
-        if(isSOS) {
-            card.classList.add('emergency-active');
-            marker.setStyle({fillColor: '#ff003c'});
-            update(ref(db, "live/" + nama), { status: "DANGER_SOS" });
-        } else {
-            card.classList.remove('emergency-active');
-            marker.setStyle({fillColor: '#00ff41'});
-            update(ref(db, "live/" + nama), { status: "ACTIVE" });
-        }
+        update(ref(db, "live/" + nama), { status: isSOS ? "DANGER_SOS" : "ACTIVE" });
+        document.getElementById("mainCard").classList.toggle('emergency-active', isSOS);
     }
 
-    // Tracking Logic
     window.mulaiTracking = async function() {
         const nama = document.getElementById("nama").value;
         if (!nama) return alert("INPUT CALLSIGN!");
 
-        // Request WakeLock
-        try {
-            if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-        } catch (e) {}
+        try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
 
-        document.getElementById("status-text").innerText = "CONNECTING...";
+        // LISTENER COMMAND DARI HQ
+        onValue(ref(db, "live/" + nama + "/command"), (snap) => {
+            const cmd = snap.val();
+            if(cmd) {
+                if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                document.getElementById("command-display").innerHTML = `<div class="command-alert">HQ: ${cmd}</div>`;
+                
+                const speech = new SpeechSynthesisUtterance("Incoming Command: " + cmd);
+                window.speechSynthesis.speak(speech);
 
-        navigator.geolocation.watchPosition(
-            (pos) => {
-                const { latitude, longitude, speed, accuracy } = pos.coords;
-                const kmh = Math.round(speed * 3.6 || 0);
+                setTimeout(() => {
+                    update(ref(db, "live/" + nama), { command: "" });
+                    document.getElementById("command-display").innerHTML = "";
+                }, 15000);
+            }
+        });
 
-                // Update UI
-                document.getElementById('coord-val').innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                document.getElementById('speed-val').innerText = `${kmh} KM/H`;
-                document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
-                document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
+        navigator.geolocation.watchPosition((pos) => {
+            const { latitude, longitude, speed, accuracy } = pos.coords;
+            const kmh = Math.round(speed * 3.6 || 0);
+            const newPos = [latitude, longitude];
 
-                // Update Map
-                const newPos = [latitude, longitude];
-                marker.setLatLng(newPos);
-                map.setView(newPos, 16);
+            document.getElementById('coord-val').innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            document.getElementById('speed-val').innerText = `${kmh} KM/H`;
+            document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
+            document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
 
-                // Update Firebase
-                update(ref(db, "live/" + nama), {
-                    lat: latitude,
-                    lon: longitude,
-                    speed: kmh,
-                    accuracy: accuracy,
-                    battery: userBattery,
-                    status: isSOS ? "DANGER_SOS" : "ACTIVE",
-                    last_seen: Date.now()
-                });
-            },
-            (err) => alert("GPS Error: " + err.message),
-            { enableHighAccuracy: true }
-        );
+            marker.setLatLng(newPos);
+            map.setView(newPos, 16);
+
+            update(ref(db, "live/" + nama), {
+                lat: latitude, lon: longitude, speed: kmh, accuracy: accuracy,
+                battery: userBattery, status: isSOS ? "DANGER_SOS" : "ACTIVE",
+                waktu: Date.now()
+            });
+        }, null, { enableHighAccuracy: true });
     };
-
-    // Auto-reconnect WakeLock
-    document.addEventListener("visibilitychange", async () => {
-        if (wakeLock !== null && document.visibilityState === "visible") {
-            wakeLock = await navigator.wakeLock.request('screen');
-        }
-    });
 </script>
-
 </body>
 </html>
