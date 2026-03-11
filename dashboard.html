@@ -3,61 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>859/RBK - TACTICAL DASHBOARD</title>
-    
+    <title>859/RBK - CYBER TACTICAL DASHBOARD</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --danger: #ff0055; --bg-dark: #010808; --border: rgba(0, 242, 255, 0.2); }
-        body { margin: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg-dark); color: var(--neon); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .header { height: 55px; background: #001010; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 2000; }
-        
-        .container { display: grid; grid-template-columns: 320px 1fr 320px; height: calc(100vh - 57px); position: relative; }
-        
-        .panel { background: rgba(2, 12, 12, 0.96); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; z-index: 1000; }
-        
-        /* FIX MAP DISPLAY */
-        #map { height: 100%; width: 100%; background: #050505; z-index: 1; }
-        /* Map Filter untuk tampilan Tactical Night Mode */
-        .leaflet-tile-container { filter: brightness(0.6) invert(1) contrast(3) hue-rotate(170deg) saturate(0.5); }
-
-        .unit-card { background: rgba(0, 242, 255, 0.03); border: 1px solid var(--border); margin-bottom: 10px; padding: 12px; cursor: pointer; transition: 0.3s; }
-        .unit-card.active { border-color: var(--neon); background: rgba(0, 242, 255, 0.15); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
-        .unit-card.sos { border-color: var(--danger); background: rgba(255, 0, 85, 0.2); animation: pulse 1s infinite; }
-        
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        .visual-feed { width: 100%; border: 2px solid var(--neon); background: #000; margin-bottom: 15px; height: 200px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .visual-feed img { max-width: 100%; max-height: 100%; object-fit: cover; }
-        .scan-line { position: absolute; width: 100%; height: 2px; background: rgba(0, 242, 255, 0.5); top: 0; animation: scan 3s linear infinite; z-index: 5; }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
-
-        .cmd-input { width: 100%; background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; margin-top: 10px; box-sizing: border-box; }
-        .cmd-btn { width: 100%; background: var(--neon); color: #000; border: none; padding: 10px; margin-top: 5px; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; }
+        :root { --neon: #00f2ff; --danger: #ff0055; --warning: #ffcc00; --bg-dark: #010808; --panel-bg: rgba(2, 12, 12, 0.96); --border: rgba(0, 242, 255, 0.2); }
+        body { margin: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg-dark); color: var(--neon); overflow: hidden; height: 100vh; }
+        .crt-effect { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 3px; z-index: 10000; pointer-events: none; }
+        .header { height: 55px; background: #001010; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .container { display: grid; grid-template-columns: 320px 1fr 320px; height: calc(100vh - 57px); }
+        .panel { background: var(--panel-bg); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        #map { height: 100%; background: #000; filter: brightness(0.9) contrast(1.1) saturate(0.2) hue-rotate(140deg) invert(0.95); }
+        .unit-card { background: rgba(0, 242, 255, 0.03); border: 1px solid var(--border); margin-bottom: 12px; padding: 12px; cursor: pointer; position: relative; clip-path: polygon(0 0, 95% 0, 100% 20%, 100% 100%, 5% 100%, 0 80%); transition: 0.3s; }
+        .unit-card.active { background: rgba(0, 242, 255, 0.15); border-color: var(--neon); }
+        .unit-card.sos { border-color: var(--danger); background: rgba(255, 0, 85, 0.2); animation: pulse-red 0.8s infinite; }
+        .logout-btn { background: linear-gradient(45deg, #ff0055, #880022); color: white; border: none; padding: 5px 15px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
+        .shutdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 99999; display: none; flex-direction: column; justify-content: center; align-items: center; font-family: 'Orbitron'; color: var(--neon); }
+        .map-controls { position: absolute; top: 70px; right: 340px; z-index: 1000; display: flex; flex-direction: column; gap: 5px; }
+        .map-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 8px; cursor: pointer; font-size: 10px; }
+        .cmd-input { width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--neon); color: var(--neon); padding: 10px; font-family: 'Share Tech Mono'; margin-top: 10px; box-sizing: border-box; }
+        .cmd-btn { width: 100%; background: var(--neon); color: #000; border: none; padding: 10px; margin-top: 5px; font-weight: bold; cursor: pointer; }
+        .siren-btn { background: #ffaa00 !important; color: black !important; margin-top: 5px; }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        #logs { font-size: 10px; height: 150px; overflow-y: auto; font-family: monospace; color: rgba(0, 242, 255, 0.5); }
     </style>
 </head>
 <body>
 
+<div id="shutdown" class="shutdown-overlay">
+    <div>TERMINATING_CONNECTION...</div>
+    <div style="margin-top:20px; width:200px; height:2px; background:#222;"><div id="bar" style="width:0%; height:100%; background:var(--neon);"></div></div>
+</div>
+
+<div class="crt-effect"></div>
 <div class="header">
-    <div style="font-family:'Orbitron';">YONIF 859/RBK HQ <span style="font-size:10px; color:var(--danger)">[TACTICAL_DASHBOARD]</span></div>
-    <div id="clock" style="font-family: monospace; font-size: 20px;">00:00:00</div>
+    <div style="font-family:'Orbitron'; letter-spacing:2px; font-weight:bold">YONIF 859/RBK HQ</div>
+    <div style="display:flex; gap:15px; align-items:center">
+        <div id="clock" style="font-family:'Share Tech Mono'">00:00:00</div>
+        <button class="logout-btn" onclick="window.triggerLogout()">SECURE_LOGOUT</button>
+    </div>
 </div>
 
 <div class="container">
     <div class="panel">
-        <div style="font-size:11px; opacity:0.5; margin-bottom:10px; letter-spacing: 2px;">SQUAD_LIST</div>
-        <div id="listAnggota">
-            <div style="text-align: center; opacity: 0.3; padding-top: 20px;">WAITING FOR DATA...</div>
+        <div style="font-size:11px; opacity:0.5; margin-bottom:10px">SQUAD_MANIFEST</div>
+        <input type="text" id="search" placeholder="FILTER..." style="width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); padding:8px; color:var(--neon); margin-bottom:15px">
+        <div id="listAnggota"></div>
+    </div>
+    <div style="position:relative">
+        <div id="map"></div>
+        <div class="map-controls">
+            <button class="map-btn" onclick="window.setMap('sat')">SATELLITE</button>
+            <button class="map-btn" onclick="window.setMap('tact')">TERRAIN</button>
         </div>
     </div>
-
-    <div id="map"></div>
-
-    <div class="panel" style="border-left:1px solid var(--border); border-right: none;">
-        <div style="font-size:11px; opacity:0.5; margin-bottom:10px; letter-spacing: 2px;">VISUAL_UPLINK</div>
-        <div id="detailBox">
-            <div style="text-align:center; padding-top:100px; opacity:0.3; font-size: 12px;">SELECT UNIT</div>
+    <div class="panel" style="border-left:1px solid var(--border)">
+        <div style="font-size:11px; opacity:0.5; margin-bottom:10px">DATA_ANALYSIS</div>
+        <div id="detailBox"><div style="text-align:center; padding-top:100px; opacity:0.3">AWAITING TARGET</div></div>
+        <div style="margin-top:auto">
+            <div id="logs"></div>
         </div>
     </div>
 </div>
@@ -79,81 +83,85 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
-    // Setup Peta dengan koordinat default Indonesia
-    const map = L.map('map', {zoomControl: false}).setView([-2.5, 118], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png').addTo(map);
+    const map = L.map('map', {zoomControl: false}).setView([-2.5489, 118.0149], 13);
+    const tiles = {
+        sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
+        tact: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+    };
+    tiles.sat.addTo(map);
 
-    // Memaksa peta merender ulang agar tidak abu-abu
-    setTimeout(() => { map.invalidateSize(); }, 500);
+    window.setMap = (t) => { Object.values(tiles).forEach(l => map.removeLayer(l)); tiles[t].addTo(map); };
 
     let allData = {}, markers = {}, selectedId = null;
+    const HQ = [-2.5489, 118.0149];
+    L.circle(HQ, {radius: 5000, color: '#00f2ff', weight: 1, fillOpacity: 0.05}).addTo(map);
 
-    // Perintah global agar bisa dipanggil dari HTML
-    window.sendCommand = (n, val) => {
-        const msg = val || document.getElementById("cmdInput").value;
-        if(!msg) return;
-        update(ref(db, `live/${n}`), { command: msg });
-        alert("COMMAND SENT TO " + n);
+    window.triggerLogout = () => {
+        const ov = document.getElementById('shutdown');
+        const bar = document.getElementById('bar');
+        ov.style.display = 'flex';
+        let w = 0;
+        const itv = setInterval(() => {
+            w += 10; bar.style.width = w + '%';
+            if(w>=100) { clearInterval(itv); window.location.href="https://mohammadzhafran04-art.github.io/trackingyoniftp859rbk/login.html"; }
+        }, 80);
     };
 
-    function renderList() {
+    window.sendCommand = (n, customCmd = null) => {
+        const val = customCmd || document.getElementById("cmdInput").value;
+        if(!val) return;
+        update(ref(db, `live/${n}`), { command: val });
+        const l = document.getElementById('logs');
+        l.innerHTML = `> [${new Date().toLocaleTimeString()}] CMD: ${val} -> ${n}<br>` + l.innerHTML;
+        if(!customCmd) document.getElementById("cmdInput").value = "";
+    };
+
+    function getDist(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const dLat = (lat2-lat1)*Math.PI/180;
+        const dLon = (lon2-lon1)*Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+        return (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * R).toFixed(0);
+    }
+
+    function render() {
         const list = document.getElementById("listAnggota");
         list.innerHTML = "";
-        
         Object.keys(allData).forEach(nama => {
             const d = allData[nama];
-            const isOnline = (Date.now() - (d.waktu || 0)) < 60000;
+            if(!d.lat) return;
+            const latency = Date.now() - (d.waktu || 0);
+            const isOnline = latency < 40000;
+            const dist = getDist(HQ[0], HQ[1], d.lat, d.lon);
             
-            if(!markers[nama]) {
-                markers[nama] = L.circleMarker([d.lat, d.lon], {radius: 9, color: '#fff', weight: 2, fillOpacity: 1}).addTo(map);
-            }
-            markers[nama].setLatLng([d.lat, d.lon]).setStyle({
-                fillColor: d.status === "DANGER_SOS" ? "#ff0055" : (isOnline ? "#00ff41" : "#444")
-            });
+            if(!markers[nama]) markers[nama] = L.circleMarker([d.lat, d.lon], {radius: 8, color: '#fff', weight: 2, fillOpacity: 1}).addTo(map);
+            markers[nama].setLatLng([d.lat, d.lon]).setStyle({fillColor: d.status === "DANGER_SOS" ? "#f05" : (isOnline ? "#0f2" : "#444")});
 
             const item = document.createElement("div");
             item.className = `unit-card ${selectedId === nama ? 'active' : ''} ${d.status === 'DANGER_SOS' ? 'sos' : ''}`;
-            item.innerHTML = `<b>${nama.toUpperCase()}</b><br><small>${isOnline?'ONLINE':'OFFLINE'} | BAT: ${d.battery||'--'}</small>`;
-            item.onclick = () => { 
-                selectedId = nama; 
-                map.flyTo([d.lat, d.lon], 16);
-                showDetail(nama, d);
-                renderList(); 
-            };
+            item.innerHTML = `<b>${nama}</b> <span style="font-size:9px; color:${isOnline?'#0f2':'#f05'}">${isOnline?'ONLINE':'OFFLINE'}</span><br>
+                              <small>LATENCY: ${latency}ms | DIST: ${dist}m</small>`;
+            item.onclick = () => { selectedId = nama; map.flyTo([d.lat, d.lon], 16); showDetail(nama, d, dist); render(); };
             list.appendChild(item);
         });
     }
 
-    function showDetail(n, d) {
-        const imgUrl = d.visual || '';
+    function showDetail(n, d, dist) {
         document.getElementById("detailBox").innerHTML = `
-            <div class="visual-feed">
-                <div class="scan-line"></div>
-                ${imgUrl ? `<img src="${imgUrl}" id="liveVisual">` : '<span style="opacity:0.2">NO FEED</span>'}
-            </div>
-            <div style="font-size:20px; font-family:Orbitron;">${n.toUpperCase()}</div>
-            <div style="font-size:12px; margin-bottom:10px; color:#0f2">SPD: ${d.speed || 0} KM/H</div>
-            <input type="text" id="cmdInput" class="cmd-input" placeholder="MESSAGE...">
-            <button class="cmd-btn" onclick="sendCommand('${n}')">SEND COMMAND</button>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px">
-                <button class="cmd-btn" style="background:#f50" onclick="sendCommand('${n}', 'ALARM_ON')">SIREN</button>
-                <button class="cmd-btn" style="background:#333; color:white" onclick="sendCommand('${n}', 'ALARM_OFF')">SILENCE</button>
-            </div>
-        `;
+            <div style="border:1px solid var(--neon); padding:10px; background:rgba(0,242,255,0.05);">
+                <div style="font-size:18px">${n}</div>
+                <div style="font-size:11px; margin:10px 0">SPD: ${d.speed}KM/H | BAT: ${d.battery} | DST: ${dist}M</div>
+                <input type="text" id="cmdInput" class="cmd-input" placeholder="Message...">
+                <button class="cmd-btn" onclick="sendCommand('${n}')">SEND TEXT</button>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px">
+                    <button class="cmd-btn siren-btn" onclick="sendCommand('${n}', 'ALARM_ON')">SIREN ON</button>
+                    <button class="cmd-btn" style="background:#444;color:white" onclick="sendCommand('${n}', 'ALARM_OFF')">SIREN OFF</button>
+                </div>
+            </div>`;
     }
 
-    onValue(ref(db, "live"), s => { 
-        if(s.exists()){ 
-            allData = s.val(); 
-            renderList(); 
-            if(selectedId && allData[selectedId] && document.getElementById('liveVisual')) {
-                document.getElementById('liveVisual').src = allData[selectedId].visual || '';
-            }
-        } 
-    });
-
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    onValue(ref(db, "live"), s => { if(s.val()){ allData = s.val(); render(); } });
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 </script>
 </body>
 </html>
