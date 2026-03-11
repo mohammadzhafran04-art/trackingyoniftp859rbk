@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tactical Command - 859/RBK</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
@@ -11,7 +13,7 @@
             --neon: #00ff41;
             --danger: #ff003c;
             --bg: #020802;
-            --glass: rgba(0, 40, 0, 0.4);
+            --glass: rgba(0, 30, 0, 0.7);
         }
 
         body {
@@ -20,95 +22,74 @@
             color: var(--neon);
             font-family: 'Share Tech Mono', monospace;
             height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* Overlay Grid & Scanline */
+        /* Scanline Overlay */
         body::before {
             content: "";
             position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 2px, 3px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
             pointer-events: none;
-            z-index: 100;
-        }
-
-        /* Animated Background Data */
-        .bg-data {
-            position: absolute;
-            font-size: 10px;
-            color: rgba(0, 255, 65, 0.1);
-            white-space: nowrap;
-            top: 0; left: 0;
-            animation: moveData 20s linear infinite;
-            z-index: 1;
-        }
-
-        @keyframes moveData {
-            from { transform: translateY(0); }
-            to { transform: translateY(-50%); }
+            z-index: 1000;
         }
 
         .header {
-            padding: 15px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid var(--neon);
-            background: rgba(0,20,0,0.8);
-            z-index: 110;
+            background: rgba(0,20,0,0.9);
+            z-index: 1100;
         }
-
-        .status-top { font-size: 12px; display: flex; gap: 15px; }
 
         .container {
             flex: 1;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            z-index: 105;
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+            overflow-y: auto;
+            z-index: 100;
         }
 
+        /* Card Section */
         .card {
-            width: 100%;
-            max-width: 400px;
             background: var(--glass);
             border: 1px solid var(--neon);
-            padding: 30px;
-            backdrop-filter: blur(15px);
+            padding: 20px;
+            backdrop-filter: blur(10px);
             position: relative;
-            box-shadow: 0 0 30px rgba(0,255,65,0.2);
+            box-shadow: 0 0 20px rgba(0,255,65,0.1);
         }
 
-        /* Dekorasi Sudut Modern */
-        .card::before, .card::after {
-            content: ""; position: absolute; width: 20px; height: 20px;
-            border: 2px solid var(--neon);
+        #map {
+            width: 100%;
+            height: 300px; /* Ukuran peta */
+            border: 1px solid var(--neon);
+            filter: brightness(0.8) hue-rotate(80deg) invert(1); /* Efek Peta Taktis Gelap */
         }
-        .card::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
-        .card::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
 
         input {
             width: 100%;
             background: rgba(0,0,0,0.5);
             border: 1px solid var(--neon);
-            padding: 12px;
+            padding: 10px;
             color: var(--neon);
             font-family: 'Orbitron', sans-serif;
-            margin-bottom: 15px;
-            outline: none;
+            margin-bottom: 10px;
             box-sizing: border-box;
         }
 
-        .btn-group { display: flex; gap: 10px; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
 
         button {
             flex: 2;
-            padding: 15px;
+            padding: 12px;
             background: var(--neon);
             color: black;
             border: none;
@@ -124,74 +105,68 @@
             border: 1px solid var(--danger);
         }
 
-        .sos-btn:hover { background: var(--danger); color: white; }
-
         #info-panel {
-            margin-top: 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 5px;
             font-size: 11px;
         }
 
         .info-box {
             background: rgba(0,255,0,0.05);
-            padding: 8px;
+            padding: 5px 8px;
             border: 1px solid rgba(0,255,0,0.2);
         }
 
         .label { color: rgba(0,255,0,0.5); font-size: 9px; display: block; }
 
-        /* SOS Active State */
-        .emergency-mode {
+        /* SOS Animation */
+        .emergency-active {
             animation: dangerAlert 0.5s infinite alternate;
+            background: rgba(50, 0, 0, 0.8) !important;
         }
         @keyframes dangerAlert {
-            from { box-shadow: 0 0 10px var(--danger); }
-            to { box-shadow: 0 0 30px var(--danger); border-color: #ff0000; }
+            from { border-color: var(--danger); box-shadow: 0 0 5px var(--danger); }
+            to { border-color: #fff; box-shadow: 0 0 20px var(--danger); }
         }
 
+        .leaflet-container { background: #000 !important; }
     </style>
 </head>
 <body>
 
-<div class="bg-data" id="bgData"></div>
-
 <div class="header">
-    <div style="font-family: 'Orbitron'; font-size: 14px;">SYS-MONITOR: 859/RBK</div>
-    <div class="status-top">
-        <span id="bat-val">BAT: --%</span>
-        <span id="net-val">NET: OK</span>
+    <div style="font-family: 'Orbitron'; font-size: 13px;">COMMAND_CORE: 859/RBK</div>
+    <div style="font-size: 11px;">
+        <span id="bat-val">BAT: --%</span> | <span id="net-val">NET: ONLINE</span>
     </div>
 </div>
 
 <div class="container">
+    <div id="map"></div>
+
     <div class="card" id="mainCard">
-        <h2 style="text-align:center; font-family:'Orbitron'; letter-spacing:4px;">UPLINK TERMINAL</h2>
-        
-        <input type="text" id="nama" placeholder="CALLSIGN ANGGOTA" autocomplete="off">
+        <input type="text" id="nama" placeholder="ENTER CALLSIGN" autocomplete="off">
 
         <div class="btn-group">
-            <button onclick="mulaiTracking()">ACTIVATE</button>
+            <button onclick="mulaiTracking()">ACTIVATE UPLINK</button>
             <button class="sos-btn" onclick="sendSOS()">SOS</button>
         </div>
 
         <div id="info-panel">
-            <div class="info-box"><span class="label">LATITUDE</span><span id="lat-val">0.000000</span></div>
-            <div class="info-box"><span class="label">LONGITUDE</span><span id="lon-val">0.000000</span></div>
+            <div class="info-box"><span class="label">COORDINATES</span><span id="coord-val">0, 0</span></div>
             <div class="info-box"><span class="label">SPEED</span><span id="speed-val">0 KM/H</span></div>
-            <div class="info-box"><span class="label">BEARING</span><span id="dir-val">0° N</span></div>
-        </div>
-
-        <div id="status-msg" style="margin-top:15px; font-size:10px; text-align:center; opacity:0.7;">
-            SYSTEM READY // IDLE_MODE
+            <div class="info-box"><span class="label">ACCURACY</span><span id="acc-val">0 M</span></div>
+            <div class="info-box"><span class="label">STATUS</span><span id="status-text">IDLE</span></div>
         </div>
     </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -206,74 +181,105 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Animasi Background Teks (Simulation Data)
-    const bgData = document.getElementById('bgData');
-    for(let i=0; i<100; i++) {
-        bgData.innerHTML += `TRK_0859_SYS_${Math.random().toString(16).slice(2,10)}...OK<br>`;
+    // Initialize Map
+    const map = L.map('map').setView([-2.5489, 118.0149], 5); // Default Indonesia
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let marker = L.circleMarker([0, 0], {
+        radius: 10,
+        fillColor: "#00ff41",
+        color: "#fff",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map);
+
+    let isSOS = false;
+    let userBattery = "N/A";
+    let wakeLock = null;
+
+    // Battery API
+    if(navigator.getBattery) {
+        navigator.getBattery().then(bat => {
+            const updateBat = () => {
+                userBattery = Math.round(bat.level * 100) + "%";
+                document.getElementById('bat-val').innerText = `BAT: ${userBattery}`;
+            };
+            updateBat();
+            bat.addEventListener('levelchange', updateBat);
+        });
     }
 
-    let userBattery = "N/A";
-    let isSOS = false;
-
-    // Monitor Battery
-    navigator.getBattery().then(bat => {
-        const updateBat = () => {
-            userBattery = (bat.level * 100) + "%";
-            document.getElementById('bat-val').innerText = `BAT: ${userBattery}`;
-        };
-        updateBat();
-        bat.addEventListener('levelchange', updateBat);
-    });
-
+    // SOS Logic
     window.sendSOS = function() {
         isSOS = !isSOS;
-        const nama = document.getElementById("nama").value || "UNKNOWN";
+        const nama = document.getElementById("nama").value || "UNKNOWN_UNIT";
         const card = document.getElementById("mainCard");
         
         if(isSOS) {
-            card.classList.add('emergency-mode');
+            card.classList.add('emergency-active');
+            marker.setStyle({fillColor: '#ff003c'});
             update(ref(db, "live/" + nama), { status: "DANGER_SOS" });
-            alert("EMERGENCY SIGNAL SENT!");
         } else {
-            card.classList.remove('emergency-mode');
+            card.classList.remove('emergency-active');
+            marker.setStyle({fillColor: '#00ff41'});
             update(ref(db, "live/" + nama), { status: "ACTIVE" });
         }
     }
 
-    window.mulaiTracking = function() {
+    // Tracking Logic
+    window.mulaiTracking = async function() {
         const nama = document.getElementById("nama").value;
         if (!nama) return alert("INPUT CALLSIGN!");
 
-        document.getElementById("status-msg").innerText = "HANDSHAKING WITH SATELLITE...";
+        // Request WakeLock
+        try {
+            if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+        } catch (e) {}
+
+        document.getElementById("status-text").innerText = "CONNECTING...";
 
         navigator.geolocation.watchPosition(
-            async (pos) => {
-                const { latitude, longitude, speed, heading } = pos.coords;
-                
-                // Update UI
-                document.getElementById('lat-val').innerText = latitude.toFixed(6);
-                document.getElementById('lon-val').innerText = longitude.toFixed(6);
-                document.getElementById('speed-val').innerText = `${Math.round(speed * 3.6 || 0)} KM/H`;
-                document.getElementById('dir-val').innerText = `${Math.round(heading || 0)}°`;
-                document.getElementById("status-msg").innerText = "UPLINK STABLISHED // DATA_STREAMING";
+            (pos) => {
+                const { latitude, longitude, speed, accuracy } = pos.coords;
+                const kmh = Math.round(speed * 3.6 || 0);
 
-                // Push to Firebase
+                // Update UI
+                document.getElementById('coord-val').innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                document.getElementById('speed-val').innerText = `${kmh} KM/H`;
+                document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
+                document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
+
+                // Update Map
+                const newPos = [latitude, longitude];
+                marker.setLatLng(newPos);
+                map.setView(newPos, 16);
+
+                // Update Firebase
                 update(ref(db, "live/" + nama), {
-                    latitude,
-                    longitude,
-                    speed: Math.round(speed * 3.6 || 0),
+                    lat: latitude,
+                    lon: longitude,
+                    speed: kmh,
+                    accuracy: accuracy,
                     battery: userBattery,
-                    heading: heading || 0,
-                    last_update: new Date().toLocaleTimeString(),
-                    status: isSOS ? "DANGER_SOS" : "ACTIVE"
+                    status: isSOS ? "DANGER_SOS" : "ACTIVE",
+                    last_seen: Date.now()
                 });
             },
-            (err) => { console.error(err) },
+            (err) => alert("GPS Error: " + err.message),
             { enableHighAccuracy: true }
         );
     };
 
-    // WakeLock & Screen Keep-alive logic here (sama seperti sebelumnya)
+    // Auto-reconnect WakeLock
+    document.addEventListener("visibilitychange", async () => {
+        if (wakeLock !== null && document.visibilityState === "visible") {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    });
 </script>
 
 </body>
