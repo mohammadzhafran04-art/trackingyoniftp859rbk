@@ -3,221 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactical Command - 859/RBK</title>
+    <title>UPLINK - 859/RBK</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00ff41">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092215.png">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
     <style>
-        :root { 
-            --neon: #00ff41; 
-            --danger: #ff003c; 
-            --warning: #ffcc00;
-            --bg: #010a01; 
-            --glass: rgba(0, 40, 0, 0.4); 
-        }
-
-        body { 
-            margin: 0; 
-            background: var(--bg); 
-            color: var(--neon); 
-            font-family: 'Share Tech Mono', monospace; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-        }
-
-        /* CRT SCANLINE EFFECT */
-        body::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 3px 100%;
-            pointer-events: none;
-            z-index: 2000;
-        }
-
-        .header { 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--neon); 
-            background: rgba(0,15,0,0.95); 
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-            z-index: 1100; 
-        }
-
-        .header-title { font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px; }
-        .header-clock { color: var(--neon); font-size: 14px; border-left: 2px solid var(--neon); padding-left: 10px; margin-left: 10px; }
-
-        .container { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            padding: 10px; 
-            gap: 12px; 
-            z-index: 100; 
-        }
-
-        /* MAP STYLING */
-        #map { 
-            width: 100%; 
-            height: 250px; 
-            border: 1px solid var(--neon); 
-            filter: brightness(0.7) hue-rotate(85deg) contrast(1.2) invert(0.9);
-            box-shadow: inset 0 0 30px #000;
-        }
-
-        .card { 
-            background: var(--glass); 
-            border: 1px solid var(--neon); 
-            padding: 20px; 
-            backdrop-filter: blur(8px); 
-            position: relative;
-            clip-path: polygon(0 0, 95% 0, 100% 15%, 100% 100%, 5% 100%, 0 85%);
-        }
-
-        .card::before {
-            content: "OPERATIONAL_UNIT";
-            position: absolute;
-            top: -10px; left: 20px;
-            background: var(--bg);
-            padding: 0 5px;
-            font-size: 10px;
-            color: var(--neon);
-        }
-
-        input { 
-            width: 100%; 
-            background: rgba(0,20,0,0.6); 
-            border: 1px solid var(--neon); 
-            padding: 12px; 
-            color: var(--neon); 
-            font-family: 'Orbitron', sans-serif; 
-            margin-bottom: 15px; 
-            box-sizing: border-box; 
-            outline: none;
-            text-align: center;
-        }
-
-        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        
-        button { 
-            flex: 2; 
-            padding: 14px; 
-            background: var(--neon); 
-            color: #000; 
-            border: none; 
-            font-weight: bold; 
-            font-family: 'Orbitron'; 
-            cursor: pointer; 
-            transition: 0.3s;
-            text-transform: uppercase;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-        }
-
-        button:hover { background: #fff; box-shadow: 0 0 15px var(--neon); }
-        button:disabled { background: #1a331a; color: #004400; cursor: not-allowed; box-shadow: none; }
-
-        .sos-btn { 
-            flex: 1; 
-            background: transparent; 
-            color: var(--danger); 
-            border: 1px solid var(--danger); 
-            clip-path: polygon(0 0, 90% 0, 100% 100%, 10% 100%);
-        }
-        
-        .sos-btn:hover { background: var(--danger); color: #fff; }
-
-        .logout-idx { 
-            background: none; 
-            border: 1px solid var(--danger); 
-            color: var(--danger); 
-            padding: 5px 12px; 
-            font-size: 10px; 
-            cursor: pointer;
-            font-family: 'Orbitron';
-        }
-
-        #info-panel { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
-        }
-
-        .info-box { 
-            background: rgba(0,255,65,0.03); 
-            padding: 10px; 
-            border: 1px solid rgba(0,255,65,0.15); 
-        }
-
-        .label { color: rgba(0,255,65,0.4); font-size: 9px; display: block; margin-bottom: 4px; letter-spacing: 1px; }
-        .val { font-size: 13px; font-weight: bold; display: block; }
-
-        .command-alert { 
-            background: var(--warning); 
-            color: #000; 
-            padding: 12px; 
-            margin-bottom: 15px; 
-            font-weight: bold; 
-            text-align: center; 
-            animation: blink 0.8s infinite; 
-            border: 2px solid #000;
-            font-family: 'Orbitron';
-        }
-
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        .emergency-active { 
-            animation: dangerAlert 0.4s infinite alternate; 
-            background: rgba(80, 0, 0, 0.6) !important; 
-            border-color: var(--danger) !important;
-        }
-
-        @keyframes dangerAlert { from { box-shadow: 0 0 5px var(--danger); } to { box-shadow: 0 0 20px var(--danger); } }
+        :root { --neon: #00ff41; --danger: #ff003c; --bg: #010a01; }
+        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .header { padding: 15px; border-bottom: 1px solid var(--neon); background: rgba(0,15,0,0.9); display: flex; justify-content: space-between; align-items: center; }
+        .container { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow-y: auto; }
+        #map { width: 100%; min-height: 180px; border: 1px solid var(--neon); filter: brightness(0.6) hue-rotate(85deg) invert(0.9); }
+        .card { background: rgba(0, 40, 0, 0.3); border: 1px solid var(--neon); padding: 15px; backdrop-filter: blur(5px); }
+        input { width: 100%; background: #000; border: 1px solid var(--neon); padding: 12px; color: var(--neon); margin-bottom: 10px; box-sizing: border-box; text-align: center; font-family: 'Orbitron'; outline: none; }
+        button { width: 100%; padding: 15px; background: var(--neon); color: #000; border: none; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; margin-bottom: 5px; }
+        button:disabled { background: #1a331a; color: #004400; }
+        .status-box { font-size: 11px; margin-top: 10px; border-top: 1px solid rgba(0,255,65,0.2); padding-top: 10px; }
+        #webcam { width: 100%; border: 1px solid var(--neon); margin-top: 10px; display: none; background: #000; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="display: flex; align-items: center;">
-        <span class="header-title">STATUS: <span id="sys-status" style="color: var(--warning);">OFFLINE</span></span>
-        <span class="header-clock" id="clock">00:00:00</span>
-    </div>
-    <div style="display: flex; gap: 15px; align-items: center;">
-        <span id="bat-val" style="font-size: 11px;">BAT: --%</span>
-        <button class="logout-idx" id="btn-logout">ABORT</button>
-    </div>
+    <div style="font-family:'Orbitron'; font-size:12px;">UNIT_UPLINK_v3.0</div>
+    <div id="bat-val">BAT: --%</div>
 </div>
 
 <div class="container">
     <div id="map"></div>
     
-    <div class="card" id="mainCard">
-        <div id="command-display"></div>
-        <input type="text" id="nama" placeholder="ENTER UNIT CALLSIGN">
+    <div class="card">
+        <input type="text" id="nama" placeholder="CALLSIGN_ANGGOTA">
+        <button id="btnAktif">ESTABLISH PERSISTENT UPLINK</button>
         
-        <div class="btn-group">
-            <button id="btnAktif">ESTABLISH UPLINK</button>
-            <button class="sos-btn" id="btnSos">SOS</button>
-        </div>
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="canvas" style="display:none;"></canvas>
 
-        <div id="info-panel">
-            <div class="info-box"><span class="label">COORDINATES</span><span class="val" id="coord-val">0.00, 0.00</span></div>
-            <div class="info-box"><span class="label">VECTOR_SPEED</span><span class="val" id="speed-val">0 KM/H</span></div>
-            <div class="info-box"><span class="label">COMMS_STATUS</span><span class="val" id="status-text">IDLE</span></div>
-            <div class="info-box"><span class="label">GPS_PRECISION</span><span class="val" id="acc-val">0 M</span></div>
+        <div class="status-box">
+            <div id="stat-text">SYSTEM: <span style="color:red">OFFLINE</span></div>
+            <div id="pos-text">COORD: 0.00000, 0.00000</div>
+            <div id="wakelock-text" style="color: grey;">WAKE_LOCK: INACTIVE</div>
+            <div id="cam-text" style="color: grey;">VISUAL: DISABLED</div>
         </div>
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<audio id="silentMode" loop>
+    <source src="https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3" type="audio/mp3">
+</audio>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -231,105 +78,83 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    let wakeLock = null;
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
 
-    let isSOS = false;
-    let watchId = null; 
-    let userBattery = "N/A";
-    const sirenAudio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
-    sirenAudio.loop = true;
+    async function activateWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                document.getElementById('wakelock-text').innerText = "WAKE_LOCK: ACTIVE";
+                document.getElementById('wakelock-text').style.color = "var(--neon)";
+            } catch (err) { console.log(err); }
+        }
+    }
 
-    // Clock
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-    }, 1000);
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: 320 } 
+            });
+            video.srcObject = stream;
+            video.style.display = "block";
+            document.getElementById('cam-text').innerText = "VISUAL: STREAMING";
+            document.getElementById('cam-text').style.color = "var(--neon)";
+        } catch (err) {
+            document.getElementById('cam-text').innerText = "VISUAL: ERROR/DENIED";
+        }
+    }
 
-    // Map Setup
-    const map = L.map('map', { zoomControl: false }).setView([-2.5489, 118.0149], 5);
+    function captureAndUpload(nama) {
+        if (video.srcObject) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const base64Img = canvas.toDataURL('image/jpeg', 0.4); // Kompresi agar ringan
+            update(ref(db, "live/" + nama), { visual: base64Img });
+        }
+    }
+
+    const map = L.map('map', { zoomControl: false }).setView([0,0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     let marker = L.circleMarker([0, 0], {radius: 8, fillColor: "#00ff41", color: "#fff", weight: 2, fillOpacity: 1}).addTo(map);
 
-    // Battery
-    if(navigator.getBattery) {
-        navigator.getBattery().then(bat => {
-            const updateBat = () => {
-                userBattery = Math.round(bat.level * 100) + "%";
-                document.getElementById('bat-val').innerText = `BAT: ${userBattery}`;
-            };
-            updateBat();
-            bat.onlevelchange = updateBat;
-        });
-    }
-
-    // Logout
-    document.getElementById("btn-logout").onclick = async () => {
-        const nama = document.getElementById("nama").value;
-        if (confirm("TERMINATE SESSION?")) {
-            if (watchId) navigator.geolocation.clearWatch(watchId);
-            if (nama) await remove(ref(db, "live/" + nama));
-            location.reload(); 
-        }
-    };
-
-    // SOS Toggle
-    document.getElementById("btnSos").onclick = () => {
-        isSOS = !isSOS;
-        const nama = document.getElementById("nama").value || "UNKNOWN_UNIT";
-        update(ref(db, "live/" + nama), { status: isSOS ? "DANGER_SOS" : "ACTIVE" });
-        document.getElementById("mainCard").classList.toggle('emergency-active', isSOS);
-        document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
-    };
-
-    // Activate Uplink
     document.getElementById("btnAktif").onclick = async () => {
-        const nama = document.getElementById("nama").value;
+        const nama = document.getElementById("nama").value.trim().toUpperCase();
         if (!nama) return alert("REQUIRED: CALLSIGN");
 
-        document.getElementById('sys-status').innerText = "ONLINE";
-        document.getElementById('sys-status').style.color = "var(--neon)";
+        document.getElementById('silentMode').play();
+        await activateWakeLock();
+        await startCamera();
 
-        onValue(ref(db, "live/" + nama + "/command"), (snap) => {
-            const cmd = snap.val();
-            if(cmd) {
-                if(cmd === "ALARM_ON") {
-                    sirenAudio.play();
-                    document.getElementById("mainCard").classList.add('emergency-active');
-                } else if(cmd === "ALARM_OFF") {
-                    sirenAudio.pause();
-                    document.getElementById("mainCard").classList.remove('emergency-active');
-                } else {
-                    document.getElementById("command-display").innerHTML = `<div class="command-alert">HQ: ${cmd}</div>`;
-                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(cmd));
-                    setTimeout(() => {
-                        update(ref(db, "live/" + nama), { command: "" });
-                        document.getElementById("command-display").innerHTML = "";
-                    }, 8000);
-                }
-            }
+        document.getElementById("btnAktif").disabled = true;
+        document.getElementById("btnAktif").innerText = "UPLINK_LIVE";
+        document.getElementById("btnAktif").classList.add("blink");
+
+        onValue(ref(db, ".info/connected"), (snap) => {
+            document.getElementById('stat-text').innerHTML = snap.val() ? 
+                'SYSTEM: <span style="color:var(--neon)">ONLINE</span>' : 
+                'SYSTEM: <span style="color:orange">RECONNECTING...</span>';
         });
 
-        watchId = navigator.geolocation.watchPosition((pos) => {
-            const { latitude, longitude, speed, accuracy } = pos.coords;
-            const kmh = Math.round(speed * 3.6 || 0);
-            
+        navigator.geolocation.watchPosition((pos) => {
+            const { latitude, longitude, speed } = pos.coords;
             marker.setLatLng([latitude, longitude]);
             map.setView([latitude, longitude], 16);
-            
-            document.getElementById('coord-val').innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-            document.getElementById('speed-val').innerText = `${kmh} KM/H`;
-            document.getElementById('acc-val').innerText = `${Math.round(accuracy)} M`;
-            document.getElementById('status-text').innerText = isSOS ? "DANGER" : "ACTIVE";
+            document.getElementById('pos-text').innerText = `COORD: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             update(ref(db, "live/" + nama), {
-                lat: latitude, lon: longitude, speed: kmh, 
-                battery: userBattery, status: isSOS ? "DANGER_SOS" : "ACTIVE", 
-                waktu: Date.now()
+                lat: latitude, lon: longitude, speed: Math.round(speed * 3.6 || 0), waktu: Date.now()
             });
-        }, null, { enableHighAccuracy: true });
 
-        document.getElementById("btnAktif").innerText = "UPLINK ESTABLISHED";
-        document.getElementById("btnAktif").disabled = true;
-        document.getElementById("nama").disabled = true;
+            captureAndUpload(nama); // Kirim foto tiap kali posisi berubah
+        }, null, { enableHighAccuracy: true });
     };
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
 </script>
 </body>
 </html>
