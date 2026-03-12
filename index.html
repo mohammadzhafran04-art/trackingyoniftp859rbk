@@ -8,59 +8,113 @@
     <style>
         :root {
             --neon: #00ff41;
+            --neon-dim: rgba(0, 255, 65, 0.15);
             --danger: #ff003c;
             --bg: #000500;
             --accent: #00e5ff;
+            --neural-grid: rgba(0, 255, 65, 0.03);
         }
 
         body, html {
             margin: 0; padding: 0; background: var(--bg);
             color: var(--neon); font-family: 'Share Tech Mono', monospace;
-            height: 100vh; width: 100vw; overflow: hidden;
+            height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* Message Overlay HUD */
-        #msgHUD {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: rgba(0, 255, 65, 0.9); color: #000;
-            padding: 15px; font-family: 'Orbitron'; font-weight: bold;
-            z-index: 2000; display: none; transform: translateY(-100%);
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center; box-shadow: 0 5px 20px var(--neon);
+        /* 2045 Neural Background */
+        .background-fx {
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(var(--neural-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--neural-grid) 1px, transparent 1px);
+            background-size: 30px 30px;
+            perspective: 1000px; z-index: -1;
         }
-        #msgHUD.show { display: block; transform: translateY(0); }
+
+        .overlay {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.4) 100%),
+                        repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: 100;
+        }
+
+        .radar-sweep {
+            position: fixed; top: 50%; left: 50%; width: 200vmax; height: 200vmax;
+            background: conic-gradient(from 0deg, var(--neon-dim), transparent 60%);
+            transform: translate(-50%, -50%); animation: sweep 8s linear infinite;
+            z-index: 0; pointer-events: none; opacity: 0.5;
+        }
+        @keyframes sweep { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 
         .ui-wrapper {
             position: relative; z-index: 10; height: 100%;
             display: flex; flex-direction: column; padding: 15px; box-sizing: border-box;
         }
 
-        .status-panel {
-            background: rgba(0, 10, 0, 0.9); border: 1px solid var(--neon);
-            flex: 1; display: flex; flex-direction: column; padding: 15px;
-            backdrop-filter: blur(10px);
-            clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
+        header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            border-bottom: 1px solid var(--neon-dim); padding-bottom: 10px; margin-bottom: 20px;
         }
 
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .status-panel {
+            background: rgba(0, 10, 0, 0.85); border: 1px solid var(--neon);
+            flex: 1; display: flex; flex-direction: column; padding: 20px;
+            position: relative; backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
+            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
+        }
+
+        /* PERINTAH DARI PUSAT - NOTIF BOX */
+        #commandPopup {
+            position: fixed; top: 20px; left: 15px; right: 15px;
+            background: var(--danger); color: white; padding: 15px;
+            font-family: 'Orbitron'; z-index: 2000; border: 2px solid white;
+            box-shadow: 0 0 20px var(--danger); animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
+        .bio-scanner {
+            width: 100px; height: 100px; border: 1px solid var(--neon);
+            margin: 20px auto; position: relative; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pulse-ring {
+            position: absolute; border: 2px solid var(--neon); border-radius: 50%;
+            animation: pulse 2s ease-out infinite; opacity: 0;
+        }
+        @keyframes pulse {
+            0% { width: 0; height: 0; opacity: 1; }
+            100% { width: 120px; height: 120px; opacity: 0; }
+        }
+
+        .auth-input {
+            background: transparent; border: 1px solid var(--neon-dim);
+            color: var(--neon); font-family: 'Orbitron'; font-size: 18px;
+            text-align: center; width: 100%; padding: 12px; outline: none; margin-bottom: 20px;
+            box-shadow: inset 0 0 10px var(--neon-dim);
+        }
+
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .hud-item {
             background: rgba(0, 255, 65, 0.05); border-left: 2px solid var(--neon);
-            padding: 10px;
+            padding: 12px; position: relative; overflow: hidden;
         }
-        .hud-item label { font-size: 8px; color: var(--accent); display: block; }
-        .hud-item span { font-size: 18px; font-family: 'Orbitron'; color: white; }
+        .hud-item label { font-size: 8px; color: var(--accent); letter-spacing: 1px; }
+        .hud-item span { font-size: 16px; font-family: 'Orbitron'; color: white; display: block; margin-top: 4px; }
 
-        .btn-sos {
-            background: rgba(255, 0, 60, 0.2); border: 2px solid var(--danger);
-            color: var(--danger); font-family: 'Orbitron'; padding: 20px;
-            margin-top: auto; font-weight: bold; cursor: pointer;
-            animation: pulse-border 2s infinite;
+        .btn {
+            font-family: 'Orbitron'; font-weight: bold; padding: 15px;
+            text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
+            transition: 0.3s; background: transparent; color: var(--neon);
         }
+        .btn:active { background: var(--neon); color: black; }
+        .btn-primary { background: var(--neon-dim); }
+        .btn-sos { background: rgba(255, 0, 60, 0.2); border-color: var(--danger); color: var(--danger); margin-top: 10px; }
 
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 0, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0); }
+        .terminal-log {
+            font-size: 10px; color: var(--neon); opacity: 0.8;
+            height: 90px; overflow-y: auto; margin-top: 15px;
+            border: 1px solid var(--neon-dim); padding: 10px; background: rgba(0,0,0,0.5);
         }
 
         .hidden { display: none !important; }
@@ -68,42 +122,74 @@
 </head>
 <body>
 
-<div id="msgHUD">
-    <div style="font-size: 9px;">INCOMING DIRECTIVE</div>
-    <div id="msgContent">HOLD POSITION</div>
+<div class="background-fx"></div>
+<div class="overlay"></div>
+<div class="radar-sweep"></div>
+
+<div id="commandPopup" class="hidden">
+    <small style="font-size: 9px;">INCOMING DIRECTIVE:</small>
+    <div id="commandText" style="font-size: 16px; margin: 5px 0;">-- NONE --</div>
+    <button onclick="dismissCommand()" style="background:white; border:none; color:black; font-family:'Orbitron'; padding:4px 10px; font-size:10px; float:right;">ACKNOWLEDGE</button>
 </div>
 
 <div class="ui-wrapper">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="font-family: 'Orbitron'; font-size: 12px;">TACTICAL_EDGE <span id="callsignHeader"></span></div>
-        <div id="clock" style="font-size: 14px; color: var(--accent);">00:00</div>
+    <header>
+        <div>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 14px; letter-spacing: 2px;">TACTICAL EDGE <span style="color:white">V4.0</span></div>
+            <div style="font-size: 9px; opacity: 0.6;">A.I. NEURAL LINK ACTIVE</div>
+        </div>
+        <div style="text-align: right;">
+            <div id="clock" style="font-family: 'Orbitron';">00:00:00</div>
+            <div id="status-tag" style="font-size: 8px; color: var(--accent);">IDLE_STATE</div>
+        </div>
     </header>
 
     <div id="loginArea" class="status-panel">
-        <h2 style="text-align: center; font-family: 'Orbitron';">NEURAL AUTH</h2>
-        <input type="text" id="idInput" placeholder="CALLSIGN" style="background:transparent; border:1px solid var(--neon); color:white; padding:15px; text-align:center; font-family:'Orbitron'; font-size:20px; margin-bottom:15px;">
-        <button onclick="initiateLogin()" style="background:var(--neon); color:black; border:none; padding:15px; font-family:'Orbitron'; font-weight:bold;">ESTABLISH LINK</button>
+        <div class="bio-scanner">
+            <div class="pulse-ring"></div>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M12 2a5 5 0 0 0-5 5v2a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5zM5 20v-1a7 7 0 0 1 14 0v1" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 10px; letter-spacing: 4px;">SECURE ACCESS</div>
+            <div style="font-size: 8px; opacity: 0.5;">WAITING FOR NEURAL HANDSHAKE...</div>
+        </div>
+        <input type="text" id="idInput" class="auth-input" placeholder="INSERT CALLSIGN" maxlength="12">
+        <button class="btn btn-primary" onclick="initiateLogin()">SYNC NEURAL LINK</button>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 10px;">
+            <span id="callsignLabel" style="color: white; border: 1px solid var(--neon); padding: 2px 8px;">-</span>
+            <span style="color: var(--neon); border: 1px solid var(--neon-dim); padding: 2px 8px;">ENCRYPTED</span>
+        </div>
+
         <div class="hud-grid">
-            <div class="hud-item"><label>LATITUDE</label><span id="lat">0.0000</span></div>
-            <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.0000</span></div>
-            <div class="hud-item"><label>SPEED</label><span id="spd">0.0</span> <small>KM/H</small></div>
-            <div class="hud-item"><label>HEADING</label><span id="hdg">000°</span></div>
+            <div class="hud-item"><label>LATITUDE</label><span id="lat">00.00000</span></div>
+            <div class="hud-item"><label>LONGITUDE</label><span id="lon">00.00000</span></div>
+            <div class="hud-item"><label>VECTOR</label><span id="hdg">000°</span></div>
+            <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0</span></div>
+            <div class="hud-item" style="grid-column: span 2;">
+                <label>ALTITUDE & PRECISION</label>
+                <span id="alt" style="font-size: 12px;">ALT: 0m | ACC: 0m</span>
+            </div>
         </div>
 
-        <div id="logBox" style="flex:1; margin-top:15px; font-size:10px; border-top:1px solid var(--neon-dim); padding-top:10px; overflow-y:auto;">
-            > ENCRYPTED LINK SECURED...
-        </div>
+        <div class="terminal-log" id="logBox">> A.I. ONLINE...<br>> LISTENING FOR COMMANDS...</div>
 
-        <button class="btn-sos" onclick="sendSOS()">EMERGENCY SOS</button>
+        <button class="btn btn-sos" onclick="sendSOS()">EMERGENCY SOS</button>
+        <button class="btn" style="margin-top: 10px; font-size: 9px; border: none; opacity: 0.5;" onclick="terminate()">DISCONNECT LINK</button>
+    </div>
+
+    <div style="text-align: center; font-size: 7px; margin-top: 10px; letter-spacing: 3px; opacity: 0.6;">
+        COMMAND CENTER SYSTEM 859/RBK - TOKYO-PURA HUB
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, update, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -117,64 +203,103 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    let watchId = null;
     let myCallsign = "";
+    let lastCmdTime = 0;
+
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
 
     window.initiateLogin = () => {
-        myCallsign = document.getElementById('idInput').value.toUpperCase();
-        if(!myCallsign) return;
+        const val = document.getElementById('idInput').value.trim().toUpperCase();
+        if(!val) return;
+        myCallsign = val;
         
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('trackingArea').classList.remove('hidden');
-        document.getElementById('callsignHeader').innerText = `[${myCallsign}]`;
+        document.getElementById('callsignLabel').innerText = myCallsign;
+        document.getElementById('status-tag').innerText = "LINK_ESTABLISHED";
         
         startTracking();
-        listenForCommands();
+        listenForCommands(); // <--- FITUR YANG KEMBALI
     };
 
-    // LISTEN PESAN DARI DASHBOARD
+    // FITUR LISTENER COMMAND (BALIK LAGI)
     function listenForCommands() {
-        onValue(ref(db, "commands/global"), (snapshot) => {
+        const cmdRef = ref(db, "commands/global");
+        onValue(cmdRef, (snapshot) => {
             const data = snapshot.val();
-            if(data && (Date.now() - data.timestamp < 10000)) { // Hanya proses jika pesan baru (10 detik terakhir)
-                const hud = document.getElementById('msgHUD');
-                const content = document.getElementById('msgContent');
-                
-                content.innerText = data.text;
-                hud.classList.add('show');
-                
-                if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
-                
-                setTimeout(() => { hud.classList.remove('show'); }, 7000); // Hilang setelah 7 detik
+            if (data && data.timestamp > lastCmdTime) {
+                lastCmdTime = data.timestamp;
+                executeDirective(data.text);
             }
         });
     }
 
-    function startTracking() {
-        navigator.geolocation.watchPosition((p) => {
-            const { latitude, longitude, speed, heading } = p.coords;
-            
-            document.getElementById('lat').innerText = latitude.toFixed(4);
-            document.getElementById('lon').innerText = longitude.toFixed(4);
-            document.getElementById('spd').innerText = ((speed || 0) * 3.6).toFixed(1);
-            document.getElementById('hdg').innerText = (heading || 0).toFixed(0).padStart(3, '0') + "°";
+    function executeDirective(text) {
+        // Tampilkan Popup
+        const popup = document.getElementById('commandPopup');
+        document.getElementById('commandText').innerText = text;
+        popup.classList.remove('hidden');
 
-            set(ref(db, "live/" + myCallsign), {
-                latitude, longitude, speed: (speed || 0) * 3.6,
-                waktu: Date.now(), sos: false
-            });
-            
-            onDisconnect(ref(db, "live/" + myCallsign)).remove();
-        }, null, { enableHighAccuracy: true });
+        // Suara AI
+        const speech = new SpeechSynthesisUtterance("Attention. New directive from command center: " + text);
+        speech.lang = 'en-US';
+        speech.rate = 0.9;
+        window.speechSynthesis.speak(speech);
+
+        // Getar
+        if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        
+        addLog("DIRECTIVE RECEIVED: " + text);
+    }
+
+    window.dismissCommand = () => {
+        document.getElementById('commandPopup').classList.add('hidden');
+    };
+
+    function startTracking() {
+        if ("geolocation" in navigator) {
+            watchId = navigator.geolocation.watchPosition((p) => {
+                const { latitude, longitude, speed, accuracy, heading, altitude } = p.coords;
+                const kmh = ((speed || 0) * 3.6).toFixed(1);
+
+                document.getElementById('lat').innerText = latitude.toFixed(5);
+                document.getElementById('lon').innerText = longitude.toFixed(5);
+                document.getElementById('spd').innerText = kmh;
+                document.getElementById('hdg').innerText = (heading ? Math.round(heading) : 0).toString().padStart(3, '0') + "°";
+                document.getElementById('alt').innerText = `ALT: ${altitude ? Math.round(altitude) : 0}m | ACC: ${Math.round(accuracy)}m`;
+
+                set(ref(db, "live/" + myCallsign), {
+                    latitude, longitude, speed: kmh, accuracy: Math.round(accuracy),
+                    waktu: Date.now(), sos: false, heading: heading || 0, altitude: altitude || 0
+                });
+
+                onDisconnect(ref(db, "live/" + myCallsign)).remove();
+            }, (e) => addLog("SIGNAL_LOST: " + e.message), { enableHighAccuracy: true });
+        }
     }
 
     window.sendSOS = () => {
         update(ref(db, "live/" + myCallsign), { sos: true });
-        alert("SOS SENT TO COMMAND CENTER!");
+        addLog("!!! SOS BROADCAST ACTIVE !!!");
+        if(navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500]);
     };
 
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-    }, 1000);
+    window.terminate = () => {
+        if(confirm("TERMINATE NEURAL LINK?")) {
+            if(watchId) navigator.geolocation.clearWatch(watchId);
+            remove(ref(db, "live/" + myCallsign));
+            location.reload();
+        }
+    };
+
+    function addLog(msg) {
+        const box = document.getElementById('logBox');
+        box.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${msg}`;
+        box.scrollTop = box.scrollHeight;
+    }
 </script>
 </body>
 </html>
