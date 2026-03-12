@@ -20,11 +20,11 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- FIX LAYER LOGO --- */
+        /* --- LAYER 1: LOGO UTAMA (PALING BELAKANG DI ATAS BACKGROUND HITAM) --- */
         .wallpaper-engine {
             position: fixed;
             inset: 0;
-            z-index: 1; /* Di atas background hitam dasar */
+            z-index: 1; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -35,28 +35,30 @@
             width: 85vw;
             max-width: 450px;
             height: auto;
-            opacity: 0.35; /* Opacity ditingkatkan agar terlihat jelas */
-            filter: drop-shadow(0 0 15px var(--neon-dim)) saturate(1.2);
+            opacity: 0.5 !important; /* Menaikkan opacity agar terlihat jelas di screenshot */
+            filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.4));
             animation: corePulse 6s infinite ease-in-out;
         }
 
         @keyframes corePulse {
-            0%, 100% { transform: scale(1); opacity: 0.25; filter: blur(1px); }
-            50% { transform: scale(1.05); opacity: 0.45; filter: blur(0px); }
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.03); opacity: 0.6; }
         }
 
-        #bg-canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.5; }
+        /* --- LAYER 2: ANIMASI PARTIKEL --- */
+        #bg-canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.3; }
 
+        /* --- LAYER 3: SCANLINE (EFEK MONITOR) --- */
         .scanline {
             position: fixed; inset: 0;
             background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.03) 50%);
             background-size: 100% 4px; z-index: 100; pointer-events: none;
         }
 
-        /* --- UI WRAPPER DENGAN TRANSPARANSI --- */
+        /* --- LAYER 4: UI WRAPPER (ANTARMUKA PENGGUNA) --- */
         .ui-wrapper {
             position: relative; 
-            z-index: 10; /* Di atas logo */
+            z-index: 10; 
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
@@ -71,16 +73,19 @@
         }
 
         .status-panel {
-            /* Transparansi dikurangi (0.4) agar logo di belakang tembus terlihat */
-            background: rgba(0, 15, 0, 0.4); 
+            /* DIBUAT TRANSPARAN AGAR LOGO DI BELAKANG TERLIHAT JELAS */
+            background: rgba(0, 15, 0, 0.5) !important; 
             border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(3px);
+            position: relative; backdrop-filter: blur(2px);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
-        .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 20px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); }
+        .btn {
+            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
+            text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
+            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: all 0.3s;
+        }
 
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .hud-item {
@@ -90,17 +95,10 @@
         .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 5px; }
         .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; }
 
-        .btn {
-            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
-            text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: all 0.3s;
-        }
-        .btn:active { transform: scale(0.95); background: var(--neon-dim); }
-
         .terminal-log {
             font-size: 11px; color: var(--neon); height: 100px; overflow-y: auto;
             margin-top: 15px; border: 1px solid var(--neon-dim); padding: 12px;
-            background: rgba(0,0,0,0.6); scrollbar-width: none;
+            background: rgba(0,0,0,0.6);
         }
 
         .hidden { display: none !important; }
@@ -117,7 +115,11 @@
 <body>
 
 <div class="wallpaper-engine">
-    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-main" alt="RBK LOGO">
+    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" 
+         class="logo-main" 
+         alt="RBK LOGO"
+         onload="console.log('Logo Loaded Successfully')"
+         onerror="this.src='https://via.placeholder.com/450?text=LOGO+ERROR'">
 </div>
 
 <canvas id="bg-canvas"></canvas>
@@ -147,14 +149,6 @@
         <button class="btn" style="border-width: 2px; font-size: 16px;" onclick="initiateLogin()">ESTABLISH LINK</button>
     </div>
 
-    <div id="loadingArea" class="status-panel hidden">
-        <div style="text-align: center; margin-top: 40px;">
-            <div id="loadMsg" style="font-size: 18px; letter-spacing: 6px; color: white; font-family: 'Orbitron';">SYNCING...</div>
-            <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-            <div class="terminal-log" id="miniLog" style="text-align: left; height: 160px; font-size: 9px; opacity: 0.8;"></div>
-        </div>
-    </div>
-
     <div id="trackingArea" class="status-panel hidden">
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
             <span id="callsignLabel" style="color: #000; border: 1px solid var(--neon); padding: 5px 15px; background: var(--neon); font-weight: bold; font-family: 'Orbitron'; font-size: 12px;">---</span>
@@ -175,7 +169,7 @@
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
             <button class="btn" style="background:rgba(255,0,0,0.1); color:#ff003c; border-color:#ff003c;">MAYDAY</button>
-            <button class="btn" style="font-size: 11px; border-color: rgba(255,255,255,0.3); color: white;" onclick="initiateTerminate()">EXIT LINK</button>
+            <button class="btn" style="font-size: 11px; border-color: rgba(255,255,255,0.3); color: white;" onclick="location.reload()">EXIT LINK</button>
         </div>
     </div>
 </div>
@@ -204,31 +198,10 @@
         myCallsign = document.getElementById('idInput').value.trim().toUpperCase();
         if(!myCallsign) return alert("REQUIRED: CALLSIGN");
         document.getElementById('loginArea').classList.add('hidden');
-        document.getElementById('loadingArea').classList.remove('hidden');
-        runSequence(["BOOTING NEURAL KERNEL...", "SYNCHRONIZING GEODATA...", "ACCESS GRANTED."], 40, () => {
-            document.getElementById('loadingArea').classList.add('hidden');
-            document.getElementById('trackingArea').classList.remove('hidden');
-            document.getElementById('callsignLabel').innerText = myCallsign;
-            startTracking();
-        });
+        document.getElementById('trackingArea').classList.remove('hidden');
+        document.getElementById('callsignLabel').innerText = myCallsign;
+        startTracking();
     };
-
-    window.initiateTerminate = () => {
-        if(!confirm("TERMINATE CONNECTION?")) return;
-        document.getElementById('trackingArea').classList.add('hidden');
-        document.getElementById('loadingArea').classList.remove('hidden');
-        document.getElementById('loadMsg').innerText = "TERMINATING...";
-        runSequence(["DE-ENCRYPTING...", "LINK SEVERED."], 80, () => location.reload());
-    };
-
-    function runSequence(msgs, speed, cb) {
-        let p = 0;
-        let bar = document.getElementById('progressFill');
-        let timer = setInterval(() => {
-            p++; bar.style.width = p + "%";
-            if(p >= 100) { clearInterval(timer); setTimeout(cb, 500); }
-        }, speed);
-    }
 
     function startTracking() {
         if ("geolocation" in navigator) {
@@ -237,11 +210,10 @@
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
                 update(ref(db, "live/" + myCallsign), { lat: latitude, lon: longitude, waktu: Date.now() });
-            });
+            }, (e) => console.log(e), {enableHighAccuracy: true});
         }
     }
 
-    // Animasi partikel latar belakang
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
