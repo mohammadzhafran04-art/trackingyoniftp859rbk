@@ -12,7 +12,6 @@
             --danger: #ff003c;
             --bg: #000500;
             --accent: #00e5ff;
-            --neural-grid: rgba(0, 255, 65, 0.05);
         }
 
         body, html {
@@ -21,10 +20,22 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- ADVANCED MOVING WALLPAPER ENGINE --- */
+        /* --- NEW WALLPAPER ENGINE WITH LOGO CORE --- */
         #bg-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-            background: radial-gradient(circle at center, #001a05 0%, #000000 100%);
+        }
+
+        .logo-overlay {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80vw; max-width: 400px; opacity: 0.15; z-index: -1;
+            filter: grayscale(1) brightness(1.5) sepia(1) hue-rotate(80deg) saturate(5);
+            animation: corePulse 4s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes corePulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
+            50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.25; }
         }
 
         .scanline {
@@ -39,14 +50,6 @@
             z-index: -1; pointer-events: none;
         }
 
-        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
-        .scanner-bar {
-            position: fixed; width: 100%; height: 10px;
-            background: linear-gradient(to bottom, transparent, var(--neon), transparent);
-            z-index: 5; animation: scan 4s linear infinite; opacity: 0.1;
-        }
-
-        /* UI DECORATION */
         .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
         .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
         .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
@@ -68,38 +71,29 @@
         }
 
         .status-panel {
-            background: rgba(0, 10, 0, 0.7); border: 1px solid var(--neon-dim);
+            background: rgba(0, 10, 0, 0.75); border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
             position: relative; backdrop-filter: blur(15px);
-            box-shadow: inset 0 0 50px rgba(0, 255, 65, 0.1);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
         .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 20px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); }
+        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); transition: width 0.1s; }
 
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .hud-item {
             background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.2);
             border-left: 4px solid var(--neon); padding: 12px;
-            transition: all 0.3s;
         }
-        .hud-item:hover { background: rgba(0, 255, 65, 0.15); border-color: var(--neon); }
-        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 5px; letter-spacing: 1px; }
-        .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; text-shadow: 0 0 5px var(--neon); }
+        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 5px; }
+        .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; }
 
         .btn {
             font-family: 'Orbitron'; font-weight: bold; padding: 18px;
             text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
             background: rgba(0, 255, 65, 0.05); color: var(--neon);
-            transition: all 0.3s; position: relative; overflow: hidden;
+            transition: all 0.3s;
         }
-        .btn::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            transform: rotate(45deg); transition: 0.5s;
-        }
-        .btn:hover::after { left: 120%; }
         .btn:active { transform: scale(0.95); background: var(--neon-dim); }
         .btn-sos { background: rgba(255, 0, 60, 0.1); border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; }
 
@@ -113,7 +107,6 @@
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 85%; background: #400; color: white; padding: 25px;
             font-family: 'Orbitron'; z-index: 2000; border: 3px solid white;
-            box-shadow: 0 0 150px rgba(255,0,0,1);
         }
 
         .hidden { display: none !important; }
@@ -122,9 +115,10 @@
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-overlay" id="coreLogo">
+
 <div class="scanline"></div>
 <div class="overlay-vignette"></div>
-<div class="scanner-bar"></div>
 
 <div class="corner top-l"></div><div class="corner top-r"></div>
 <div class="corner bot-l"></div><div class="corner bot-r"></div>
@@ -188,80 +182,40 @@
 </div>
 
 <div id="commandPopup" class="hidden">
-    <div style="font-size: 11px; border-bottom: 1px solid white; padding-bottom: 8px; margin-bottom: 15px; letter-spacing: 2px;">CRITICAL COMMAND INCOMING</div>
     <div id="commandText" style="font-size: 22px; text-align: center; margin: 25px 0; font-weight: bold;">-- NONE --</div>
-    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:15px; font-weight: bold; cursor: pointer;">ACKNOWLEDGE</button>
+    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:15px; font-weight: bold;">ACKNOWLEDGE</button>
 </div>
 
 <script>
-    // --- NEON PULSE NEBULA ENGINE (HD MOVING WALLPAPER) ---
+    // --- WALLPAPER NEBULA ENGINE ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
-
-    function initCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-
+    function initCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     class Particle {
-        constructor() {
-            this.reset();
-        }
+        constructor() { this.reset(); }
         reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 2 + 1;
-            this.speedX = (Math.random() - 0.5) * 0.8;
-            this.speedY = (Math.random() - 0.5) * 0.8;
-            this.life = Math.random() * 0.5 + 0.2;
+            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1; this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5; this.life = Math.random() * 0.5 + 0.1;
         }
         update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
+            this.x += this.speedX; this.y += this.speedY;
             if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
         }
         draw() {
             ctx.fillStyle = `rgba(0, 255, 65, ${this.life})`;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#00ff41';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
         }
     }
-
-    for (let i = 0; i < 60; i++) particles.push(new Particle());
-
-    function connect() {
-        for (let a = 0; a < particles.length; a++) {
-            for (let b = a; b < particles.length; b++) {
-                let dx = particles[a].x - particles[b].x;
-                let dy = particles[a].y - particles[b].y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 150) {
-                    ctx.strokeStyle = `rgba(0, 255, 65, ${0.1 - dist/1500})`;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[a].x, particles[a].y);
-                    ctx.lineTo(particles[b].x, particles[b].y);
-                    ctx.stroke();
-                }
-            }
-        }
-    }
-
+    for (let i = 0; i < 40; i++) particles.push(new Particle());
     function animateWallpaper() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
-        connect();
         requestAnimationFrame(animateWallpaper);
     }
-
     window.addEventListener('resize', initCanvas);
-    initCanvas();
-    animateWallpaper();
+    initCanvas(); animateWallpaper();
 </script>
 
 <script type="module">
@@ -279,11 +233,7 @@
     };
 
     let app, db, watchId = null, myCallsign = "", lastCmdTime = 0, wakeLock = null;
-
-    try {
-        app = initializeApp(firebaseConfig);
-        db = getDatabase(app);
-    } catch (e) { console.error(e); }
+    try { app = initializeApp(firebaseConfig); db = getDatabase(app); } catch (e) { console.error(e); }
 
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
@@ -291,49 +241,67 @@
     }, 1000);
 
     async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-                document.getElementById('wklStatus').innerText = "WAKE: ACTIVE";
-                document.getElementById('wklStatus').style.color = "var(--neon)";
-                addLog("SYSTEM: WAKE_LOCK_ENGAGED");
-            }
-        } catch (err) { }
+        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); document.getElementById('wklStatus').innerText = "WAKE: ACTIVE"; } } catch (err) { }
     }
 
+    // --- NEW: LOGIN SEQUENCE ---
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) return alert("REQUIRED: CALLSIGN");
         myCallsign = val;
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
+        document.getElementById('loadMsg').innerText = "ESTABLISHING LINK...";
         
         startSequence([
-            "LOADING NEURAL KERNEL...",
-            "PINGING ASIA-SOUTHEAST GATEWAY...",
-            "ENCRYPTING GEOLOCATION STREAM...",
-            "CONSCIOUSNESS LINK ESTABLISHED."
-        ], showDashboard);
+            "OPENING NEURAL CHANNEL...",
+            "AUTHENTICATING BIOMETRICS...",
+            "UPLOADING TACTICAL DATA...",
+            "LINK STABLE. WELCOME, PILOT."
+        ], 50, showDashboard);
     };
 
-    function startSequence(messages, callback) {
+    // --- NEW: EXIT SEQUENCE (LOGOUT 3-5 DETIK) ---
+    window.initiateTerminate = () => {
+        if(!confirm("CONFIRM NEURAL DISCONNECT?")) return;
+        
+        // Sembunyikan tracking, tampilkan loading
+        document.getElementById('trackingArea').classList.add('hidden');
+        document.getElementById('loadingArea').classList.remove('hidden');
+        document.getElementById('loadMsg').innerText = "TERMINATING LINK...";
+        document.getElementById('miniLog').innerHTML = ""; // Reset log
+
+        startSequence([
+            "STOPPING GEOLOCATION STREAM...",
+            "WIPING CACHE DATA...",
+            "RELEASING WAKE_LOCK...",
+            "DISCONNECTING FROM FIREBASE...",
+            "NEURAL LINK SEVERED. GOODBYE."
+        ], 70, () => {
+            if(wakeLock) wakeLock.release();
+            location.reload(); 
+        });
+    };
+
+    function startSequence(messages, speed, callback) {
         let progress = 0;
         const bar = document.getElementById('progressFill');
         const miniLog = document.getElementById('miniLog');
         const loader = setInterval(() => {
-            progress += 2;
+            progress += 1;
             bar.style.width = progress + "%";
+            
             let idx = Math.floor((progress/100) * messages.length);
             if(messages[idx] && !miniLog.innerHTML.includes(messages[idx])) {
                 miniLog.innerHTML += `<div>> ${messages[idx]}</div>`;
                 miniLog.scrollTop = miniLog.scrollHeight;
             }
+            
             if(progress >= 100) { 
                 clearInterval(loader); 
-                requestWakeLock();
-                setTimeout(callback, 500); 
+                setTimeout(callback, 600); 
             }
-        }, 50);
+        }, speed);
     }
 
     function showDashboard() {
@@ -342,6 +310,7 @@
         document.getElementById('callsignLabel').innerText = myCallsign;
         startTracking();
         listenForCommands();
+        requestWakeLock();
     }
 
     function startTracking() {
@@ -352,15 +321,12 @@
                 document.getElementById('lon').innerText = longitude.toFixed(6);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
                 document.getElementById('alt').innerText = `ALT: ${altitude ? Math.round(altitude) : 0}M | ACC: ${Math.round(accuracy)}M`;
-                
                 if(db) {
                     const userRef = ref(db, "live/" + myCallsign);
                     update(userRef, { lat: latitude, lon: longitude, speed: (speed||0), accuracy: Math.round(accuracy), waktu: Date.now(), sos: false });
                     onDisconnect(userRef).update({ waktu: Date.now() - 60000 });
                 }
-            }, (err) => {
-                addLog("ERROR: " + err.message);
-            }, { enableHighAccuracy: true });
+            }, (err) => { addLog("ERROR: " + err.message); }, { enableHighAccuracy: true });
         }
     }
 
@@ -383,7 +349,6 @@
         addLog("CRITICAL: SOS_SENT");
         if(navigator.vibrate) navigator.vibrate([1000, 200, 1000]);
     };
-    window.initiateTerminate = () => { if(confirm("DISCONNECT LINK?")) location.reload(); };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
