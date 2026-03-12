@@ -10,7 +10,7 @@
             --neon: #00ff41;
             --neon-dim: rgba(0, 255, 65, 0.15);
             --danger: #ff003c;
-            --bg: #000800; /* Hitam pekat militer */
+            --bg: #000800; 
             --accent: #00e5ff;
         }
 
@@ -20,40 +20,37 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- LOGO WALLPAPER SYSTEM (FIXED LAYER) --- */
+        /* --- FIX LOGO LAYER --- */
         .wallpaper-engine {
             position: fixed;
-            inset: 0;
-            z-index: 0; /* Di atas background hitam */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Di atas background hitam, di bawah UI */
             display: flex;
             justify-content: center;
             align-items: center;
             pointer-events: none;
+            width: 100%;
         }
 
         .logo-main {
-            width: 85vw;
-            max-width: 450px;
+            width: 80vw;
+            max-width: 400px;
             height: auto;
-            opacity: 0.25; /* Transparansi logo */
-            filter: drop-shadow(0 0 15px var(--neon-dim)) saturate(1.3);
+            opacity: 0.3; /* Nilai transparansi */
+            filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.2));
             animation: corePulse 6s infinite ease-in-out;
         }
 
         @keyframes corePulse {
-            0%, 100% { transform: scale(1); opacity: 0.2; filter: blur(1px); }
-            50% { transform: scale(1.05); opacity: 0.35; filter: blur(0px); }
+            0%, 100% { transform: scale(1); opacity: 0.2; }
+            50% { transform: scale(1.08); opacity: 0.4; }
         }
 
-        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.5; }
+        #bg-canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.4; }
+        .scanline { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.03) 50%); background-size: 100% 4px; z-index: 100; pointer-events: none; }
 
-        .scanline {
-            position: fixed; inset: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.03) 50%);
-            background-size: 100% 4px; z-index: 100; pointer-events: none;
-        }
-
-        /* UI WRAPPER HARUS DI ATAS SEMUA (z-index: 10) */
         .ui-wrapper {
             position: relative; 
             z-index: 10; 
@@ -71,42 +68,36 @@
         }
 
         .status-panel {
-            background: rgba(0, 15, 0, 0.7); /* Transparan dikit biar logo tembus */
+            background: rgba(0, 10, 0, 0.6); /* Lebih transparan agar logo terlihat */
             border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(4px);
+            position: relative; backdrop-filter: blur(2px);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
-        .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 20px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); }
+        .btn {
+            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
+            text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
+            background: rgba(0, 255, 65, 0.05); color: var(--neon); transition: all 0.3s;
+            outline: none;
+        }
+        
+        .btn:focus { border-style: solid; box-shadow: 0 0 15px var(--neon-dim); }
 
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .hud-item {
             background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.2);
             border-left: 4px solid var(--neon); padding: 12px;
         }
-        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 5px; }
-        .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; }
+        
+        .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); }
 
-        .btn {
-            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
-            text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: all 0.3s;
-        }
-        .btn:active { transform: scale(0.95); background: var(--neon-dim); }
-
-        .terminal-log {
-            font-size: 11px; color: var(--neon); height: 100px; overflow-y: auto;
-            margin-top: 15px; border: 1px solid var(--neon-dim); padding: 12px;
-            background: rgba(0,0,0,0.5); scrollbar-width: none;
-        }
-
+        .terminal-log { font-size: 11px; color: var(--neon); height: 100px; overflow-y: auto; margin-top: 15px; border: 1px solid var(--neon-dim); padding: 12px; background: rgba(0,0,0,0.5); }
         .hidden { display: none !important; }
         .sync-pulse { animation: pulse 2s infinite; color: var(--accent); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         
-        /* Corner Accents */
         .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
         .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
         .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
@@ -117,7 +108,10 @@
 <body>
 
 <div class="wallpaper-engine">
-    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-main" alt="RBK LOGO">
+    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" 
+         class="logo-main" 
+         alt="UNIT_LOGO"
+         onerror="this.src='https://via.placeholder.com/400?text=LOGO+NOT+FOUND'">
 </div>
 
 <canvas id="bg-canvas"></canvas>
@@ -165,10 +159,10 @@
         </div>
         
         <div class="hud-grid">
-            <div class="hud-item"><label>LATITUDE</label><span id="lat">0.00000</span></div>
-            <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.00000</span></div>
-            <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>SIGNAL</label><span id="coreStatus" style="color: var(--neon);">EXCELLENT</span></div>
+            <div class="hud-item"><label style="font-size:8px; color:var(--accent)">LATITUDE</label><br><span id="lat" style="font-family:'Orbitron'; color:white">0.00000</span></div>
+            <div class="hud-item"><label style="font-size:8px; color:var(--accent)">LONGITUDE</label><br><span id="lon" style="font-family:'Orbitron'; color:white">0.00000</span></div>
+            <div class="hud-item"><label style="font-size:8px; color:var(--accent)">VELOCITY</label><br><span id="spd" style="font-family:'Orbitron'; color:white">0.0 KM/H</span></div>
+            <div class="hud-item"><label style="font-size:8px; color:var(--accent)">SIGNAL</label><br><span id="coreStatus" style="font-family:'Orbitron'; color: var(--neon);">EXCELLENT</span></div>
         </div>
 
         <div class="terminal-log" id="logBox">> SYSTEM_READY...</div>
@@ -191,10 +185,11 @@
         projectId: "real-time-location-30d91"
     };
 
-    let app = initializeApp(firebaseConfig);
-    let db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
     let myCallsign = "";
 
+    // Clock & HR Simulation
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
         if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (85 - 65) + 65);
@@ -203,9 +198,20 @@
     window.initiateLogin = () => {
         myCallsign = document.getElementById('idInput').value.trim().toUpperCase();
         if(!myCallsign) return alert("REQUIRED: CALLSIGN");
+        
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
-        runSequence(["BOOTING NEURAL KERNEL...", "SYNCHRONIZING GEODATA...", "ACCESS GRANTED."], 40, () => {
+        
+        let logs = ["INITIALIZING QUANTUM TUNNEL...", "CONNECTING TO SAT-NODE...", "ENCRYPTING BIOMETRIC DATA...", "LINK ESTABLISHED."];
+        let logIdx = 0;
+        let logInterval = setInterval(() => {
+            if(logIdx < logs.length) {
+                document.getElementById('miniLog').innerHTML += `> ${logs[logIdx]}<br>`;
+                logIdx++;
+            } else { clearInterval(logInterval); }
+        }, 800);
+
+        runSequence(30, () => {
             document.getElementById('loadingArea').classList.add('hidden');
             document.getElementById('trackingArea').classList.remove('hidden');
             document.getElementById('callsignLabel').innerText = myCallsign;
@@ -215,13 +221,10 @@
 
     window.initiateTerminate = () => {
         if(!confirm("TERMINATE CONNECTION?")) return;
-        document.getElementById('trackingArea').classList.add('hidden');
-        document.getElementById('loadingArea').classList.remove('hidden');
-        document.getElementById('loadMsg').innerText = "TERMINATING...";
-        runSequence(["DE-ENCRYPTING...", "LINK SEVERED."], 80, () => location.reload());
+        location.reload();
     };
 
-    function runSequence(msgs, speed, cb) {
+    function runSequence(speed, cb) {
         let p = 0;
         let bar = document.getElementById('progressFill');
         let timer = setInterval(() => {
@@ -233,26 +236,42 @@
     function startTracking() {
         if ("geolocation" in navigator) {
             navigator.geolocation.watchPosition((p) => {
-                const { latitude, longitude } = p.coords;
+                const { latitude, longitude, speed } = p.coords;
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
-                update(ref(db, "live/" + myCallsign), { lat: latitude, lon: longitude, waktu: Date.now() });
-            });
+                document.getElementById('spd').innerText = (speed ? (speed * 3.6).toFixed(1) : "0.0") + " KM/H";
+                
+                update(ref(db, "live/" + myCallsign), { 
+                    lat: latitude, 
+                    lon: longitude, 
+                    waktu: Date.now(),
+                    status: "ACTIVE"
+                });
+                
+                document.getElementById('logBox').innerHTML += `<br>> UPLINK_SUCCESS: [${latitude.toFixed(4)}, ${longitude.toFixed(4)}]`;
+                document.getElementById('logBox').scrollTop = document.getElementById('logBox').scrollHeight;
+            }, (err) => {
+                console.error(err);
+                alert("GPS ACCESS DENIED");
+            }, { enableHighAccuracy: true });
         }
     }
 
+    // Background Particles
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    let particles = Array.from({length: 25}, () => ({
+    let particles = Array.from({length: 30}, () => ({
         x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-        s: Math.random() * 2, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3
+        s: Math.random() * 2, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5
     }));
     function draw() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "rgba(0,255,65,0.3)";
+        ctx.fillStyle = "rgba(0,255,65,0.4)";
         particles.forEach(p => {
             p.x += p.vx; p.y += p.vy;
+            if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
             ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
         });
         requestAnimationFrame(draw);
