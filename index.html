@@ -20,22 +20,28 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- NEW WALLPAPER ENGINE WITH LOGO CORE --- */
+        /* --- LOGO WALLPAPER ENGINE (FIXED) --- */
         #bg-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
         }
 
-        .logo-overlay {
+        /* Container logo agar presisi di tengah */
+        .logo-container {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80vw; max-width: 400px; opacity: 0.15; z-index: -1;
-            filter: grayscale(1) brightness(1.5) sepia(1) hue-rotate(80deg) saturate(5);
-            animation: corePulse 4s infinite ease-in-out;
-            pointer-events: none;
+            width: 85vw; max-width: 450px; z-index: -1;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .logo-main {
+            width: 100%; height: auto;
+            opacity: 0.2; /* Tingkat transparansi logo di background */
+            filter: drop-shadow(0 0 20px var(--neon-dim)) saturate(1.2);
+            animation: corePulse 5s infinite ease-in-out;
         }
 
         @keyframes corePulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
-            50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.25; }
+            0%, 100% { transform: scale(1); opacity: 0.15; filter: blur(1px); }
+            50% { transform: scale(1.08); opacity: 0.3; filter: blur(0px); }
         }
 
         .scanline {
@@ -46,18 +52,16 @@
 
         .overlay-vignette {
             position: fixed; inset: 0;
-            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
             z-index: -1; pointer-events: none;
         }
 
+        /* UI ELEMENTS */
         .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
         .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
         .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
         .bot-l { bottom: 15px; left: 15px; border-right: none; border-top: none; }
         .bot-r { bottom: 15px; right: 15px; border-left: none; border-top: none; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        .sync-pulse { animation: pulse 2s infinite; color: var(--accent); }
 
         .ui-wrapper {
             position: relative; z-index: 10; height: 100%;
@@ -71,14 +75,14 @@
         }
 
         .status-panel {
-            background: rgba(0, 10, 0, 0.75); border: 1px solid var(--neon-dim);
+            background: rgba(0, 10, 0, 0.8); border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(15px);
+            position: relative; backdrop-filter: blur(8px);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
         .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 20px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); transition: width 0.1s; }
+        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); }
 
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .hud-item {
@@ -91,11 +95,9 @@
         .btn {
             font-family: 'Orbitron'; font-weight: bold; padding: 18px;
             text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.05); color: var(--neon);
-            transition: all 0.3s;
+            background: rgba(0, 255, 65, 0.05); color: var(--neon); transition: all 0.3s;
         }
         .btn:active { transform: scale(0.95); background: var(--neon-dim); }
-        .btn-sos { background: rgba(255, 0, 60, 0.1); border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; }
 
         .terminal-log {
             font-size: 11px; color: var(--neon); height: 120px; overflow-y: auto;
@@ -103,19 +105,18 @@
             background: rgba(0,0,0,0.6); scrollbar-width: none;
         }
 
-        #commandPopup {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; background: #400; color: white; padding: 25px;
-            font-family: 'Orbitron'; z-index: 2000; border: 3px solid white;
-        }
-
         .hidden { display: none !important; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .sync-pulse { animation: pulse 2s infinite; color: var(--accent); }
     </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
-<img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-overlay" id="coreLogo">
+
+<div class="logo-container">
+    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-main" onerror="this.src='https://i.ibb.co/Xf8R3mN/IMG-2984-1.jpg'">
+</div>
 
 <div class="scanline"></div>
 <div class="overlay-vignette"></div>
@@ -166,195 +167,124 @@
             <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.00000</span></div>
             <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
             <div class="hud-item"><label>SIGNAL</label><span id="coreStatus" style="color: var(--neon);">EXCELLENT</span></div>
-            <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
-                <label>ENVIRONMENTAL TELEMETRY</label>
-                <span id="alt" style="font-size: 12px;">ALT: 0M | ACCURACY: --</span>
-            </div>
         </div>
 
         <div class="terminal-log" id="logBox">> SYSTEM_READY...</div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-            <button class="btn btn-sos" onclick="sendSOS()">MAYDAY / SOS</button>
+            <button class="btn" style="background:rgba(255,0,0,0.1); color:#ff003c; border-color:#ff003c;" onclick="sendSOS()">MAYDAY</button>
             <button class="btn" style="font-size: 11px; border-color: rgba(255,255,255,0.3); color: white;" onclick="initiateTerminate()">EXIT LINK</button>
         </div>
     </div>
 </div>
 
-<div id="commandPopup" class="hidden">
-    <div id="commandText" style="font-size: 22px; text-align: center; margin: 25px 0; font-weight: bold;">-- NONE --</div>
-    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:15px; font-weight: bold;">ACKNOWLEDGE</button>
-</div>
-
-<script>
-    // --- WALLPAPER NEBULA ENGINE ---
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    function initCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    class Particle {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 2 + 1; this.speedX = (Math.random() - 0.5) * 0.5;
-            this.speedY = (Math.random() - 0.5) * 0.5; this.life = Math.random() * 0.5 + 0.1;
-        }
-        update() {
-            this.x += this.speedX; this.y += this.speedY;
-            if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
-        }
-        draw() {
-            ctx.fillStyle = `rgba(0, 255, 65, ${this.life})`;
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    for (let i = 0; i < 40; i++) particles.push(new Particle());
-    function animateWallpaper() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animateWallpaper);
-    }
-    window.addEventListener('resize', initCanvas);
-    initCanvas(); animateWallpaper();
-</script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
         authDomain: "real-time-location-30d91.firebaseapp.com",
         databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "real-time-location-30d91",
-        storageBucket: "real-time-location-30d91.firebasestorage.app",
-        messagingSenderId: "1092565406651",
-        appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+        projectId: "real-time-location-30d91"
     };
 
-    let app, db, watchId = null, myCallsign = "", lastCmdTime = 0, wakeLock = null;
-    try { app = initializeApp(firebaseConfig); db = getDatabase(app); } catch (e) { console.error(e); }
+    let app = initializeApp(firebaseConfig);
+    let db = getDatabase(app);
+    let myCallsign = "";
+    let wakeLock = null;
 
+    // Clock & Heart Rate
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
         if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (85 - 65) + 65);
     }, 1000);
 
-    async function requestWakeLock() {
-        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); document.getElementById('wklStatus').innerText = "WAKE: ACTIVE"; } } catch (err) { }
-    }
-
-    // --- NEW: LOGIN SEQUENCE ---
+    // LOGIN SEQUENCE
     window.initiateLogin = () => {
-        const val = document.getElementById('idInput').value.trim().toUpperCase();
-        if(!val) return alert("REQUIRED: CALLSIGN");
-        myCallsign = val;
+        myCallsign = document.getElementById('idInput').value.trim().toUpperCase();
+        if(!myCallsign) return alert("REQUIRED: CALLSIGN");
+        
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
-        document.getElementById('loadMsg').innerText = "ESTABLISHING LINK...";
         
-        startSequence([
-            "OPENING NEURAL CHANNEL...",
-            "AUTHENTICATING BIOMETRICS...",
-            "UPLOADING TACTICAL DATA...",
-            "LINK STABLE. WELCOME, PILOT."
-        ], 50, showDashboard);
-    };
-
-    // --- NEW: EXIT SEQUENCE (LOGOUT 3-5 DETIK) ---
-    window.initiateTerminate = () => {
-        if(!confirm("CONFIRM NEURAL DISCONNECT?")) return;
-        
-        // Sembunyikan tracking, tampilkan loading
-        document.getElementById('trackingArea').classList.add('hidden');
-        document.getElementById('loadingArea').classList.remove('hidden');
-        document.getElementById('loadMsg').innerText = "TERMINATING LINK...";
-        document.getElementById('miniLog').innerHTML = ""; // Reset log
-
-        startSequence([
-            "STOPPING GEOLOCATION STREAM...",
-            "WIPING CACHE DATA...",
-            "RELEASING WAKE_LOCK...",
-            "DISCONNECTING FROM FIREBASE...",
-            "NEURAL LINK SEVERED. GOODBYE."
-        ], 70, () => {
-            if(wakeLock) wakeLock.release();
-            location.reload(); 
+        runSequence([
+            "BOOTING NEURAL KERNEL...",
+            "LINKING TO YONIF 859 NETWORK...",
+            "SYNCHRONIZING GEODATA...",
+            "ACCESS GRANTED."
+        ], 40, () => {
+            document.getElementById('loadingArea').classList.add('hidden');
+            document.getElementById('trackingArea').classList.remove('hidden');
+            document.getElementById('callsignLabel').innerText = myCallsign;
+            startTracking();
         });
     };
 
-    function startSequence(messages, speed, callback) {
-        let progress = 0;
-        const bar = document.getElementById('progressFill');
-        const miniLog = document.getElementById('miniLog');
-        const loader = setInterval(() => {
-            progress += 1;
-            bar.style.width = progress + "%";
-            
-            let idx = Math.floor((progress/100) * messages.length);
-            if(messages[idx] && !miniLog.innerHTML.includes(messages[idx])) {
-                miniLog.innerHTML += `<div>> ${messages[idx]}</div>`;
-                miniLog.scrollTop = miniLog.scrollHeight;
-            }
-            
-            if(progress >= 100) { 
-                clearInterval(loader); 
-                setTimeout(callback, 600); 
-            }
-        }, speed);
-    }
+    // EXIT SEQUENCE (MODIFIED: 3-5 SECONDS)
+    window.initiateTerminate = () => {
+        if(!confirm("TERMINATE CONNECTION?")) return;
+        
+        document.getElementById('trackingArea').classList.add('hidden');
+        document.getElementById('loadingArea').classList.remove('hidden');
+        document.getElementById('loadMsg').innerText = "TERMINATING LINK...";
+        document.getElementById('miniLog').innerHTML = "";
 
-    function showDashboard() {
-        document.getElementById('loadingArea').classList.add('hidden');
-        document.getElementById('trackingArea').classList.remove('hidden');
-        document.getElementById('callsignLabel').innerText = myCallsign;
-        startTracking();
-        listenForCommands();
-        requestWakeLock();
+        runSequence([
+            "DE-ENCRYPTING DATA...",
+            "RELEASING NEURAL BINDING...",
+            "CLOSING FIREBASE PORT...",
+            "LINK SEVERED."
+        ], 80, () => location.reload());
+    };
+
+    function runSequence(msgs, speed, cb) {
+        let p = 0;
+        let bar = document.getElementById('progressFill');
+        let log = document.getElementById('miniLog');
+        let timer = setInterval(() => {
+            p++;
+            bar.style.width = p + "%";
+            let idx = Math.floor((p/100) * msgs.length);
+            if(msgs[idx] && !log.innerHTML.includes(msgs[idx])) {
+                log.innerHTML += `<div>> ${msgs[idx]}</div>`;
+                log.scrollTop = log.scrollHeight;
+            }
+            if(p >= 100) { clearInterval(timer); setTimeout(cb, 500); }
+        }, speed);
     }
 
     function startTracking() {
         if ("geolocation" in navigator) {
-            watchId = navigator.geolocation.watchPosition((p) => {
-                const { latitude, longitude, speed, accuracy, altitude } = p.coords;
+            navigator.geolocation.watchPosition((p) => {
+                const { latitude, longitude } = p.coords;
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
-                document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
-                document.getElementById('alt').innerText = `ALT: ${altitude ? Math.round(altitude) : 0}M | ACC: ${Math.round(accuracy)}M`;
-                if(db) {
-                    const userRef = ref(db, "live/" + myCallsign);
-                    update(userRef, { lat: latitude, lon: longitude, speed: (speed||0), accuracy: Math.round(accuracy), waktu: Date.now(), sos: false });
-                    onDisconnect(userRef).update({ waktu: Date.now() - 60000 });
-                }
-            }, (err) => { addLog("ERROR: " + err.message); }, { enableHighAccuracy: true });
+                update(ref(db, "live/" + myCallsign), { lat: latitude, lon: longitude, waktu: Date.now() });
+            });
         }
     }
 
-    function listenForCommands() {
-        if(!db) return;
-        onValue(ref(db, "commands/global"), (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.timestamp > lastCmdTime) {
-                lastCmdTime = data.timestamp;
-                document.getElementById('commandText').innerText = data.text;
-                document.getElementById('commandPopup').classList.remove('hidden');
-                if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
-            }
+    // Background Canvas Particles
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    let particles = Array.from({length: 30}, () => ({
+        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        s: Math.random() * 2, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5
+    }));
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "rgba(0,255,65,0.2)";
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0 || p.x>canvas.width) p.vx*=-1;
+            if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
         });
+        requestAnimationFrame(draw);
     }
-
-    window.dismissCommand = () => document.getElementById('commandPopup').classList.add('hidden');
-    window.sendSOS = () => { 
-        if(db) update(ref(db, "live/" + myCallsign), { sos: true }); 
-        addLog("CRITICAL: SOS_SENT");
-        if(navigator.vibrate) navigator.vibrate([1000, 200, 1000]);
-    };
-
-    function addLog(msg) {
-        const box = document.getElementById('logBox');
-        box.innerHTML += `<br><span>></span> [${new Date().toLocaleTimeString()}] ${msg}`;
-        box.scrollTop = box.scrollHeight;
-    }
+    draw();
 </script>
 </body>
 </html>
