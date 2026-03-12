@@ -3,95 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>859/RBK - UNIT</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>Tactical Tracker | YONIF TP 859/RBK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff41; --danger: #ff003c; --bg: #020802; }
-        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono'; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        .header { padding: 15px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 12px; }
-        .card { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        #map { height: 150px; border: 1px solid var(--neon); filter: invert(1) hue-rotate(80deg); }
-        input, button { width: 100%; padding: 15px; background: #000; border: 1px solid var(--neon); color: var(--neon); font-family: 'Orbitron'; font-weight: bold; box-sizing: border-box; }
-        button { background: var(--neon); color: #000; margin-top: 5px; }
-        .sos { background: none; color: var(--danger); border-color: var(--danger); }
-        .alert-bg { animation: alert 0.5s infinite alternate; }
-        @keyframes alert { from { background: rgba(150,0,0,0.5); } to { background: #000; } }
+        :root {
+            --army-green: #00ff41;
+            --dark-bg: #050a05;
+            --glass: rgba(0, 255, 65, 0.05);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--army-green);
+            background: rgba(0, 20, 0, 0.8);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 15px var(--army-green);
+            top: 0;
+            animation: scan 4s linear infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0; } 100% { top: 100%; }
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(10, 20, 10, 0.9);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border: 1px solid var(--army-green);
+            border-radius: 2px;
+            position: relative;
+            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
+        }
+
+        .card::before {
+            content: "SECURE LINK ACTIVE";
+            position: absolute;
+            top: 5px;
+            right: 20px;
+            font-size: 10px;
+            color: var(--army-green);
+            opacity: 0.5;
+        }
+
+        h2 {
+            color: var(--army-green);
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            background: rgba(0, 40, 0, 0.3);
+            border: 1px solid var(--army-green);
+            color: var(--army-green);
+            font-family: inherit;
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            box-shadow: inset 0 0 10px var(--army-green);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--army-green);
+            color: black;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #fff;
+            box-shadow: 0 0 20px var(--army-green);
+        }
+
+        #status {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px dashed var(--army-green);
+            text-align: center;
+            min-height: 50px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .data-box {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 10px;
+            border-left: 3px solid var(--army-green);
+        }
     </style>
 </head>
-<body id="body">
-    <div class="header">
-        <div>UNIT_859/RBK</div>
-        <div id="bat">BAT: --%</div>
-    </div>
-    <div class="card">
-        <div id="map"></div>
-        <div id="msg" style="background:#ffaa00; color:#000; padding:10px; display:none; font-weight:bold; text-align:center;"></div>
-        <input type="text" id="nama" placeholder="ENTER CALLSIGN">
-        <button id="start">ACTIVATE UPLINK</button>
-        <button id="sos" class="sos">SOS EMERGENCY</button>
-        <div style="font-size:10px; display:flex; justify-content:space-between; margin-top:10px;">
-            <span>LAT/LON: <span id="co">0,0</span></span>
-            <span>SPD: <span id="sp">0</span> KM/H</span>
-        </div>
-    </div>
+<body>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<div class="scan-line"></div>
+
+<div class="header">
+    📡 TRANSMITTER LOKASI SATUAN YONIF TP 859/RBK
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>ID AUTHENTICATION</h2>
+        <input type="text" id="nama" placeholder="MASUKKAN NAMA / NRP">
+        <button onclick="mulaiTracking()">INITIATE LINK</button>
+        
+        <div id="status">WAITING FOR UPLINK...</div>
+        <div id="info"></div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-        databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "real-time-location-30d91"
+        apiKey:"AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+        authDomain:"real-time-location-30d91.firebaseapp.com",
+        databaseURL:"https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId:"real-time-location-30d91",
+        storageBucket:"real-time-location-30d91.firebasestorage.app",
+        messagingSenderId:"1092565406651",
+        appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let isSOS = false, siren = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3'); siren.loop = true;
 
-    if(navigator.getBattery) navigator.getBattery().then(b => {
-        const u = () => document.getElementById('bat').innerText = `BAT: ${Math.round(b.level*100)}%`;
-        u(); b.onlevelchange = u;
-    });
+    window.mulaiTracking = function() {
+        const nama = document.getElementById("nama").value;
+        if(!nama) { alert("IDENTITAS WAJIB DIISI!"); return; }
 
-    document.getElementById('start').onclick = async () => {
-        const n = document.getElementById('nama').value;
-        if(!n) return alert("Callsign required!");
+        document.getElementById("status").innerHTML = "SATELLITE LOCKING...";
         
-        document.getElementById('start').innerText = "UPLINK ACTIVE";
-        document.getElementById('start').disabled = true;
+        navigator.geolocation.watchPosition(async (pos) => {
+            const { latitude, longitude, speed, accuracy } = pos.coords;
+            const spd = Math.round((speed || 0) * 3.6);
 
-        if('wakeLock' in navigator) await navigator.wakeLock.request('screen');
-
-        onValue(ref(db, `live/${n}/command`), s => {
-            const c = s.val();
-            if(!c) return;
-            if(c === "ALARM_ON") { siren.play(); document.getElementById('body').classList.add('alert-bg'); }
-            else if(c === "ALARM_OFF") { siren.pause(); document.getElementById('body').classList.remove('alert-bg'); }
-            else { 
-                document.getElementById('msg').innerText = "HQ: " + c; 
-                document.getElementById('msg').style.display = 'block';
-                const ut = new SpeechSynthesisUtterance(c); window.speechSynthesis.speak(ut);
-            }
-        });
-
-        navigator.geolocation.watchPosition(p => {
-            const { latitude, longitude, speed } = p.coords;
-            const kmh = Math.round(speed * 3.6 || 0);
-            document.getElementById('co').innerText = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
-            document.getElementById('sp').innerText = kmh;
-
-            update(ref(db, `live/${n}`), {
-                lat: latitude, lon: longitude, speed: kmh,
-                battery: document.getElementById('bat').innerText,
-                status: isSOS ? 'DANGER_SOS' : 'ACTIVE', waktu: Date.now()
+            await set(ref(db, "live/" + nama), {
+                latitude, longitude, speed: spd, accuracy,
+                waktu: Date.now(), status: "ONLINE"
             });
-        }, null, {enableHighAccuracy:true});
-    };
 
-    document.getElementById('sos').onclick = () => { isSOS = !isSOS; };
+            document.getElementById("status").innerHTML = "<span style='color:lime'>▣ SIGNAL ACQUIRED - TRANSMITTING</span>";
+            document.getElementById("info").innerHTML = `
+                <div class="data-grid">
+                    <div class="data-box">LAT: ${latitude.toFixed(4)}</div>
+                    <div class="data-box">LON: ${longitude.toFixed(4)}</div>
+                    <div class="data-box">SPD: ${spd} KM/H</div>
+                    <div class="data-box">ACC: ${accuracy.toFixed(0)}M</div>
+                </div>
+            `;
+        }, (err) => alert(err.message), { enableHighAccuracy: true });
+    }
 </script>
 </body>
 </html>
