@@ -4,157 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tactical Edge | YONIF TP 859/RBK</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon: #00ff41;
+            --neon-dim: rgba(0, 255, 65, 0.15);
             --danger: #ff003c;
-            --dark: #020802;
-            --panel: rgba(2, 12, 2, 0.9);
+            --bg: #010a01;
+            --accent: #00e5ff;
         }
 
-        body {
+        body, html {
             margin: 0; padding: 0;
-            background: var(--dark);
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
-            height: 100vh;
-            display: flex; flex-direction: column;
+            background: var(--bg);
+            color: var(--neon);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh; width: 100vw;
             overflow: hidden;
+            text-transform: uppercase;
         }
 
-        /* Scanline Overlay */
-        body::before {
-            content: " ";
-            position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
-            z-index: 999; background-size: 100% 2px, 2px 100%; pointer-events: none;
+        /* Scanline & Overlay Background */
+        .overlay {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
+                        repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; z-index: 10;
         }
 
-        .top-nav {
-            padding: 15px;
-            background: var(--panel);
+        /* Animated Radar Pulse */
+        .radar-bg {
+            position: fixed; top: 50%; left: 50%;
+            width: 600px; height: 600px;
+            border: 1px solid var(--neon-dim);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0; pointer-events: none;
+        }
+        .radar-bg::after {
+            content: ""; position: absolute; inset: 0;
+            background: conic-gradient(from 0deg, var(--neon-dim), transparent);
+            border-radius: 50%;
+            animation: rotate 4s linear infinite;
+        }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .ui-wrapper {
+            position: relative; z-index: 5;
+            height: 100%; display: flex; flex-direction: column;
+            padding: 20px; box-sizing: border-box;
+        }
+
+        header {
             border-bottom: 2px solid var(--neon);
-            display: flex; justify-content: space-between; align-items: center;
-            font-family: 'Orbitron'; font-size: 12px;
+            padding-bottom: 10px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
         }
 
-        .main-container {
-            flex: 1;
-            display: flex; flex-direction: column;
-            padding: 20px; gap: 15px;
-            justify-content: center;
-        }
+        .sys-title { font-family: 'Orbitron'; font-weight: 700; font-size: 18px; letter-spacing: 2px; }
 
-        .status-card {
-            background: var(--panel);
+        .status-panel {
+            background: rgba(0, 20, 0, 0.8);
             border: 1px solid var(--neon);
-            padding: 20px;
-            box-shadow: 0 0 20px var(--neon-dim);
-            position: relative;
+            padding: 20px; position: relative;
+            flex: 1; display: flex; flex-direction: column; gap: 15px;
+            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
-        .auth-group input {
-            width: 100%; padding: 15px; margin-bottom: 10px;
+        .auth-input {
             background: rgba(0, 255, 65, 0.05);
             border: 1px solid var(--neon);
-            color: var(--neon); font-family: 'Orbitron';
-            text-align: center; box-sizing: border-box;
+            color: var(--neon);
+            width: 100%; padding: 15px;
+            font-family: 'Orbitron'; font-size: 16px;
+            text-align: center; outline: none; box-sizing: border-box;
         }
 
         .btn {
-            width: 100%; padding: 18px;
-            font-family: 'Orbitron'; font-weight: bold;
-            text-transform: uppercase; border: none; cursor: pointer;
-            transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+            padding: 18px; font-family: 'Orbitron'; font-weight: bold;
+            cursor: pointer; transition: 0.2s; border: none;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
         }
+        .btn-main { background: var(--neon); color: black; width: 100%; }
+        .btn-main:active { transform: scale(0.98); background: white; }
 
-        .btn-primary { background: var(--neon); color: black; }
-        .btn-danger { background: var(--danger); color: white; margin-top: 10px; }
+        .telemetry-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .data-box {
+            border: 1px solid var(--neon-dim);
+            padding: 10px; background: rgba(0,0,0,0.3);
+        }
+        .data-box label { font-size: 10px; color: var(--accent); display: block; margin-bottom: 4px;}
+        .data-box span { font-size: 20px; font-weight: bold; }
+
+        .terminal-log {
+            flex: 1; background: rgba(0,0,0,0.5);
+            border: 1px solid var(--neon-dim);
+            padding: 10px; font-size: 11px;
+            overflow-y: auto; color: #00aa22;
+        }
 
         .sos-btn {
-            background: transparent; border: 2px solid var(--danger);
-            color: var(--danger); padding: 10px; font-family: 'Orbitron';
-            animation: blink 1s infinite; margin-top: 20px;
+            background: var(--danger); color: white;
+            animation: sos-pulse 1s infinite alternate;
         }
-
-        @keyframes blink { 
-            0%, 100% { opacity: 1; } 
-            50% { opacity: 0.3; background: var(--danger); color: white; } 
-        }
-
-        .telemetry-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;
-        }
-
-        .tele-item {
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            padding: 10px; font-size: 14px; background: rgba(0,0,0,0.5);
-        }
-
-        .label { color: var(--neon); font-size: 10px; display: block; margin-bottom: 5px; }
+        @keyframes sos-pulse { from { opacity: 0.7; } to { opacity: 1; box-shadow: 0 0 20px var(--danger); } }
 
         .hidden { display: none !important; }
 
-        #battery-level { color: var(--neon); }
+        .footer-info {
+            margin-top: 15px; font-size: 9px; text-align: center; opacity: 0.6;
+            letter-spacing: 3px;
+        }
     </style>
 </head>
 <body>
 
-<nav class="top-nav">
-    <div>SYS: ACTIVE</div>
-    <div id="clock">00:00:00</div>
-    <div id="battery-status">BAT: <span id="battery-level">--%</span></div>
-</nav>
+<div class="overlay"></div>
+<div class="radar-bg"></div>
 
-<div class="main-container">
-    
-    <div id="authArea" class="status-card">
-        <h3 style="text-align:center; margin-top:0; color:var(--neon); font-family:'Orbitron'">UNIT AUTHENTICATION</h3>
-        <div class="auth-group">
-            <input type="text" id="nama" placeholder="CALLSIGN / NRP" maxlength="20">
-            <button class="btn btn-primary" id="btnConnect">INITIATE LINK</button>
+<div class="ui-wrapper">
+    <header>
+        <div>
+            <div class="sys-title">TACTICAL EDGE</div>
+            <div style="font-size: 10px; color: var(--accent)">BATTALION LINK: ENCRYPTED</div>
         </div>
+        <div style="text-align: right">
+            <div id="clock" style="font-size: 16px;">00:00:00</div>
+            <div id="batt" style="font-size: 10px;">BAT: --%</div>
+        </div>
+    </header>
+
+    <div id="loginSection" class="status-panel">
+        <h2 style="text-align: center; font-family: 'Orbitron';">AUTHENTICATION</h2>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px;">
+            <input type="text" id="idInput" class="auth-input" placeholder="CALLSIGN / NRP" maxlength="15">
+            <button class="btn btn-main" onclick="initiateLink()">ESTABLISH CONNECTION</button>
+        </div>
+        <p style="font-size: 10px; text-align: center">NOTICE: Unauthorized access to military assets is strictly prohibited.</p>
     </div>
 
-    <div id="trackingArea" class="status-card hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center">
-            <h3 id="displayNama" style="margin:0; color:var(--neon)">-</h3>
-            <div id="signalPulse" style="width:12px; height:12px; background:var(--neon); border-radius:50%"></div>
-        </div>
-        
-        <div class="telemetry-grid">
-            <div class="tele-item">
-                <span class="label">LATITUDE</span>
-                <span id="lat">-</span>
-            </div>
-            <div class="tele-item">
-                <span class="label">LONGITUDE</span>
-                <span id="lon">-</span>
-            </div>
-            <div class="tele-item">
-                <span class="label">SPEED</span>
-                <span id="spd">0</span> KM/H
-            </div>
-            <div class="tele-item">
-                <span class="label">ACCURACY</span>
-                <span id="acc">0</span> M
-            </div>
+    <div id="trackingSection" class="status-panel hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+            <div id="activeCallsign" style="font-family: 'Orbitron'; font-size: 20px; color: white;">-</div>
+            <div style="color: var(--neon); font-size: 10px;">● UPLINK ACTIVE</div>
         </div>
 
-        <button class="btn sos-btn" id="btnSOS">SEND EMERGENCY SOS</button>
-        <button class="btn btn-danger" id="btnDisconnect">TERMINATE & WIPE DATA</button>
+        <div class="telemetry-row">
+            <div class="data-box"><label>LATITUDE</label><span id="lat">0.0000</span></div>
+            <div class="data-box"><label>LONGITUDE</label><span id="lon">0.0000</span></div>
+        </div>
+        <div class="telemetry-row">
+            <div class="data-box"><label>VELOCITY (KM/H)</label><span id="spd">0</span></div>
+            <div class="data-box"><label>PRECISION (M)</label><span id="acc">0</span></div>
+        </div>
+
+        <div class="terminal-log" id="logs">
+            > INITIALIZING SECURE CHANNEL...<br>
+            > HANDSHAKE SUCCESSFUL...<br>
+            > WAITING FOR GPS FIX...
+        </div>
+
+        <button class="btn sos-btn" onclick="triggerSOS()">EMERGENCY SOS</button>
+        <button class="btn" style="background: #222; color: #888; border: 1px solid #444;" onclick="terminateLink()">TERMINATE & WIPE</button>
     </div>
 
-    <div style="text-align:center; font-size:10px; opacity:0.5; letter-spacing:2px">
-        SECURE ENCRYPTED CHANNEL 859-RBK
-    </div>
+    <div class="footer-info">YONIF TP 859/RBK - MOBILE TRANSMITTER V2.4</div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, update, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -169,85 +191,75 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     let watchId = null;
-    let currentCallsign = "";
+    let myId = "";
 
     // Clock & Battery
     setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
     }, 1000);
 
-    navigator.getBattery?.().then(batt => {
-        const updateBatt = () => document.getElementById('battery-level').innerText = Math.round(batt.level * 100) + "%";
-        updateBatt();
-        batt.addEventListener('levelchange', updateBatt);
+    navigator.getBattery?.().then(b => {
+        const up = () => document.getElementById('batt').innerText = `BAT: ${Math.round(b.level * 100)}%`;
+        up(); b.onlevelchange = up;
     });
 
-    // Connect Function
-    document.getElementById('btnConnect').onclick = () => {
-        const nameInput = document.getElementById('nama').value.trim().toUpperCase();
-        if(!nameInput) return alert("INPUT CALLSIGN!");
-
-        currentCallsign = nameInput;
-        startTracking();
+    window.initiateLink = () => {
+        const input = document.getElementById('idInput').value.trim().toUpperCase();
+        if(!input) return alert("INPUT CALLSIGN!");
         
-        document.getElementById('authArea').classList.add('hidden');
-        document.getElementById('trackingArea').classList.remove('hidden');
-        document.getElementById('displayNama').innerText = currentCallsign;
-        if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        myId = input;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('trackingSection').classList.remove('hidden');
+        document.getElementById('activeCallsign').innerText = myId;
+        
+        startGps();
+        log("CONNECTION ESTABLISHED WITH HQ");
     };
 
-    function startTracking() {
+    function startGps() {
         if ("geolocation" in navigator) {
-            watchId = navigator.geolocation.watchPosition(async (pos) => {
-                const { latitude, longitude, speed, accuracy } = pos.coords;
-                
-                // Update UI
-                document.getElementById('lat').innerText = latitude.toFixed(5);
-                document.getElementById('lon').innerText = longitude.toFixed(5);
-                document.getElementById('spd').innerText = Math.round((speed || 0) * 3.6);
+            watchId = navigator.geolocation.watchPosition((p) => {
+                const { latitude, longitude, speed, accuracy } = p.coords;
+                const kmh = Math.round((speed || 0) * 3.6);
+
+                // UI Update
+                document.getElementById('lat').innerText = latitude.toFixed(4);
+                document.getElementById('lon').innerText = longitude.toFixed(4);
+                document.getElementById('spd').innerText = kmh;
                 document.getElementById('acc').innerText = Math.round(accuracy);
 
-                // Update Firebase
-                await set(ref(db, "live/" + currentCallsign), {
-                    latitude, longitude, 
-                    speed: Math.round((speed || 0) * 3.6),
-                    accuracy: Math.round(accuracy),
-                    waktu: Date.now(),
-                    status: "ONLINE",
-                    sos: false
+                // Firebase Update
+                set(ref(db, "live/" + myId), {
+                    latitude, longitude, speed: kmh, accuracy: Math.round(accuracy),
+                    waktu: Date.now(), sos: false
                 });
 
-                // Auto-delete on disconnect (tab closed)
-                onDisconnect(ref(db, "live/" + currentCallsign)).remove();
+                onDisconnect(ref(db, "live/" + myId)).remove();
+                log(`PACKET SENT: ${latitude.toFixed(2)},${longitude.toFixed(2)}`);
 
-            }, (err) => console.error(err), { enableHighAccuracy: true });
+            }, (e) => log("GPS ERROR: " + e.message), { enableHighAccuracy: true });
         }
     }
 
-    // SOS Button
-    document.getElementById('btnSOS').onclick = () => {
-        set(ref(db, `live/${currentCallsign}/sos`), true);
-        alert("SOS SIGNAL SENT TO HQ!");
-        if(navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+    window.triggerSOS = () => {
+        update(ref(db, "live/" + myId), { sos: true });
+        log("!!! SOS SIGNAL BROADCASTED !!!");
+        if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
     };
 
-    // Disconnect & Wipe (FITUR UTAMA YANG DIMINTA)
-    document.getElementById('btnDisconnect').onclick = async () => {
-        if(confirm("TERMINATE CONNECTION & WIPE DATA?")) {
+    window.terminateLink = () => {
+        if(confirm("TERMINATE CONNECTION? ALL DATA WILL BE WIPED.")) {
             if(watchId) navigator.geolocation.clearWatch(watchId);
-            
-            // Hapus data dari Firebase sehingga hilang dari dashboard
-            await remove(ref(db, "live/" + currentCallsign));
-            
-            // Reset UI
-            document.getElementById('authArea').classList.remove('hidden');
-            document.getElementById('trackingArea').classList.add('hidden');
-            document.getElementById('nama').value = "";
-            
-            alert("CONNECTION TERMINATED. DATA WIPED.");
-            if(navigator.vibrate) navigator.vibrate(500);
+            remove(ref(db, "live/" + myId));
+            location.reload();
         }
     };
+
+    function log(msg) {
+        const l = document.getElementById('logs');
+        l.innerHTML += `<br>> ${msg}`;
+        l.scrollTop = l.scrollHeight;
+    }
 </script>
 </body>
 </html>
