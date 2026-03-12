@@ -54,7 +54,6 @@
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
-        /* LOADING COMPONENTS */
         .progress-track {
             width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1);
             margin: 20px 0; overflow: hidden; border: 1px solid var(--neon-dim);
@@ -63,6 +62,9 @@
             height: 100%; background: var(--neon); width: 0%;
             box-shadow: 0 0 15px var(--neon); transition: width 0.2s;
         }
+
+        /* KHUSUS PROGRESS BAR SHUTDOWN */
+        .shutdown-fill { background: var(--danger) !important; box-shadow: 0 0 15px var(--danger) !important; }
 
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .hud-item {
@@ -151,7 +153,7 @@
         </div>
         <div class="terminal-log" id="logBox">> LISTENING FOR COMMANDS...</div>
         <button class="btn btn-sos" style="margin-top: 15px;" onclick="sendSOS()">EMERGENCY SOS</button>
-        <button class="btn" style="margin-top: 10px; font-size: 9px; border: none; opacity: 0.5;" onclick="terminate()">TERMINATE LINK</button>
+        <button class="btn" style="margin-top: 10px; font-size: 9px; border: none; opacity: 0.5;" onclick="initiateTerminate()">TERMINATE LINK</button>
     </div>
 </div>
 
@@ -164,7 +166,7 @@
         authDomain: "real-time-location-30d91.firebaseapp.com",
         databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "real-time-location-30d91",
-        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        storageBucket: "real-time-location-30d91.firebasedatabase.app",
         messagingSenderId: "1092565406651",
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
@@ -175,28 +177,55 @@
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); }, 1000);
 
-    // FIX: ALUR LOADING
+    // --- LOGIN SEQUENCE ---
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) return;
         myCallsign = val;
 
-        // Pindah ke Loading Area dulu
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
+        document.getElementById('progressFill').classList.remove('shutdown-fill');
+        document.getElementById('loadMsg').innerText = "INITIALIZING";
 
-        startLoadingSequence();
+        startSequence(["CONNECTING TO SAT-LINK...", "VERIFYING NEURAL HASH...", "ENCRYPTING CHANNEL...", "SYNCING TELEMETRY...", "HANDSHAKE COMPLETE."], showDashboard);
     };
 
-    function startLoadingSequence() {
+    // --- TERMINATE SEQUENCE (WOW FEATURE) ---
+    window.initiateTerminate = () => {
+        if(!confirm("CONFIRM SYSTEM TERMINATION?")) return;
+
+        // Berhenti tracking GPS segera
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+        
+        // Pindah ke layar loading tapi dengan style Shutdown
+        document.getElementById('trackingArea').classList.add('hidden');
+        document.getElementById('loadingArea').classList.remove('hidden');
+        
+        const bar = document.getElementById('progressFill');
+        bar.classList.add('shutdown-fill'); // Berubah jadi merah
+        document.getElementById('loadMsg').innerText = "TERMINATING";
+        document.getElementById('loadMsg').style.color = "var(--danger)";
+        document.getElementById('miniLog').innerHTML = "";
+
+        startSequence(["DISCONNECTING SATELLITE...", "WIPING LOCAL TELEMETRY...", "DECRYPTING CHANNEL...", "CLOSING NEURAL LINK...", "OFFLINE."], () => {
+            // Hapus data dari Firebase secara manual sebelum reload
+            remove(ref(db, "live/" + myCallsign)).then(() => {
+                location.reload();
+            });
+        });
+    };
+
+    // --- GENERIC LOADING ENGINE ---
+    function startSequence(messages, callback) {
         let progress = 0;
         const bar = document.getElementById('progressFill');
         const subMsg = document.getElementById('subMsg');
         const miniLog = document.getElementById('miniLog');
-        const messages = ["CONNECTING TO SAT-LINK...", "VERIFYING NEURAL HASH...", "ENCRYPTING CHANNEL...", "SYNCING TELEMETRY...", "HANDSHAKE COMPLETE."];
+        bar.style.width = "0%";
 
         const loader = setInterval(() => {
-            progress += Math.random() * 15;
+            progress += Math.random() * 20;
             if(progress > 100) progress = 100;
             
             bar.style.width = progress + "%";
@@ -211,9 +240,9 @@
 
             if(progress === 100) {
                 clearInterval(loader);
-                setTimeout(showDashboard, 500);
+                setTimeout(callback, 800);
             }
-        }, 200);
+        }, 250);
     }
 
     function showDashboard() {
@@ -271,8 +300,6 @@
         addLog("!!! SOS BROADCAST ACTIVE !!!");
         if(navigator.vibrate) navigator.vibrate([500, 100, 500]);
     };
-
-    window.terminate = () => { if(confirm("TERMINATE LINK?")) location.reload(); };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
