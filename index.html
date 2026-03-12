@@ -21,16 +21,23 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* AMBIENT EFFECTS */
+        /* --- HD DYNAMIC WALLPAPER ENGINE --- */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            filter: brightness(0.6);
+        }
+
+        .overlay-vignette {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            z-index: -1; pointer-events: none;
+        }
+
         body::before {
             content: " "; position: fixed; inset: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
             z-index: 1000; background-size: 100% 2px, 3px 100%; pointer-events: none;
-        }
-
-        #bg-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
         }
 
         @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
@@ -114,6 +121,7 @@
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<div class="overlay-vignette"></div>
 <div class="scanner-bar"></div>
 <div class="background-fx"></div>
 
@@ -188,49 +196,50 @@
 </div>
 
 <script>
-    // --- BACKGROUND ANIMATION ENGINE ---
+    // --- HD CYBER MATRIX ANIMATION ENGINE ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
-    let particles = [];
+
+    let width, height, columns;
+    const fontSize = 16;
+    const chars = "0101010101ABCDEFHIJKLMNOPQRSTUVWXYZ0123456789%@#$*";
+    let drops = [];
 
     function initCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        columns = Math.floor(width / fontSize);
+        drops = [];
+        for (let i = 0; i < columns; i++) drops[i] = Math.random() * -100;
     }
 
-    class Particle {
-        constructor() {
-            this.reset();
-        }
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 0.5;
-            this.vy = (Math.random() - 0.5) * 0.5;
-            this.size = Math.random() * 2;
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
-        }
-        draw() {
-            ctx.fillStyle = 'rgba(0, 255, 65, 0.3)';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
+    function drawMatrix() {
+        ctx.fillStyle = "rgba(0, 5, 0, 0.1)"; // Trail effect
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.font = fontSize + "px 'Share Tech Mono'";
+        
+        for (let i = 0; i < drops.length; i++) {
+            const text = chars.charAt(Math.floor(Math.random() * chars.length));
+            const opacity = Math.random();
+            ctx.fillStyle = `rgba(0, 255, 65, ${opacity * 0.4})`; // Neon Green HD
+            
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
         }
     }
-
-    for (let i = 0; i < 50; i++) particles.push(new Particle());
 
     function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-        requestAnimationFrame(animate);
+        drawMatrix();
+        setTimeout(() => {
+            requestAnimationFrame(animate);
+        }, 50); // Locked 20fps for power saving & HD feel
     }
 
     window.addEventListener('resize', initCanvas);
