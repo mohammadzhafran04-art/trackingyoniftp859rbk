@@ -6,6 +6,7 @@
     <title>NEURAL COMMAND | YONIF 859/RBK 2045</title>
     
     <script>
+        // PROTEKSI AUTH
         if (localStorage.getItem("auth") !== "true") {
             window.location.replace("login.html");
             document.write('<style>body { display:none !important; }</style>');
@@ -35,7 +36,7 @@
             overflow: hidden;
         }
 
-        /* Scanline Effect */
+        /* Scanline CRT Effect */
         body::after {
             content: ""; position: fixed; inset: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
@@ -71,38 +72,50 @@
             overflow-y: auto; backdrop-filter: blur(20px);
         }
 
-        #map { border: 1px solid var(--neon-dim); background: #000; }
+        #map { border: 1px solid var(--neon-dim); background: #000; z-index: 1; }
 
-        /* Tactical Uplink Styles */
         .uplink-box {
             background: rgba(0, 255, 65, 0.05);
             border: 1px solid var(--neon);
-            padding: 15px;
-            margin-top: auto;
+            padding: 15px; margin-top: auto;
         }
+
         .uplink-input {
             width: 100%; background: #000; border: 1px solid var(--neon-dim);
             color: var(--neon); font-family: 'Share Tech Mono';
             padding: 10px; box-sizing: border-box; margin-bottom: 10px; outline: none;
         }
+
         .btn-execute {
             width: 100%; padding: 10px; background: var(--neon); color: #000;
             border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
+            transition: 0.2s;
         }
+
         .btn-execute:hover { background: #fff; box-shadow: 0 0 15px var(--neon); }
 
         .personnel-card {
             background: rgba(0, 255, 65, 0.03); border: 1px solid var(--neon-dim);
             padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.3s;
+            position: relative;
         }
-        .personnel-card:hover { background: rgba(0, 255, 65, 0.1); border-color: var(--neon); }
 
+        .personnel-card:hover { background: rgba(0, 255, 65, 0.1); border-color: var(--neon); }
+        
         .stat-val { font-family: 'Orbitron'; font-size: 28px; color: #fff; text-shadow: 0 0 10px var(--neon); }
 
+        /* Filter Map agar terlihat Futuistik */
         .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.5); }
         
         .sos-active { animation: emergency-bg 0.5s infinite; }
-        @keyframes emergency-bg { 0% { background: #000; } 50% { background: #200; } 100% { background: #000; } }
+        @keyframes emergency-bg { 
+            0% { background: #000; } 
+            50% { background: #300; } 
+            100% { background: #000; } 
+        }
+
+        #missionLog::-webkit-scrollbar { width: 4px; }
+        #missionLog::-webkit-scrollbar-thumb { background: var(--neon); }
     </style>
 </head>
 <body>
@@ -111,41 +124,45 @@
 
 <div class="main-ui" id="dashboardContent">
     <header>
-        <div style="font-family: 'Orbitron'; letter-spacing: 3px;">
+        <div style="font-family: 'Orbitron'; letter-spacing: 3px; display: flex; align-items: center; gap: 10px;">
+            <div style="width:10px; height:10px; background:var(--neon); border-radius:50%; animation: pulse 1s infinite;"></div>
             NEURAL COMMAND <span style="color:white; opacity: 0.5;">V4.0</span>
         </div>
         <div id="clock" style="font-family: 'Orbitron'; font-size: 20px; color: var(--accent);">00:00:00</div>
-        <button style="background:none; border: 1px solid var(--danger); color: var(--danger); padding: 5px 15px; cursor:pointer;" onclick="triggerLogout()">DISCONNECT</button>
+        <button style="background:none; border: 1px solid var(--danger); color: var(--danger); padding: 5px 15px; cursor:pointer; font-family:'Orbitron'; font-size: 10px;" onclick="triggerLogout()">DISCONNECT</button>
     </header>
 
     <aside class="side-panel">
-        <h3 style="font-size: 11px; font-family: 'Orbitron'; color: var(--accent);">UNIT STATUS</h3>
+        <h3 style="font-size: 11px; font-family: 'Orbitron'; color: var(--accent); margin: 0;">UNIT STATUS</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div style="border: 1px solid var(--neon-dim); padding: 10px; text-align:center;">
-                <small style="font-size: 9px;">TOTAL</small>
+                <small style="font-size: 9px; opacity: 0.7;">TOTAL UNITS</small>
                 <div class="stat-val" id="totalUnit">0</div>
             </div>
             <div style="border: 1px solid var(--neon-dim); padding: 10px; text-align:center;">
-                <small style="font-size: 9px;">ACTIVE</small>
+                <small style="font-size: 9px; opacity: 0.7;">ACTIVE LINK</small>
                 <div class="stat-val" style="color: var(--accent)" id="activeUnit">0</div>
             </div>
         </div>
-        <div id="unitList" style="flex:1; margin-top: 10px;"></div>
+        <div id="unitList" style="flex:1; margin-top: 10px; overflow-y: auto;">
+            <div style="text-align:center; opacity:0.3; font-size:10px; padding:20px;">SCANNING NEURAL NET...</div>
+        </div>
     </aside>
 
     <div id="map"></div>
 
     <aside class="side-panel">
-        <div style="font-family: 'Orbitron'; font-size: 12px; color: var(--accent);">COMMAND UPLINK</div>
+        <div style="font-family: 'Orbitron'; font-size: 11px; color: var(--accent);">MISSION_LOG.EXE</div>
         
-        <div id="missionLog" style="flex:1; font-family: 'Share Tech Mono'; font-size: 11px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border: 1px solid var(--neon-dim);">
-            <div>> SYSTEM READY...</div>
+        <div id="missionLog" style="flex:1; font-family: 'Share Tech Mono'; font-size: 11px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border: 1px solid var(--neon-dim); color: #88ff88;">
+            <div>> SYSTEM INITIALIZED...</div>
+            <div>> ENCRYPTION: AES-256 ACTIVE</div>
         </div>
 
         <div class="uplink-box">
-            <div style="font-size: 9px; margin-bottom: 5px;">BROADCAST DIRECTIVE:</div>
-            <input type="text" id="cmdInput" class="uplink-input" placeholder="Enter command text...">
-            <button class="btn-execute" onclick="broadcastCommand()">SEND TO ALL UNITS</button>
+            <div style="font-size: 9px; margin-bottom: 5px; letter-spacing: 1px;">DIRECTIVE UPLINK:</div>
+            <input type="text" id="cmdInput" class="uplink-input" placeholder="Tulis instruksi..." onkeypress="if(event.key==='Enter') broadcastCommand()">
+            <button class="btn-execute" onclick="broadcastCommand()">EXECUTE COMMAND</button>
         </div>
     </aside>
 </div>
@@ -155,7 +172,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -171,48 +188,66 @@
     const db = getDatabase(app);
     let markers = {};
 
+    // LOGOUT FUNCTION
+    window.triggerLogout = () => {
+        if(confirm("TERMINATE SESSION?")) {
+            localStorage.removeItem("auth");
+            window.location.replace("login.html");
+        }
+    };
+
     // BROADCAST FUNCTION
     window.broadcastCommand = () => {
-        const msg = document.getElementById('cmdInput').value;
+        const msgInput = document.getElementById('cmdInput');
+        const msg = msgInput.value.trim();
         if(!msg) return;
         
-        // Simpan ke node 'commands' agar semua index bisa listen
         set(ref(db, "commands/global"), {
             text: msg.toUpperCase(),
             timestamp: Date.now(),
-            sender: "COMMAND CENTER"
+            sender: "COMMANDER"
         }).then(() => {
-            document.getElementById('cmdInput').value = "";
-            addLog("DIRECTIVE SENT: " + msg);
+            addLog("BROADCAST: " + msg);
+            msgInput.value = "";
+        }).catch(err => {
+            addLog("UPLINK ERROR: " + err.message);
         });
     };
 
     function addLog(msg) {
         const log = document.getElementById('missionLog');
-        log.innerHTML += `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>`;
+        const time = new Date().toLocaleTimeString('id-ID');
+        log.innerHTML += `<div style="margin-bottom:4px; border-left:1px solid var(--neon); padding-left:5px;"><span style="color:var(--accent)">[${time}]</span> ${msg}</div>`;
         log.scrollTop = log.scrollHeight;
     }
 
-    // REALTIME TRACKING
+    // REALTIME TRACKING ENGINE
     onValue(ref(db, "live"), (snapshot) => {
         const data = snapshot.val();
         const listContainer = document.getElementById("unitList");
-        if(!data) return;
+        
+        if(!data) {
+            listContainer.innerHTML = "<div style='opacity:0.3; text-align:center; padding:20px;'>NO UNITS DETECTED</div>";
+            return;
+        }
 
         listContainer.innerHTML = "";
         let total = 0, active = 0, anySOS = false;
 
         Object.keys(data).forEach(id => {
             const val = data[id];
+            // Cek jika data diperbarui dalam 60 detik terakhir
             const isOnline = (Date.now() - (val.waktu || 0)) < 60000;
             const hasSOS = val.sos === true && isOnline;
 
-            total++; if(isOnline) active++;
+            total++; 
+            if(isOnline) active++;
             if(hasSOS) anySOS = true;
 
             if(val.latitude && val.longitude) {
                 const color = hasSOS ? 'var(--danger)' : (isOnline ? 'var(--neon)' : '#555');
-                const iconHtml = `<div style="width:12px; height:12px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 0 10px ${color};"></div>`;
+                const shadow = hasSOS ? '0 0 15px #ff003c' : '0 0 8px #00ff41';
+                const iconHtml = `<div style="width:12px; height:12px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:${shadow};"></div>`;
                 
                 if(!markers[id]) {
                     markers[id] = L.marker([val.latitude, val.longitude], {
@@ -220,12 +255,26 @@
                     }).addTo(map);
                 } else {
                     markers[id].setLatLng([val.latitude, val.longitude]);
+                    markers[id].setIcon(L.divIcon({ html: iconHtml, className: '', iconSize: [12,12] }));
                 }
 
+                // UI Unit Card
                 const card = document.createElement("div");
                 card.className = "personnel-card";
-                card.innerHTML = `<div style="display:flex; justify-content:space-between"><strong>${id}</strong><small>${isOnline ? 'SYNC' : 'LOST'}</small></div>`;
-                card.onclick = () => map.flyTo([val.latitude, val.longitude], 17);
+                card.style.borderLeft = `3px solid ${color}`;
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong>${id}</strong>
+                        <span style="font-size:9px; color:${color}">${isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                    </div>
+                    <div style="font-size:10px; opacity:0.6; margin-top:5px;">
+                        SPD: ${val.speed || 0} km/h | ALT: ${val.altitude || 0}m
+                    </div>
+                `;
+                card.onclick = () => {
+                    map.flyTo([val.latitude, val.longitude], 17);
+                    addLog("TRACKING FOCUS: " + id);
+                };
                 listContainer.appendChild(card);
             }
         });
@@ -233,18 +282,26 @@
         document.getElementById("totalUnit").innerText = total;
         document.getElementById("activeUnit").innerText = active;
         
+        // SOS Global Handler
+        const sosAudio = document.getElementById('sosAudio');
         if(anySOS) {
             document.body.classList.add('sos-active');
-            document.getElementById('sosAudio').play();
+            if(sosAudio.paused) sosAudio.play().catch(e => console.log("Audio play deferred"));
         } else {
             document.body.classList.remove('sos-active');
-            document.getElementById('sosAudio').pause();
+            sosAudio.pause();
         }
     });
 
+    // Clock Engine
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
     }, 1000);
+
+    // Initial Map View
+    map.setView([-2.5, 118], 5); // Default Indonesia
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
 </script>
 </body>
 </html>
