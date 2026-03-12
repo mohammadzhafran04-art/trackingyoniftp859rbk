@@ -29,6 +29,10 @@
             z-index: 1000; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+        }
+
         @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
         .scanner-bar {
             position: fixed; width: 100%; height: 5px;
@@ -109,6 +113,7 @@
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
 <div class="scanner-bar"></div>
 <div class="background-fx"></div>
 
@@ -182,6 +187,57 @@
     <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:12px; font-weight: bold; cursor: pointer;">ACKNOWLEDGE</button>
 </div>
 
+<script>
+    // --- BACKGROUND ANIMATION ENGINE ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function initCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.size = Math.random() * 2;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = 'rgba(0, 255, 65, 0.3)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', initCanvas);
+    initCanvas();
+    animate();
+</script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, update, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -198,7 +254,6 @@
 
     let app, db, watchId = null, myCallsign = "", lastCmdTime = 0, wakeLock = null;
 
-    // Firebase Initialization
     try {
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
@@ -206,13 +261,11 @@
         console.error("Firebase Sync Fail:", e);
     }
 
-    // HUD Real-time Logic
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
         if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
     }, 1000);
 
-    // --- FITUR WAKE LOCK (Anti-Sleep) ---
     async function requestWakeLock() {
         try {
             if ('wakeLock' in navigator) {
@@ -223,11 +276,9 @@
             }
         } catch (err) {
             document.getElementById('wklStatus').innerText = "FAIL";
-            console.log("Wake Lock Error: " + err.message);
         }
     }
 
-    // Re-aktifkan jika tab dibuka kembali
     document.addEventListener('visibilitychange', () => {
         if (wakeLock !== null && document.visibilityState === 'visible') {
             requestWakeLock();
@@ -263,7 +314,7 @@
             }
             if(progress >= 100) { 
                 clearInterval(loader); 
-                requestWakeLock(); // Aktifkan anti-tidur
+                requestWakeLock();
                 setTimeout(callback, 400); 
             }
         }, 80);
@@ -288,7 +339,6 @@
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
                 
-                // Update UI
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
@@ -296,7 +346,6 @@
                 
                 if(db && myCallsign) {
                     const userRef = ref(db, "live/" + myCallsign);
-                    // UPDATE: Gunakan lat/lon agar sinkron dengan Dashboard
                     update(userRef, { 
                         lat: latitude, 
                         lon: longitude, 
@@ -305,7 +354,7 @@
                         waktu: Date.now(), 
                         sos: false 
                     });
-                    onDisconnect(userRef).update({ waktu: Date.now() - 60000 }); // Tandai offline jika diskonek
+                    onDisconnect(userRef).update({ waktu: Date.now() - 60000 });
                 }
             }, (err) => {
                 addLog("SYNC_ERR: " + err.message);
@@ -323,8 +372,6 @@
                 lastCmdTime = data.timestamp;
                 document.getElementById('commandText').innerText = data.text;
                 document.getElementById('commandPopup').classList.remove('hidden');
-                
-                // Vibrate saat ada perintah masuk
                 if(navigator.vibrate) navigator.vibrate([300, 100, 300]);
             }
         });
