@@ -7,7 +7,7 @@
     
     <script>
         if (localStorage.getItem("auth") !== "true") {
-            window.location.href = "index.html"; // Arahkan ke file login Anda
+            window.location.replace("login.html");
         }
     </script>
 
@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* 2045 Grid Background */
         .cyber-grid {
             position: fixed; inset: 0;
             background-image: 
@@ -83,7 +82,6 @@
             pointer-events: none; z-index: 1000;
         }
 
-        /* Unit Cards */
         .personnel-card {
             background: rgba(0, 255, 65, 0.03);
             border: 1px solid var(--neon-dim);
@@ -103,7 +101,6 @@
         }
         .stat-val { font-family: 'Orbitron'; font-size: 32px; color: #fff; text-shadow: 0 0 10px var(--neon); }
 
-        /* Logout Button Styles */
         .btn-logout {
             background: transparent;
             border: 1px solid var(--danger);
@@ -121,7 +118,6 @@
             box-shadow: 0 0 15px var(--danger);
         }
 
-        /* Logout Overlay Sequence */
         #logoutOverlay {
             position: fixed; inset: 0;
             background: black;
@@ -142,13 +138,14 @@
             line-height: 1.5;
         }
 
-        /* SOS Alert */
         body.sos-active::after {
             content: "EMERGENCY - UNIT COMPROMISED";
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             color: var(--danger); font-family: 'Orbitron'; font-weight: bold;
             z-index: 2000; letter-spacing: 5px; animation: blink 0.5s infinite;
         }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
 
         .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.5); }
     </style>
@@ -241,7 +238,6 @@
     let markers = {};
     const sosAudio = document.getElementById('sosAudio');
 
-    // Clock & Latency
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
         if(document.getElementById('latency')) {
@@ -249,17 +245,14 @@
         }
     }, 1000);
 
-    // Logout Function (Global agar bisa dipanggil button)
     window.triggerLogout = function() {
         const overlay = document.getElementById('logoutOverlay');
         const log = document.getElementById('logoutLog');
-        const bar = document.getElementById('logoutBar');
         const main = document.getElementById('dashboardContent');
 
         main.style.filter = "blur(20px) grayscale(1)";
         main.style.transform = "scale(0.9)";
         overlay.style.display = "flex";
-        bar.style.width = "0%";
 
         const steps = [
             "[LOG] Requesting disconnect from MIL-SAT...",
@@ -278,7 +271,7 @@
                 clearInterval(interval);
                 localStorage.removeItem("auth");
                 setTimeout(() => {
-                    window.location.href = "index.html"; // Balik ke Login
+                    window.location.replace("login.html"); 
                 }, 1000);
             }
         }, 400);
@@ -287,7 +280,6 @@
     onValue(ref(db, "live"), (snapshot) => {
         const data = snapshot.val();
         const listContainer = document.getElementById("unitList");
-        const sosAlertBox = document.getElementById("sosAlertBox");
         
         Object.keys(markers).forEach(id => {
             if (!data || !data[id]) {
