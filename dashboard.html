@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMMAND CENTER | YONIF 859/RBK</title>
+    <title>NEURAL COMMAND | YONIF 859/RBK 2045</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -11,10 +11,10 @@
     <style>
         :root {
             --neon: #00ff41;
-            --neon-dim: rgba(0, 255, 65, 0.2);
-            --bg: #010a01;
+            --neon-dim: rgba(0, 255, 65, 0.1);
+            --bg: #000500;
             --danger: #ff003c;
-            --panel: rgba(2, 15, 2, 0.95);
+            --panel: rgba(0, 15, 0, 0.8);
             --accent: #00e5ff;
         }
 
@@ -27,146 +27,162 @@
             overflow: hidden;
         }
 
-        /* Perbaikan: Animasi SOS pada Body */
-        body.sos-active {
-            animation: screen-red-alert 0.5s infinite alternate;
-        }
-        @keyframes screen-red-alert {
-            from { box-shadow: inset 0 0 0px transparent; }
-            to { box-shadow: inset 0 0 100px rgba(255, 0, 60, 0.4); }
-        }
-
-        .grid-overlay {
+        /* 2045 Grid Background */
+        .cyber-grid {
             position: fixed; inset: 0;
-            background-image: linear-gradient(var(--neon-dim) 1px, transparent 1px), 
-                              linear-gradient(90deg, var(--neon-dim) 1px, transparent 1px);
-            background-size: 50px 50px; pointer-events: none; opacity: 0.1; z-index: 0;
+            background-image: 
+                linear-gradient(var(--neon-dim) 1px, transparent 1px),
+                linear-gradient(90deg, var(--neon-dim) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1; opacity: 0.3;
         }
 
         .main-ui {
             display: grid;
-            grid-template-columns: 350px 1fr 350px;
-            grid-template-rows: 80px 1fr;
-            height: 100vh; gap: 15px; padding: 15px; box-sizing: border-box;
-            position: relative; z-index: 1;
+            grid-template-columns: 380px 1fr 380px;
+            grid-template-rows: 70px 1fr;
+            height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
         }
 
         header {
             grid-column: span 3;
             background: var(--panel);
-            border: 2px solid var(--neon);
+            border: 1px solid var(--neon);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 30px; clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
-            box-shadow: 0 0 20px var(--neon-dim);
+            padding: 0 25px;
+            backdrop-filter: blur(15px);
+            clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%);
         }
 
         .side-panel {
             background: var(--panel);
-            border: 1px solid var(--neon);
-            padding: 20px; display: flex; flex-direction: column; gap: 20px;
-            overflow-y: auto; backdrop-filter: blur(10px);
-        }
-
-        #map { border: 1px solid var(--neon); background: #000; }
-
-        /* Marker & Radar Styles */
-        .custom-marker {
-            width: 24px; height: 24px;
-            background: var(--neon);
-            border: 2px solid #fff; border-radius: 50%;
-            box-shadow: 0 0 15px var(--neon);
-            display: flex; align-items: center; justify-content: center;
-            color: black; font-weight: bold; font-size: 9px;
-        }
-        .sos-marker {
-            background: var(--danger) !important;
-            animation: marker-pulse 0.6s infinite alternate;
-        }
-        @keyframes marker-pulse {
-            from { transform: scale(1); box-shadow: 0 0 10px var(--danger); }
-            to { transform: scale(1.4); box-shadow: 0 0 30px var(--danger); }
-        }
-
-        .personnel-card {
-            background: rgba(0, 255, 65, 0.05);
             border: 1px solid var(--neon-dim);
-            padding: 15px; border-left: 4px solid var(--neon);
-            transition: 0.3s; cursor: pointer;
+            padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            overflow-y: auto; backdrop-filter: blur(20px);
+            box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.05);
         }
+
+        #map { 
+            border: 1px solid var(--neon-dim); 
+            background: #000; 
+            position: relative;
+        }
+
+        /* Scanline Effect on Map */
+        #map::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                        repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 4px 100%;
+            pointer-events: none; z-index: 1000;
+        }
+
+        /* Unit Cards Futuristik */
+        .personnel-card {
+            background: rgba(0, 255, 65, 0.03);
+            border: 1px solid var(--neon-dim);
+            padding: 12px; margin-bottom: 10px;
+            position: relative; transition: 0.3s; cursor: pointer;
+            overflow: hidden;
+        }
+        .personnel-card::before {
+            content: ""; position: absolute; left: 0; top: 0; width: 3px; height: 100%;
+            background: var(--neon);
+        }
+        .personnel-card:hover { background: rgba(0, 255, 65, 0.1); transform: translateX(5px); }
+
         .personnel-card.sos {
-            border-left-color: var(--danger);
+            border-color: var(--danger);
             background: rgba(255, 0, 60, 0.1);
-            animation: card-flicker 1s infinite;
+            animation: glitch-border 0.5s infinite;
         }
-        @keyframes card-flicker {
-            50% { border-left-color: white; }
-        }
-
-        /* Speed Gauge */
-        .speed-gauge {
-            width: 100%; height: 10px; background: #111;
-            margin-top: 10px; border-radius: 5px; overflow: hidden;
-        }
-        .speed-fill {
-            height: 100%; background: linear-gradient(90deg, var(--neon), var(--accent));
-            width: 0%; transition: 1s;
+        @keyframes glitch-border {
+            0% { border-color: var(--danger); }
+            50% { border-color: #fff; }
+            100% { border-color: var(--danger); }
         }
 
-        .stat-val { font-family: 'Orbitron'; font-size: 28px; color: white; }
+        .stat-box {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--neon-dim);
+            padding: 15px; text-align: center; position: relative;
+        }
+        .stat-val { font-family: 'Orbitron'; font-size: 32px; color: #fff; text-shadow: 0 0 10px var(--neon); }
 
-        /* Leaflet Dark Filter */
-        .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.9) contrast(1.2); }
+        /* Speed & Telemetry HUD */
+        .hud-line {
+            display: flex; justify-content: space-between; font-size: 12px;
+            margin-bottom: 5px; border-bottom: 1px solid rgba(0,255,65,0.1);
+            padding-bottom: 2px;
+        }
+
+        /* SOS Screen Overlay */
+        body.sos-active::after {
+            content: "EMERGENCY - UNIT COMPROMISED";
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            color: var(--danger); font-family: 'Orbitron'; font-weight: bold;
+            z-index: 2000; letter-spacing: 5px; animation: blink 0.5s infinite;
+        }
+        @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* Dark Map Filter */
+        .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.5); }
     </style>
 </head>
 <body>
 
-<div class="grid-overlay"></div>
+<div class="cyber-grid"></div>
 
 <div class="main-ui">
     <header>
-        <div style="font-family: 'Orbitron'; letter-spacing: 5px;">
-            <span style="color: var(--accent)">●</span> BATTALION COMMAND CENTER
+        <div style="font-family: 'Orbitron'; letter-spacing: 3px; display: flex; align-items: center; gap: 15px;">
+            <div style="width: 15px; height: 15px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon);"></div>
+            NEURAL COMMAND CENTER <span style="color:white; opacity: 0.5;">V4.0</span>
         </div>
-        <div id="clock" style="font-family: 'Orbitron'; font-size: 24px;">00:00:00</div>
-        <div style="font-family: 'Share Tech Mono'; font-size: 12px; text-align: right;">
-            SECTOR: 859-RBK<br>STATUS: <span id="sysStatus" style="color:var(--neon)">ENCRYPTED</span>
+        <div id="clock" style="font-family: 'Orbitron'; font-size: 20px; color: var(--accent);">00:00:00</div>
+        <div style="font-family: 'Share Tech Mono'; font-size: 10px; text-align: right; opacity: 0.7;">
+            CORE_SYNC: ACTIVE<br>SATELLITE: MIL-SAT_2045
         </div>
     </header>
 
     <aside class="side-panel">
-        <div>
-            <h3 style="font-size: 12px; margin-bottom: 10px; font-family: 'Orbitron'">OPERATIONAL FORCE</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div style="border:1px solid var(--neon); padding:10px; text-align:center">
-                    <div class="stat-val" id="totalUnit">0</div>
-                    <small>UNITS</small>
-                </div>
-                <div style="border:1px solid var(--neon); padding:10px; text-align:center">
-                    <div class="stat-val" style="color: var(--accent)" id="activeUnit">0</div>
-                    <small>LIVE</small>
-                </div>
+        <h3 style="font-size: 11px; font-family: 'Orbitron'; color: var(--accent); letter-spacing: 2px;">NEURAL LINK STATUS</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="stat-box">
+                <small style="font-size: 9px; opacity: 0.6;">TOTAL UNITS</small>
+                <div class="stat-val" id="totalUnit">0</div>
+            </div>
+            <div class="stat-box">
+                <small style="font-size: 9px; opacity: 0.6;">ACTIVE LINK</small>
+                <div class="stat-val" style="color: var(--accent)" id="activeUnit">0</div>
             </div>
         </div>
 
-        <div id="unitList" style="flex:1"></div>
+        <div id="unitList" style="flex:1; margin-top: 10px;">
+            </div>
     </aside>
 
     <div id="map"></div>
 
     <aside class="side-panel">
-        <div style="font-family: 'Orbitron'; border-bottom: 2px solid var(--neon); padding-bottom:10px">TELEMETRY DATA</div>
-        <div id="detailBox" style="font-family: 'Share Tech Mono'; font-size: 14px; margin-top:15px">
-            <p style="opacity:0.5">SELECT UNIT ON MAP...</p>
+        <div style="font-family: 'Orbitron'; font-size: 12px; border-bottom: 1px solid var(--neon); padding-bottom:8px; color: var(--accent);">DATA TELEMETRY</div>
+        
+        <div id="detailBox" style="font-family: 'Share Tech Mono'; margin-top:15px;">
+            <div style="text-align: center; padding: 40px 0; opacity: 0.3;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/>
+                </svg>
+                <p>WAITING FOR TARGET SELECTION</p>
+            </div>
         </div>
 
         <div id="sosAlertBox"></div>
 
-        <div style="margin-top:auto">
-            <h4 style="font-size:10px; color:var(--accent)">SATELLITE DOWNLINK</h4>
-            <div style="font-size:10px; opacity:0.6; line-height:1.5">
-                SAT: MIL-COM-7<br>
-                POS: FIX-3D ACTIVE<br>
-                BW: 124.5 kbps
+        <div style="margin-top:auto; background: rgba(0,0,0,0.4); padding: 10px; border: 1px solid var(--neon-dim);">
+            <div class="hud-line"><span>UPLINK</span><span style="color:white">SECURED</span></div>
+            <div class="hud-line"><span>LATENCY</span><span id="latency">24ms</span></div>
+            <div class="hud-line"><span>ENCRYPTION</span><span>AES-512</span></div>
+            <div style="height: 2px; background: var(--neon-dim); margin-top: 5px;">
+                <div style="width: 75%; height: 100%; background: var(--neon);"></div>
             </div>
         </div>
     </aside>
@@ -192,7 +208,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const map = L.map('map', { zoomControl: false }).setView([-2.5, 118], 5);
+    // Init Map with Dark Mode
+    const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-2.5, 118], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
     let markers = {};
@@ -200,29 +217,24 @@
 
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+        document.getElementById('latency').innerText = Math.floor(Math.random() * (40 - 15) + 15) + "ms";
     }, 1000);
-
-    // FIX: Fungsi Pembersihan Marker
-    function clearOldMarkers(currentData) {
-        Object.keys(markers).forEach(id => {
-            if (!currentData || !currentData[id]) {
-                map.removeLayer(markers[id]);
-                delete markers[id];
-            }
-        });
-    }
 
     onValue(ref(db, "live"), (snapshot) => {
         const data = snapshot.val();
         const listContainer = document.getElementById("unitList");
         const sosAlertBox = document.getElementById("sosAlertBox");
         
-        clearOldMarkers(data);
+        // Cleanup markers
+        Object.keys(markers).forEach(id => {
+            if (!data || !data[id]) {
+                map.removeLayer(markers[id]);
+                delete markers[id];
+            }
+        });
 
         if(!data) {
-            listContainer.innerHTML = "<div style='opacity:0.3; text-align:center'>STANDBY...</div>";
-            document.body.classList.remove('sos-active');
-            sosAudio.pause();
+            listContainer.innerHTML = "<div style='opacity:0.3; text-align:center'>SCANNING FOR SIGNALS...</div>";
             return;
         }
 
@@ -231,9 +243,8 @@
 
         Object.keys(data).forEach(id => {
             const val = data[id];
-            // FIX: Validasi Online (Data harus diupdate dalam 30 detik terakhir)
             const diff = Date.now() - (val.waktu || 0);
-            const isOnline = diff < 30000; 
+            const isOnline = diff < 60000; // 1 Minute limit
             const hasSOS = val.sos === true;
             
             total++;
@@ -241,9 +252,15 @@
             if(hasSOS && isOnline) anySOS = true;
 
             if(val.latitude && val.longitude) {
-                // Update Marker
-                const iconHtml = `<div class="custom-marker ${hasSOS && isOnline ? 'sos-marker' : ''}">${id.substring(0,2)}</div>`;
-                const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [24,24] });
+                // Marker Styling 2045
+                const markerColor = hasSOS && isOnline ? 'var(--danger)' : (isOnline ? 'var(--neon)' : '#555');
+                const iconHtml = `
+                    <div style="position:relative;">
+                        <div class="marker-radar" style="position:absolute; inset:-10px; border:1px solid ${markerColor}; border-radius:50%; animation: pulse 2s infinite;"></div>
+                        <div style="width:12px; height:12px; background:${markerColor}; border:2px solid #fff; border-radius:50%; box-shadow:0 0 10px ${markerColor};"></div>
+                    </div>`;
+                
+                const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [12,12] });
 
                 if(!markers[id]) {
                     markers[id] = L.marker([val.latitude, val.longitude], {icon: customIcon}).addTo(map);
@@ -252,32 +269,32 @@
                     markers[id].setIcon(customIcon);
                 }
 
-                // Add to List
+                // Add to Sidebar
                 const card = document.createElement("div");
                 card.className = `personnel-card ${hasSOS && isOnline ? 'sos' : ''}`;
-                card.style.opacity = isOnline ? "1" : "0.4";
+                card.style.opacity = isOnline ? "1" : "0.5";
                 
-                const speedPct = Math.min((val.speed || 0) * 2, 100);
-
                 card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between">
-                        <strong>${id}</strong>
-                        <small style="color:${isOnline ? 'var(--neon)' : 'red'}">${isOnline ? 'ONLINE' : 'OFFLINE'}</small>
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <span style="font-family:'Orbitron'; font-size:13px">${id}</span>
+                        <span style="font-size:9px; color:${isOnline ? 'var(--neon)' : 'gray'}">${isOnline ? 'SYNCED' : 'LOST'}</span>
                     </div>
-                    <div style="font-size:11px; margin-top:5px">SPD: ${val.speed || 0} KM/H | ACC: ${val.accuracy || 0}M</div>
-                    <div class="speed-gauge"><div class="speed-fill" style="width:${speedPct}%"></div></div>
+                    <div style="font-size:10px; margin-top:5px; opacity:0.7">
+                        V: ${val.speed || 0} km/h | A: ${val.altitude || 0}m
+                    </div>
                 `;
 
                 card.onclick = () => {
                     map.flyTo([val.latitude, val.longitude], 16);
                     document.getElementById("detailBox").innerHTML = `
-                        <div style="color:var(--accent)">ID: ${id}</div>
-                        <div>LAT: ${val.latitude.toFixed(6)}</div>
-                        <div>LON: ${val.longitude.toFixed(6)}</div>
-                        <div>LAST: ${new Date(val.waktu).toLocaleTimeString()}</div>
-                        <div style="margin-top:10px; border:1px solid var(--neon-dim); padding:5px">
-                            SIGNAL: ${val.accuracy < 20 ? 'EXCELLENT' : 'WEAK'}<br>
-                            STATUS: ${hasSOS ? 'EMERGENCY' : 'PATROL'}
+                        <div style="color:var(--accent); font-size:18px; margin-bottom:10px;">TARGET: ${id}</div>
+                        <div class="hud-line"><span>COORD</span><span>${val.latitude.toFixed(5)}, ${val.longitude.toFixed(5)}</span></div>
+                        <div class="hud-line"><span>BEARING</span><span>${val.heading || 0}°</span></div>
+                        <div class="hud-line"><span>PRECISION</span><span>${val.accuracy}m</span></div>
+                        <div class="hud-line"><span>ALTITUDE</span><span>${val.altitude || 0}m</span></div>
+                        <div style="margin-top:15px; padding:10px; background:rgba(0,255,65,0.1); border:1px solid var(--neon);">
+                            <div style="font-size:9px">AI ANALYSIS:</div>
+                            <div style="font-size:11px">UNIT IS ${hasSOS ? 'UNDER DISTRESS' : 'OPERATING NORMALLY'}</div>
                         </div>
                     `;
                 };
@@ -289,7 +306,10 @@
         if(anySOS) {
             document.body.classList.add('sos-active');
             if(sosAudio.paused) sosAudio.play();
-            sosAlertBox.innerHTML = `<div style="background:var(--danger); padding:10px; margin-top:10px; animation:marker-pulse 0.5s infinite">⚠️ IMMEDIATE SOS ALERT</div>`;
+            sosAlertBox.innerHTML = `
+                <div style="background:rgba(255,0,60,0.2); border:1px solid var(--danger); padding:15px; margin-top:10px; text-align:center; color:var(--danger); font-family:'Orbitron'; font-size:12px;">
+                    ⚠️ NEURAL SOS DETECTED ⚠️
+                </div>`;
         } else {
             document.body.classList.remove('sos-active');
             sosAudio.pause();
@@ -300,5 +320,13 @@
         document.getElementById("activeUnit").innerText = active;
     });
 </script>
+
+<style>
+    @keyframes pulse {
+        0% { transform: scale(0.5); opacity: 1; }
+        100% { transform: scale(2.5); opacity: 0; }
+    }
+</style>
+
 </body>
 </html>
