@@ -21,7 +21,7 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- BACKGROUND & EFFECTS --- */
+        /* --- BACKGROUND EFFECTS --- */
         .indo-map-bg {
             position: fixed; inset: 0; z-index: -3;
             background-image: url('https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg');
@@ -198,8 +198,7 @@
     function playSound(freq, type, duration, vol) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         gain.gain.setValueAtTime(vol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -209,24 +208,26 @@
     const sfx = {
         click: () => playSound(800, 'square', 0.1, 0.1),
         success: () => { playSound(600, 'sine', 0.2, 0.1); setTimeout(() => playSound(1200, 'sine', 0.3, 0.1), 100); },
-        sos: () => {
-            let i = 0;
-            const itv = setInterval(() => {
-                playSound(400, 'sawtooth', 0.2, 0.05);
-                if(++i > 4) clearInterval(itv);
-            }, 150);
-        },
+        sos: () => { let i = 0; const itv = setInterval(() => { playSound(400, 'sawtooth', 0.2, 0.05); if(++i > 4) clearInterval(itv); }, 150); },
         error: () => playSound(150, 'sawtooth', 0.5, 0.2)
     };
 
-    // --- TELEMETRY & CLOCK ---
+    // --- REAL BATTERY & CLOCK ---
+    function updateBattery() {
+        if(navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+                const level = Math.round(battery.level * 100);
+                document.getElementById('batStatus').innerText = `PWR: ${level}%`;
+                // Warna peringatan jika baterai rendah
+                document.getElementById('batStatus').style.color = level < 20 ? "var(--danger)" : "var(--accent)";
+            });
+        }
+    }
+
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
         if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
-        
-        if(navigator.getBattery) navigator.getBattery().then(b => {
-            document.getElementById('batStatus').innerText = `PWR: ${Math.round(b.level * 100)}%`;
-        });
+        updateBattery();
     }, 1000);
 
     window.addEventListener('deviceorientation', (e) => {
@@ -253,15 +254,18 @@
     }
     initCanvas(); drawMatrix();
 
-    // --- CORE LOGIC ---
+    // --- LOGIC FUNCTIONS ---
     window.initiateLogin = () => {
         sfx.click();
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) { sfx.error(); return; }
         myCallsign = val;
+        
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
-        
+        document.getElementById('loadMsg').innerText = "ESTABLISHING LINK";
+        document.getElementById('miniLog').innerHTML = ""; // Reset log
+
         startSequence(["ENCRYPTING_BIO_LINK", "BYPASSING_FIREWALL", "SAT_LINK_ESTABLISHED"], 80, () => {
             sfx.success();
             document.getElementById('loadingArea').classList.add('hidden');
@@ -272,12 +276,31 @@
         });
     };
 
+    window.initiateTerminate = () => {
+        sfx.click();
+        if(confirm("CONFIRM NEURAL DISCONNECT?")) {
+            if(watchId) navigator.geolocation.clearWatch(watchId);
+            
+            document.getElementById('trackingArea').classList.add('hidden');
+            document.getElementById('loadingArea').classList.remove('hidden');
+            document.getElementById('loadMsg').innerText = "DE-SYNCING";
+            document.getElementById('miniLog').innerHTML = ""; // Clear log for logout
+
+            startSequence(["WIPING_ENCRYPTION_KEYS", "DISCONNECTING_SAT_CORE", "NEURAL_LINK_SEVERED"], 50, () => {
+                location.reload();
+            });
+        }
+    };
+
     function startSequence(messages, speed, callback) {
         let p = 0;
         const bar = document.getElementById('progressFill'), miniLog = document.getElementById('miniLog');
+        bar.style.width = "0%";
+        
         const loader = setInterval(() => {
             p += 5; bar.style.width = p + "%";
             if(p % 10 === 0) playSound(1500, 'sine', 0.05, 0.02);
+            
             let idx = Math.floor((p/100) * messages.length);
             if(messages[idx] && !miniLog.innerHTML.includes(messages[idx])) {
                 miniLog.innerHTML += `<div>> ${messages[idx]}... OK</div>`;
@@ -326,7 +349,6 @@
     };
 
     window.dismissCommand = () => { sfx.click(); document.getElementById('commandPopup').classList.add('hidden'); };
-    window.initiateTerminate = () => { sfx.click(); if(confirm("TERMINATE LINK?")) location.reload(); };
 </script>
 </body>
 </html>
