@@ -6,8 +6,14 @@
     <title>NEURAL COMMAND | YONIF 859/RBK 2045</title>
     
     <script>
+        /* PROTEKSI KETAT */
         if (localStorage.getItem("auth") !== "true") {
+            // Langsung lempar ke login.html
             window.location.replace("login.html");
+            
+            // Hentikan render HTML sisa agar tidak sempat terlihat
+            document.write('<style>body { display:none !important; }</style>');
+            window.stop(); 
         }
     </script>
 
