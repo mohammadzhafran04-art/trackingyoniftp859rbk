@@ -33,7 +33,7 @@
             height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* --- WOW FEATURE: NEURAL SCAN ANIMATION --- */
+        /* Scanline Animasi */
         @keyframes scanline {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(100vh); }
@@ -41,26 +41,19 @@
         .scan-effect {
             position: fixed; inset: 0; 
             background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
-            height: 100px; width: 100%; z-index: 1000; pointer-events: none;
-            animation: scanline 4s linear infinite; opacity: 0.5;
+            height: 100px; width: 100%; z-index: 2000; pointer-events: none;
+            animation: scanline 6s linear infinite; opacity: 0.3;
         }
 
-        /* --- CSS RESTORATION & UPGRADE --- */
-        #loadingArea {
-            position: fixed; inset: 0; background: var(--bg);
-            z-index: 9999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-
-        .progress-track { width: 300px; height: 4px; background: rgba(0,255,65,0.1); margin: 20px 0; }
-        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 15px var(--neon); transition: width 0.2s; }
-
+        /* Grid Background */
         .cyber-grid {
             position: fixed; inset: 0; z-index: -1; opacity: 0.2;
-            background-image: linear-gradient(var(--neon-dim) 1px, transparent 1px), linear-gradient(90deg, var(--neon-dim) 1px, transparent 1px);
-            background-size: 40px 40px;
+            background-image: linear-gradient(var(--neon-dim) 1px, transparent 1px), 
+                              linear-gradient(90deg, var(--neon-dim) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
 
+        /* Layout */
         .main-ui {
             display: grid; grid-template-columns: 350px 1fr 350px;
             grid-template-rows: 70px 1fr; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
@@ -75,27 +68,58 @@
         .side-panel {
             background: var(--panel); border: 1px solid var(--neon-dim);
             padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto;
+            z-index: 10;
         }
 
-        /* Personnel Card Fix */
+        /* FIX PETA: Filter Diperhalus agar tidak hitam pekat */
+        #map { 
+            border: 1px solid var(--neon-dim); 
+            background: #000a00; 
+            box-shadow: inset 0 0 50px rgba(0,255,65,0.2);
+            z-index: 1;
+        }
+        
+        /* Tactical Night Vision Map Filter */
+        .leaflet-container { 
+            filter: invert(90%) hue-rotate(150deg) brightness(0.7) contrast(1.2) saturate(0.5); 
+            background: #000 !important;
+        }
+
         .personnel-card {
             background: rgba(0, 255, 65, 0.05); border: 1px solid var(--neon-dim);
             padding: 12px; cursor: pointer; transition: 0.3s; position: relative;
         }
-        .personnel-card:hover { background: var(--neon-dim); border-color: var(--neon); }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .online { background: var(--neon); box-shadow: 0 0 8px var(--neon); }
-        .offline { background: #555; }
+        .personnel-card:hover { 
+            background: var(--neon-dim); border-color: var(--neon); 
+            box-shadow: 0 0 10px var(--neon-dim);
+        }
+        
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .online { background: var(--neon); box-shadow: 0 0 10px var(--neon); }
+        .offline { background: #444; }
 
-        #map { border: 1px solid var(--neon-dim); background: #000; }
-        .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.4); }
+        .btn-command {
+            background: var(--neon-dim); border: 1px solid var(--neon);
+            color: var(--neon); padding: 10px; cursor: pointer; font-family: 'Orbitron';
+            transition: 0.3s;
+        }
+        .btn-command:hover { background: var(--neon); color: black; }
 
         .terminal-log {
-            font-size: 11px; font-family: 'Share Tech Mono'; background: rgba(0,0,0,0.8);
-            padding: 10px; height: 200px; overflow-y: auto; border: 1px solid var(--neon-dim);
+            font-size: 11px; font-family: 'Share Tech Mono'; background: rgba(0,5,0,0.9);
+            padding: 10px; height: 180px; overflow-y: auto; border: 1px solid var(--neon-dim);
+            color: var(--accent);
+        }
+
+        #loadingArea {
+            position: fixed; inset: 0; background: var(--bg);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
         }
 
         .hidden { display: none !important; }
+        
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -104,36 +128,36 @@
 <div class="cyber-grid"></div>
 
 <div id="loadingArea">
-    <div style="font-family: 'Orbitron'; font-size: 18px; letter-spacing: 5px; color: var(--neon);">BOOTING NEURAL_OS</div>
-    <div class="progress-track">
-        <div id="progressFill" class="progress-fill"></div>
+    <div style="font-family: 'Orbitron'; font-size: 20px; letter-spacing: 8px; color: var(--neon);">NEURAL_OS V4.3</div>
+    <div style="width: 300px; height: 2px; background: rgba(0,255,65,0.1); margin: 20px 0;">
+        <div id="progressFill" style="height: 100%; background: var(--neon); width: 0%; transition: 0.3s;"></div>
     </div>
-    <div id="loadMsg" style="font-family: 'Share Tech Mono'; font-size: 10px; color: var(--accent);">MOUNTING SATELLITE INTERFACE...</div>
+    <div id="loadMsg" style="font-family: 'Share Tech Mono'; font-size: 10px;">ESTABLISHING UPLINK...</div>
 </div>
 
 <div class="main-ui hidden" id="dashboardContent">
     <header>
         <div style="font-family: 'Orbitron'; letter-spacing: 2px;">
-            <span style="color:var(--neon)">●</span> NEURAL COMMAND <span style="color:white; opacity:0.5">V4.2</span>
+            <span style="color:var(--neon); animation: blink 1s infinite;">●</span> COMMAND DASHBOARD
         </div>
-        <div id="clock" style="font-family: 'Orbitron'; font-size: 20px; color: var(--accent);">00:00:00</div>
+        <div id="clock" style="font-family: 'Orbitron'; font-size: 22px; color: var(--accent); text-shadow: 0 0 10px var(--accent);">00:00:00</div>
         <button onclick="triggerLogout()" style="background:transparent; border:1px solid var(--danger); color:var(--danger); font-family:'Orbitron'; padding:5px 15px; cursor:pointer;">DISCONNECT</button>
     </header>
 
     <aside class="side-panel">
-        <h3 style="font-size: 11px; font-family: 'Orbitron'; color: var(--accent);">ACTIVE PERSONNEL</h3>
+        <h3 style="font-size: 12px; font-family: 'Orbitron'; color: var(--accent); border-bottom: 1px solid var(--neon-dim); padding-bottom: 5px;">ACTIVE UNITS</h3>
         <div id="unitList"></div>
     </aside>
 
     <div id="map"></div>
 
     <aside class="side-panel">
-        <h3 style="font-size: 11px; font-family: 'Orbitron'; color: var(--accent);">TACTICAL BROADCAST</h3>
-        <input type="text" id="cmdInput" placeholder="TYPE DIRECTIVE..." style="background:black; border:1px solid var(--neon); color:var(--neon); padding:10px; font-family:'Share Tech Mono'; outline:none;">
-        <button class="btn-command" onclick="broadcastCommand()" style="background:var(--neon-dim); border:1px solid var(--neon); color:var(--neon); padding:10px; cursor:pointer; font-family:'Orbitron';">EXECUTE COMMAND</button>
+        <h3 style="font-size: 12px; font-family: 'Orbitron'; color: var(--accent); border-bottom: 1px solid var(--neon-dim); padding-bottom: 5px;">DIRECTIVE CONTROL</h3>
+        <input type="text" id="cmdInput" placeholder="ENTER DIRECTIVE..." style="background:rgba(0,0,0,0.5); border:1px solid var(--neon); color:var(--neon); padding:10px; font-family:'Share Tech Mono'; outline:none;">
+        <button class="btn-command" onclick="broadcastCommand()">BROADCAST COMMAND</button>
         
-        <h3 style="font-size: 11px; font-family: 'Orbitron'; color: var(--accent); margin-top: 15px;">ENCRYPTED LOG</h3>
-        <div class="terminal-log" id="sysLog">> LINK_ESTABLISHED...</div>
+        <h3 style="font-size: 12px; font-family: 'Orbitron'; color: var(--accent); margin-top: 15px;">ENCRYPTED LOG</h3>
+        <div class="terminal-log" id="sysLog">> WAITING_FOR_DATA...</div>
     </aside>
 </div>
 
@@ -147,7 +171,7 @@
         authDomain: "real-time-location-30d91.firebaseapp.com",
         databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "real-time-location-30d91",
-        storageBucket: "real-time-location-30d91.firebasedatabase.app",
+        storageBucket: "real-time-location-30d91.firebasestorage.app",
         messagingSenderId: "1092565406651",
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
@@ -156,66 +180,85 @@
     const db = getDatabase(app);
     let map, markers = {};
 
-    // 1. SEQUENCE LOADING
     window.addEventListener('DOMContentLoaded', () => {
         let prog = 0;
         const bar = document.getElementById('progressFill');
         const loader = setInterval(() => {
-            prog += Math.random() * 25;
+            prog += Math.random() * 30;
             if(prog > 100) prog = 100;
             bar.style.width = prog + "%";
             if(prog === 100) {
                 clearInterval(loader);
-                setTimeout(initDashboard, 600);
+                setTimeout(initDashboard, 800);
             }
-        }, 120);
+        }, 150);
     });
 
     function initDashboard() {
         document.getElementById('loadingArea').classList.add('hidden');
         document.getElementById('dashboardContent').classList.remove('hidden');
         
-        map = L.map('map', { zoomControl: false }).setView([-6.2000, 106.8166], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        // Setup Map
+        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-6.2000, 106.8166], 13);
         
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); }, 1000);
+        // Menggunakan Tile yang lebih stabil
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+        
+        setInterval(() => { 
+            const d = new Date();
+            document.getElementById('clock').innerText = d.getHours().toString().padStart(2, '0') + "." + d.getMinutes().toString().padStart(2, '0') + "." + d.getSeconds().toString().padStart(2, '0'); 
+        }, 1000);
+        
         syncUnits();
     }
 
-    // 2. SYNC & INTERACTIVITY (FIXED ZOOM & STATUS)
     function syncUnits() {
         onValue(ref(db, "live"), (snapshot) => {
             const data = snapshot.val();
             const listArea = document.getElementById('unitList');
+            if(!data) return;
+            
             listArea.innerHTML = "";
             const now = Date.now();
 
             for(let id in data) {
                 const unit = data[id];
-                const isOnline = (now - unit.waktu) < 10000; // Online jika update < 10 detik
+                // Online jika data masuk dalam 15 detik terakhir
+                const isOnline = (now - unit.waktu) < 15000; 
 
-                // Update Map Markers
                 if(!markers[id]) {
-                    markers[id] = L.marker([unit.latitude, unit.longitude]).addTo(map);
+                    // Marker custom style
+                    markers[id] = L.circleMarker([unit.latitude, unit.longitude], {
+                        radius: 8,
+                        fillColor: unit.sos ? "#ff003c" : "#00ff41",
+                        color: "#fff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map).bindPopup(`<b>${id}</b>`);
                 } else {
                     markers[id].setLatLng([unit.latitude, unit.longitude]);
+                    markers[id].setStyle({ fillColor: unit.sos ? "#ff003c" : "#00ff41" });
                 }
-                
-                // Color marker if SOS
-                if(unit.sos) markers[id]._icon.style.filter = "hue-rotate(280deg) brightness(1.5)";
 
-                // Update List with Click-to-Zoom
                 const card = document.createElement('div');
                 card.className = "personnel-card";
-                card.onclick = () => focusUnit(unit.latitude, unit.longitude, id);
+                card.onclick = () => {
+                    map.flyTo([unit.latitude, unit.longitude], 17);
+                    markers[id].openPopup();
+                    addLog(`NEURAL FOCUS: ${id}`);
+                };
+                
                 card.innerHTML = `
-                    <div style="font-family:'Orbitron'; font-size:13px;">
+                    <div style="font-family:'Orbitron'; font-size:12px; display:flex; align-items:center;">
                         <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
-                        ${id} ${unit.sos ? '<span style="color:var(--danger); animation:blink 0.5s infinite"> [!]</span>' : ''}
+                        ${id} ${unit.sos ? '<span style="color:var(--danger); font-size:10px; margin-left:10px;">[SOS ACTIVE]</span>' : ''}
                     </div>
-                    <div style="font-size:10px; margin-top:5px; opacity:0.8; font-family:'Share Tech Mono'">
-                        POS: ${unit.latitude.toFixed(4)}, ${unit.longitude.toFixed(4)}<br>
-                        SPD: ${unit.speed} KM/H | ALT: ${unit.altitude}M
+                    <div style="font-size:10px; margin-top:5px; opacity:0.7; font-family:'Share Tech Mono'">
+                        POS: ${unit.latitude.toFixed(5)}, ${unit.longitude.toFixed(5)}<br>
+                        SPD: ${unit.speed || 0} KM/H | ALT: ${unit.altitude || 0}M
                     </div>
                 `;
                 listArea.appendChild(card);
@@ -223,31 +266,20 @@
         });
     }
 
-    // WOW FEATURE: TARGET LOCK FOCUS
-    function focusUnit(lat, lon, id) {
-        map.flyTo([lat, lon], 18, { duration: 1.5 });
-        addLog(`LOCKING NEURAL LINK ON: ${id}...`);
-        
-        // Visual cue on marker
-        markers[id].bindPopup(`<b style="color:black">TARGET: ${id}</b>`).openPopup();
-        
-        if(navigator.vibrate) navigator.vibrate(50);
-    }
-
     window.broadcastCommand = () => {
         const text = document.getElementById('cmdInput').value.trim();
         if(!text) return;
         set(ref(db, "commands/global"), { text: text, timestamp: Date.now() })
             .then(() => {
-                addLog("BROADCAST SENT: " + text);
+                addLog("GLOBAL_CMD: " + text);
                 document.getElementById('cmdInput').value = "";
             });
     };
 
     function addLog(msg) {
         const log = document.getElementById('sysLog');
-        log.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${msg}`;
-        log.scrollTop = log.scrollHeight;
+        log.innerHTML = `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>` + log.innerHTML;
+        if(log.children.length > 50) log.lastElementChild.remove();
     }
 
     window.triggerLogout = () => {
