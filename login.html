@@ -3,74 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>859/RBK - Secure Authentication</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>859/RBK - AUTH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff9c; --danger: #ff003c; --bg: #020804; --panel: rgba(5, 20, 10, 0.9); }
-        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', monospace; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; perspective: 1000px; }
-        body::after { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 20; background-size: 100% 2px, 3px 100%; pointer-events: none; }
-        .grid-bg { position: absolute; width: 200%; height: 200%; background-image: linear-gradient(rgba(0, 255, 156, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 156, 0.05) 1px, transparent 1px); background-size: 40px 40px; transform: rotateX(60deg) translateY(-20%); animation: gridMove 12s linear infinite; z-index: 0; }
-        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
-        #warp-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.8s ease-in; }
-        .card { width: 340px; padding: 40px; background: var(--panel); border: 1px solid var(--neon); box-shadow: 0 0 40px rgba(0, 255, 156, 0.1); backdrop-filter: blur(10px); text-align: center; z-index: 10; position: relative; clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%); }
-        .title { font-family: 'Orbitron'; font-size: 16px; letter-spacing: 5px; margin-bottom: 30px; text-shadow: 0 0 10px var(--neon); }
-        .scanner-container { width: 120px; height: 120px; margin: 0 auto 30px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .retina-ring { position: absolute; width: 100%; height: 100%; border: 2px solid rgba(0, 255, 156, 0.1); border-radius: 50%; }
-        .progress-ring { position: absolute; width: 100%; height: 100%; border: 3px solid transparent; border-top: 3px solid var(--neon); border-radius: 50%; animation: rotate 2s linear infinite; display: none; }
-        .scan-line { position: absolute; width: 90%; height: 2px; background: var(--neon); box-shadow: 0 0 15px var(--neon); top: 0; animation: scanning 3s ease-in-out infinite; }
-        @keyframes scanning { 0%, 100% { top: 10%; opacity: 0; } 50% { top: 90%; opacity: 1; } }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        input { width: 100%; padding: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 255, 156, 0.3); color: var(--neon); font-family: 'Orbitron'; text-align: center; letter-spacing: 5px; outline: none; box-sizing: border-box; margin-bottom: 20px; }
-        button { width: 100%; padding: 16px; background: var(--neon); color: #000; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%); }
-        #terminal { margin-top: 25px; font-size: 12px; min-height: 20px; color: rgba(0, 255, 156, 0.6); border-top: 1px solid rgba(0, 255, 156, 0.1); padding-top: 15px; }
-        .alert-error { color: var(--danger); }
-        .shake { animation: shake 0.4s ease-in-out; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        :root { --neon: #00ff9c; --bg: #020804; }
+        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono'; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .card { width: 320px; padding: 40px; border: 1px solid var(--neon); background: rgba(5, 20, 10, 0.9); text-align: center; position: relative; clip-path: polygon(0 15px, 15px 0, 100% 0, 100% 85%, 85% 100%, 0 100%); }
+        .scan-line { position: absolute; width: 80%; height: 2px; background: var(--neon); left: 10%; top: 20%; animation: scan 3s infinite; box-shadow: 0 0 15px var(--neon); }
+        @keyframes scan { 0%, 100% { top: 20%; opacity: 0; } 50% { top: 70%; opacity: 1; } }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--neon); color: var(--neon); text-align: center; margin: 20px 0; font-family: 'Orbitron'; }
+        button { width: 100%; padding: 15px; background: var(--neon); color: #000; border: none; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; }
+        .error { color: #ff003c; font-size: 12px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-    <div id="warp-overlay"></div>
-    <div class="grid-bg"></div>
-    <div class="card" id="loginCard">
-        <div class="title">CORE AUTHENTICATION</div>
-        <div class="scanner-container">
-            <div class="retina-ring"></div>
-            <div class="progress-ring" id="ring"></div>
-            <div class="scan-line"></div>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;"><path d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M17 16c0-2.8-2.2-5-5-5s-5 2.2-5 5"/></svg>
-        </div>
-        <input type="password" id="pass" placeholder="PASSCODE" autocomplete="off" autofocus>
-        <button onclick="authProcess()">INITIALIZE UPLINK</button>
-        <div id="terminal">> AWAITING_INPUT...</div>
+    <div class="card">
+        <div class="scan-line"></div>
+        <div style="font-family:'Orbitron'; letter-spacing:3px;">SYSTEM ACCESS</div>
+        <input type="password" id="pass" placeholder="PASSCODE">
+        <button onclick="login()">INITIALIZE</button>
+        <div id="err" class="error">INVALID CREDENTIALS</div>
     </div>
 
     <script>
         const SECRET = "rabekaojokendor2026";
         if(localStorage.getItem("auth") === "true") window.location.href = "dashboard.html";
 
-        async function authProcess() {
-            const val = document.getElementById("pass").value;
-            const term = document.getElementById("terminal");
-            const ring = document.getElementById("ring");
-            if(!val) return;
-
-            ring.style.display = "block";
-            term.innerText = "> SCANNING BIOMETRICS...";
-
-            await new Promise(r => setTimeout(r, 1500));
-
-            if (val === SECRET) {
+        function login() {
+            const p = document.getElementById("pass").value;
+            if(p === SECRET) {
                 localStorage.setItem("auth", "true");
-                document.getElementById("warp-overlay").style.opacity = "1";
-                setTimeout(() => window.location.href = "dashboard.html", 800);
+                window.location.href = "dashboard.html";
             } else {
-                document.getElementById("loginCard").classList.add("shake");
-                term.innerHTML = "<span class='alert-error'>> ACCESS DENIED</span>";
-                setTimeout(() => {
-                    document.getElementById("loginCard").classList.remove("shake");
-                    ring.style.display = "none";
-                    document.getElementById("pass").value = "";
-                }, 500);
+                document.getElementById("err").style.display = "block";
+                setTimeout(() => document.getElementById("err").style.display = "none", 2000);
             }
         }
     </script>
