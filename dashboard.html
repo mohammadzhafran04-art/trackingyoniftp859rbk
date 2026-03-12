@@ -6,7 +6,7 @@
     <title>NEURAL COMMAND | YONIF 859/RBK 2045</title>
     
     <script>
-        // Security Layer: Langsung arahkan jika tidak ada auth
+        // Security Layer
         if (localStorage.getItem("auth") !== "true") {
             window.location.replace("login.html");
         }
@@ -32,7 +32,6 @@
             height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* Scanline Animasi */
         @keyframes scanline {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(100vh); }
@@ -102,7 +101,6 @@
             color: var(--accent);
         }
 
-        /* Full Screen Loading */
         #loadingArea {
             position: fixed; inset: 0; background: var(--bg);
             z-index: 9999; display: flex; flex-direction: column;
@@ -172,7 +170,6 @@
     const db = getDatabase(app);
     let map, markers = {};
 
-    // --- FUNGSI BOOTING ---
     window.addEventListener('DOMContentLoaded', () => {
         let prog = 0;
         const bar = document.getElementById('progressFill');
@@ -192,10 +189,12 @@
         document.getElementById('dashboardContent').classList.remove('hidden');
         
         // Setup Map
-        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-6.2000, 106.8166], 13);
+        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-0.8194, 135.6846], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         
-        // Clock
+        // PENTING: Memaksa Leaflet refresh ukuran agar tidak blank saat UI muncul
+        setTimeout(() => { map.invalidateSize(); }, 200);
+
         setInterval(() => { 
             const d = new Date();
             document.getElementById('clock').innerText = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0') + ":" + d.getSeconds().toString().padStart(2, '0'); 
@@ -204,7 +203,6 @@
         syncUnits();
     }
 
-    // --- SYNC DATA FIREBASE ---
     function syncUnits() {
         onValue(ref(db, "live"), (snapshot) => {
             const data = snapshot.val();
@@ -216,53 +214,59 @@
 
             for(let id in data) {
                 const unit = data[id];
-                const isOnline = (now - unit.waktu) < 15000; 
-
-                if(!markers[id]) {
-                    markers[id] = L.circleMarker([unit.latitude, unit.longitude], {
-                        radius: 8,
-                        fillColor: unit.sos ? "#ff003c" : "#00ff41",
-                        color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.8
-                    }).addTo(map).bindPopup(`<b>${id}</b>`);
-                } else {
-                    markers[id].setLatLng([unit.latitude, unit.longitude]);
-                    markers[id].setStyle({ fillColor: unit.sos ? "#ff003c" : "#00ff41" });
-                }
-
-                const card = document.createElement('div');
-                card.className = "personnel-card";
-                card.onclick = () => {
-                    map.flyTo([unit.latitude, unit.longitude], 17);
-                    markers[id].openPopup();
-                };
                 
-                card.innerHTML = `
-                    <div style="font-family:'Orbitron'; font-size:11px;">
-                        <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
-                        ${id} ${unit.sos ? '<span style="color:var(--danger)">[SOS]</span>' : ''}
-                    </div>
-                `;
-                listArea.appendChild(card);
+                // --- FIX VARIABEL: Di database kamu pake 'lat' dan 'lon', bukan 'latitude' ---
+                const uLat = unit.lat || unit.latitude;
+                const uLon = unit.lon || unit.longitude;
+                // --------------------------------------------------------------------------
+
+                const isOnline = (now - (unit.waktu || unit.timestamp)) < 20000; 
+
+                if(uLat && uLon) {
+                    if(!markers[id]) {
+                        markers[id] = L.circleMarker([uLat, uLon], {
+                            radius: 10,
+                            fillColor: unit.sos ? "#ff003c" : "#00ff41",
+                            color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.8
+                        }).addTo(map).bindPopup(`<b>UNIT: ${id}</b>`);
+                    } else {
+                        markers[id].setLatLng([uLat, uLon]);
+                        markers[id].setStyle({ fillColor: unit.sos ? "#ff003c" : "#00ff41" });
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = "personnel-card";
+                    card.onclick = () => {
+                        map.flyTo([uLat, uLon], 17);
+                        markers[id].openPopup();
+                    };
+                    
+                    card.innerHTML = `
+                        <div style="font-family:'Orbitron'; font-size:11px;">
+                            <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+                            ${id} ${unit.sos ? '<span style="color:var(--danger)">[SOS]</span>' : ''}
+                        </div>
+                        <div style="font-size:9px; opacity:0.6; margin-top:4px; font-family:'Share Tech Mono'">
+                            POS: ${uLat.toFixed(4)}, ${uLon.toFixed(4)}
+                        </div>
+                    `;
+                    listArea.appendChild(card);
+                }
             }
         });
     }
 
-    // --- EVENT LISTENERS (SOLUSI DISCONNECT) ---
-    
-    // Broadcast Command
     document.getElementById('broadcastBtn').addEventListener('click', () => {
         const text = document.getElementById('cmdInput').value.trim();
         if(!text) return;
         set(ref(db, "commands/global"), { text: text, timestamp: Date.now() })
             .then(() => {
-                addLog("GLOBAL_CMD: " + text);
+                addLog("SENT_GLOBAL_CMD: " + text);
                 document.getElementById('cmdInput').value = "";
             });
     });
 
-    // Logout / Disconnect Logic
     document.getElementById('logoutBtn').addEventListener('click', () => {
-        // Tampilkan loading kembali
         const loadingArea = document.getElementById('loadingArea');
         const loadMsg = document.getElementById('loadMsg');
         const progBar = document.getElementById('progressFill');
@@ -277,8 +281,8 @@
             progBar.style.width = p + "%";
             if(p >= 100) {
                 clearInterval(outInterval);
-                localStorage.removeItem("auth"); // Hapus Auth
-                window.location.replace("login.html"); // Pindah Halaman
+                localStorage.removeItem("auth");
+                window.location.replace("login.html");
             }
         }, 50);
     });
