@@ -152,7 +152,7 @@
             <span id="callsignLabel" style="color: white; border: 1px solid var(--neon); padding: 3px 12px; background: rgba(0,255,65,0.1); font-weight: bold;">---</span>
             <div style="display: flex; gap: 15px; color: var(--accent);">
                 <span>HR: <b id="heartRate" style="color:white">--</b></span>
-                <span>O2: <b style="color:white">98%</b></span>
+                <span>WKL: <b id="wklStatus" style="color:white">OFF</b></span>
             </div>
         </div>
         
@@ -184,19 +184,19 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, update, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
         authDomain: "real-time-location-30d91.firebaseapp.com",
         databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "real-time-location-30d91",
-        storageBucket: "real-time-location-30d91.firebasedatabase.app",
+        storageBucket: "real-time-location-30d91.firebasestorage.app",
         messagingSenderId: "1092565406651",
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
-    let app, db, watchId = null, myCallsign = "", lastCmdTime = 0;
+    let app, db, watchId = null, myCallsign = "", lastCmdTime = 0, wakeLock = null;
 
     // Firebase Initialization
     try {
@@ -212,6 +212,28 @@
         if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
     }, 1000);
 
+    // --- FITUR WAKE LOCK (Anti-Sleep) ---
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                document.getElementById('wklStatus').innerText = "ACTIVE";
+                document.getElementById('wklStatus').style.color = "var(--neon)";
+                addLog("WAKE_LOCK: SYSTEM_AWAKE_CONFIRMED");
+            }
+        } catch (err) {
+            document.getElementById('wklStatus').innerText = "FAIL";
+            console.log("Wake Lock Error: " + err.message);
+        }
+    }
+
+    // Re-aktifkan jika tab dibuka kembali
+    document.addEventListener('visibilitychange', () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            requestWakeLock();
+        }
+    });
+
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) { alert("ERROR: PILOT_ID REQUIRED"); return; }
@@ -221,7 +243,7 @@
         
         startSequence([
             "BOOTING NEURAL KERNEL...",
-            "REPAIRING SYNC_LINK_065...",
+            "WAKE_LOCK_INITIATED...",
             "ESTABLISHING FIREBASE HANDSHAKE...",
             "LINK START."
         ], showDashboard);
@@ -239,8 +261,12 @@
                 miniLog.innerHTML += `<div>> ${messages[idx]}</div>`;
                 miniLog.scrollTop = miniLog.scrollHeight;
             }
-            if(progress >= 100) { clearInterval(loader); setTimeout(callback, 400); }
-        }, 80).app; // Penanda internal
+            if(progress >= 100) { 
+                clearInterval(loader); 
+                requestWakeLock(); // Aktifkan anti-tidur
+                setTimeout(callback, 400); 
+            }
+        }, 80);
     }
 
     function showDashboard() {
@@ -253,8 +279,16 @@
 
     function startTracking() {
         if ("geolocation" in navigator) {
+            const options = { 
+                enableHighAccuracy: true, 
+                timeout: 15000, 
+                maximumAge: 0 
+            };
+
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
+                
+                // Update UI
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
@@ -262,21 +296,22 @@
                 
                 if(db && myCallsign) {
                     const userRef = ref(db, "live/" + myCallsign);
-                    set(userRef, { 
-                        latitude, 
-                        longitude, 
+                    // UPDATE: Gunakan lat/lon agar sinkron dengan Dashboard
+                    update(userRef, { 
+                        lat: latitude, 
+                        lon: longitude, 
                         speed: (speed||0), 
                         accuracy: Math.round(accuracy), 
                         waktu: Date.now(), 
                         sos: false 
                     });
-                    onDisconnect(userRef).remove();
+                    onDisconnect(userRef).update({ waktu: Date.now() - 60000 }); // Tandai offline jika diskonek
                 }
             }, (err) => {
-                addLog("SYNC_ERR: SENSOR_ACCESS_DENIED");
-                document.getElementById('coreStatus').innerText = "OFFLINE";
+                addLog("SYNC_ERR: " + err.message);
+                document.getElementById('coreStatus').innerText = "RECONNECTING";
                 document.getElementById('coreStatus').style.color = "var(--danger)";
-            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            }, options);
         }
     }
 
@@ -288,17 +323,27 @@
                 lastCmdTime = data.timestamp;
                 document.getElementById('commandText').innerText = data.text;
                 document.getElementById('commandPopup').classList.remove('hidden');
-                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                
+                // Vibrate saat ada perintah masuk
+                if(navigator.vibrate) navigator.vibrate([300, 100, 300]);
             }
         });
     }
 
     window.dismissCommand = () => document.getElementById('commandPopup').classList.add('hidden');
+    
     window.sendSOS = () => { 
         if(db) update(ref(db, "live/" + myCallsign), { sos: true }); 
         addLog("CRITICAL: SOS_BROADCASTED");
+        if(navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
     };
-    window.initiateTerminate = () => { if(confirm("CONFIRM DISCONNECT?")) location.reload(); };
+
+    window.initiateTerminate = () => { 
+        if(confirm("CONFIRM NEURAL DISCONNECT?")) {
+            if(wakeLock) wakeLock.release();
+            location.reload(); 
+        }
+    };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
