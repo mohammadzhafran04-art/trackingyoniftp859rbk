@@ -1,46 +1,202 @@
-<style>
-    /* ... (Gunakan style lama Anda, tapi tambahkan ini) ... */
-    .card {
-        border: 2px solid var(--army-green);
-        box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 20px rgba(0, 255, 65, 0.1);
-        backdrop-filter: blur(10px);
-    }
-    
-    #btnMulai {
-        font-family: 'Orbitron', sans-serif;
-        text-shadow: 0 0 5px black;
-        position: relative; overflow: hidden;
-    }
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Tracker | YONIF TP 859/RBK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --army-green: #00ff41;
+            --dark-bg: #050a05;
+        }
 
-    #btnMulai::after {
-        content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-        transform: rotate(45deg); animation: shine 3s infinite;
-    }
+        body {
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
 
-    @keyframes shine { 0% { left: -100%; } 100% { left: 100%; } }
+        .header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--army-green);
+            background: rgba(0, 20, 0, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+        }
 
-    .accuracy-meter {
-        height: 4px; width: 100%; background: #222; margin-top: 10px;
-    }
-    .accuracy-fill {
-        height: 100%; background: var(--army-green); transition: 0.5s;
-    }
-</style>
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-<script>
-    // Di dalam watchPosition, ganti bagian update info UI:
-    const accPercent = Math.max(0, 100 - accuracy);
-    document.getElementById("info").innerHTML = `
-        <div class="data-grid">
-            <div class="data-box">LAT: ${latitude.toFixed(5)}</div>
-            <div class="data-box">LON: ${longitude.toFixed(5)}</div>
-        </div>
-        <div style="margin-top:15px">
-            <small>GPS PRECISION</small>
-            <div class="accuracy-meter">
-                <div class="accuracy-fill" style="width: ${accPercent}%"></div>
-            </div>
-        </div>
-    `;
+        .card {
+            background: rgba(10, 20, 10, 0.9);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border: 2px solid var(--army-green);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 20px rgba(0, 255, 65, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            background: rgba(0, 40, 0, 0.3);
+            border: 1px solid var(--army-green);
+            color: var(--army-green);
+            font-family: inherit;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        #btnMulai {
+            width: 100%;
+            padding: 15px;
+            background: var(--army-green);
+            color: black;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        #btnMulai::after {
+            content: ''; position: absolute; top: -50%; left: -100%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: rotate(45deg); animation: shine 3s infinite;
+        }
+
+        @keyframes shine { 0% { left: -100%; } 100% { left: 100%; } }
+
+        #status {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px dashed var(--army-green);
+            text-align: center;
+            color: var(--army-green);
+            font-weight: bold;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .data-box {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 10px;
+            border-left: 3px solid var(--army-green);
+        }
+
+        .accuracy-meter {
+            height: 6px; width: 100%; background: #111; margin-top: 8px; border: 1px solid #333;
+        }
+        .accuracy-fill {
+            height: 100%; background: var(--army-green); width: 0%; transition: 0.5s ease-in-out;
+            box-shadow: 0 0 10px var(--army-green);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    📡 TRANSMITTER LOKASI YONIF TP 859/RBK
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2 style="text-align: center; color: var(--army-green); font-family: 'Orbitron';">UNIT AUTH</h2>
+        <input type="text" id="nama" placeholder="MASUKKAN NAMA / NRP">
+        <button id="btnMulai">AKTIFKAN TRACKING</button>
+        
+        <div id="status">SISTEM SIAP...</div>
+        <div id="info"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+        authDomain: "real-time-location-30d91.firebaseapp.com",
+        databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "real-time-location-30d91",
+        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        messagingSenderId: "1092565406651",
+        appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    document.getElementById('btnMulai').addEventListener('click', () => {
+        const nama = document.getElementById("nama").value.trim();
+        if (!nama) { alert("IDENTITAS UNIT WAJIB DIISI!"); return; }
+
+        document.getElementById("status").innerHTML = "MENGHUBUNGKAN KE SATELIT...";
+
+        if ("geolocation" in navigator) {
+            const statusRef = ref(db, "live/" + nama + "/status");
+            onDisconnect(statusRef).set("OFFLINE");
+
+            navigator.geolocation.watchPosition(async (pos) => {
+                const { latitude, longitude, speed, accuracy } = pos.coords;
+                const spdKmh = Math.round((speed || 0) * 3.6);
+                const accPercent = Math.max(5, 100 - accuracy);
+
+                await set(ref(db, "live/" + nama), {
+                    latitude, longitude, speed: spdKmh, accuracy: Math.round(accuracy),
+                    waktu: Date.now(), status: "ONLINE"
+                });
+
+                document.getElementById("status").innerHTML = "<span style='color:lime'>▣ SIGNAL TERKUNCI (HQ)</span>";
+                document.getElementById("info").innerHTML = `
+                    <div class="data-grid">
+                        <div class="data-box">LAT: ${latitude.toFixed(5)}</div>
+                        <div class="data-box">LON: ${longitude.toFixed(5)}</div>
+                    </div>
+                    <div style="margin-top:15px">
+                        <small>SIGNAL STRENGTH (ACCURACY: ${Math.round(accuracy)}m)</small>
+                        <div class="accuracy-meter">
+                            <div class="accuracy-fill" style="width: ${accPercent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }, (err) => {
+                document.getElementById("status").innerHTML = `<span style='color:red'>ERROR: ${err.message}</span>`;
+            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+        }
+    });
 </script>
+</body>
+</html>
