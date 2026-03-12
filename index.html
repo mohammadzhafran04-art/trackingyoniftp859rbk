@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tactical Edge V3 | YONIF 859/RBK</title>
+    <title>Tactical Edge V3.5 | YONIF 859/RBK</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -73,6 +73,20 @@
             text-align: center; width: 100%; padding: 10px; outline: none; margin-bottom: 30px;
         }
 
+        /* Loading Bar Styles */
+        .load-container {
+            width: 100%; flex: 1; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; gap: 20px;
+        }
+        .progress-track {
+            width: 80%; height: 6px; background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--neon); position: relative;
+        }
+        .progress-fill {
+            height: 100%; background: var(--neon); width: 0%;
+            box-shadow: 0 0 15px var(--neon);
+        }
+
         /* HUD Data Grid */
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .hud-item {
@@ -109,7 +123,7 @@
 <div class="ui-wrapper">
     <header>
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: bold; font-size: 14px;">TACTICAL EDGE V3</div>
+            <div style="font-family: 'Orbitron'; font-weight: bold; font-size: 14px;">TACTICAL EDGE V3.5</div>
             <div style="font-size: 9px; opacity: 0.8;">ENCRYPTION: AES-256 ACTIVE</div>
         </div>
         <div style="text-align: right;">
@@ -124,10 +138,20 @@
                 <path d="M12 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM12 13c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/>
             </svg>
         </div>
-        <h3 style="text-align: center; font-family: 'Orbitron'; font-size: 14px;">AUTHORIZATION REQUIRED</h3>
+        <h3 style="text-align: center; font-family: 'Orbitron'; font-size: 12px; letter-spacing: 2px;">AUTHORIZATION REQUIRED</h3>
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
             <input type="text" id="idInput" class="auth-input" placeholder="CALLSIGN" maxlength="12">
-            <button class="btn btn-primary" onclick="connect()">INITIALIZE LINK</button>
+            <button class="btn btn-primary" onclick="initiateLogin()">INITIALIZE LINK</button>
+        </div>
+    </div>
+
+    <div id="loadingArea" class="status-panel hidden">
+        <div class="load-container">
+            <div style="font-family: 'Orbitron'; font-size: 14px; color: white; letter-spacing: 3px;" id="loadMsg">ESTABLISHING UPLINK</div>
+            <div class="progress-track">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div id="subMsg" style="font-size: 10px; opacity: 0.6;">SYNCING WITH MIL-SATCOM...</div>
         </div>
     </div>
 
@@ -176,7 +200,7 @@
     let watchId = null;
     let myCallsign = "";
 
-    // Utils
+    // Clock Utility
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
     }, 1000);
@@ -186,19 +210,58 @@
         updateB(); b.onlevelchange = updateB;
     });
 
-    window.connect = () => {
+    // Loading Logic (The requested feature)
+    window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) return alert("ENTER CALLSIGN!");
         
         myCallsign = val;
+
+        // Transition to Loading
         document.getElementById('loginArea').classList.add('hidden');
+        document.getElementById('loadingArea').classList.remove('hidden');
+
+        let progress = 0;
+        const bar = document.getElementById('progressFill');
+        const subMsg = document.getElementById('subMsg');
+        
+        const statusUpdates = [
+            "CHECKING BIOMETRIC HASH...",
+            "DECRYPTING SATELLITE HANDSHAKE...",
+            "STABILIZING GPS UPLINK...",
+            "BYPASSING FIREWALL...",
+            "FINALIZING CONNECTION..."
+        ];
+
+        const interval = setInterval(() => {
+            progress += Math.random() * 15; // Random speed increase
+            if (progress > 100) progress = 100;
+            
+            bar.style.width = progress + "%";
+            
+            // Update sub-messages based on progress
+            let msgIndex = Math.floor((progress / 100) * statusUpdates.length);
+            if(msgIndex < statusUpdates.length) subMsg.innerText = statusUpdates[msgIndex];
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    showDashboard();
+                }, 500);
+            }
+        }, 400); // Will take around 3-4 seconds
+    };
+
+    function showDashboard() {
+        document.getElementById('loadingArea').classList.add('hidden');
         document.getElementById('trackingArea').classList.remove('hidden');
         document.getElementById('callsignLabel').innerText = myCallsign;
         document.getElementById('status-tag').innerText = "ONLINE";
         document.getElementById('status-tag').style.color = "var(--neon)";
-
+        
+        if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         startTracking();
-    };
+    }
 
     function startTracking() {
         if ("geolocation" in navigator) {
@@ -222,7 +285,6 @@
             }, (e) => addLog("ERROR: " + e.message), { enableHighAccuracy: true });
         }
 
-        // Add Compass Heading if supported
         if (window.DeviceOrientationEvent) {
             window.addEventListener('deviceorientationabsolute', (e) => {
                 if(e.alpha) document.getElementById('hdg').innerText = Math.round(360 - e.alpha) + "°";
@@ -251,4 +313,4 @@
     }
 </script>
 </body>
-</html>-
+</html>
