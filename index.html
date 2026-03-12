@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tactical Edge V5.2 | NEURO-LINK 2065</title>
+    <title>Tactical Edge V5.2.1 | NEURO-LINK</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -21,20 +21,15 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* 2065 DYNAMIC BACKGROUND & SCANLINE */
+        /* AMBIENT EFFECTS */
         body::before {
-            content: " ";
-            position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            content: " "; position: fixed; inset: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
             z-index: 1000; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* HORIZONTAL SCANNING BAR */
-        @keyframes scan {
-            0% { top: -10%; }
-            100% { top: 110%; }
-        }
+        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
         .scanner-bar {
             position: fixed; width: 100%; height: 5px;
             background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
@@ -43,17 +38,12 @@
 
         .background-fx {
             position: fixed; inset: 0;
-            background-image: 
-                linear-gradient(var(--neural-grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--neural-grid) 1px, transparent 1px);
+            background-image: linear-gradient(var(--neural-grid) 1px, transparent 1px), linear-gradient(90deg, var(--neural-grid) 1px, transparent 1px);
             background-size: 40px 40px; z-index: -1;
         }
 
-        /* CORNER BRACKETS */
-        .corner {
-            position: fixed; width: 20px; height: 20px;
-            border: 2px solid var(--neon); z-index: 100;
-        }
+        /* UI DECORATION */
+        .corner { position: fixed; width: 20px; height: 20px; border: 2px solid var(--neon); z-index: 100; opacity: 0.6; }
         .top-l { top: 10px; left: 10px; border-right: none; border-bottom: none; }
         .top-r { top: 10px; right: 10px; border-left: none; border-bottom: none; }
         .bot-l { bottom: 10px; left: 10px; border-right: none; border-top: none; }
@@ -70,63 +60,35 @@
         header {
             display: flex; justify-content: space-between; align-items: flex-start;
             border-bottom: 1px solid var(--neon-dim); padding-bottom: 10px; margin-bottom: 15px;
-            position: relative;
-        }
-
-        header::after {
-            content: "DECRYPTED_LINK_065"; position: absolute; bottom: -8px; right: 0;
-            font-size: 6px; color: var(--accent);
         }
 
         .status-panel {
-            background: rgba(0, 15, 0, 0.8); border: 1px solid var(--neon-dim);
+            background: rgba(0, 15, 0, 0.85); border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 15px;
             position: relative; backdrop-filter: blur(10px);
             box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.05);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
-        /* SIDE DECALS */
-        .side-info {
-            position: absolute; left: -15px; top: 50%; transform: rotate(-90deg);
-            font-size: 7px; letter-spacing: 2px; color: var(--neon-dim);
-        }
-
-        .progress-track {
-            width: 100%; height: 4px; background: rgba(0, 255, 65, 0.05);
-            margin: 20px 0; overflow: hidden; border: 1px solid var(--neon-dim);
-        }
-        .progress-fill {
-            height: 100%; background: var(--neon); width: 0%;
-            box-shadow: 0 0 15px var(--neon); transition: width 0.3s ease;
-        }
+        .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.05); margin: 20px 0; overflow: hidden; border: 1px solid var(--neon-dim); }
+        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 15px var(--neon); transition: width 0.3s ease; }
 
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .hud-item {
             background: rgba(0, 255, 65, 0.03); border: 1px solid rgba(0, 255, 65, 0.1);
-            border-left: 3px solid var(--neon); padding: 10px; position: relative;
+            border-left: 3px solid var(--neon); padding: 10px;
         }
         .hud-item label { font-size: 7px; color: var(--accent); display: block; margin-bottom: 4px; }
-        .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; }
+        .hud-item span { font-size: 14px; font-family: 'Orbitron'; color: white; }
 
         .btn {
             font-family: 'Orbitron'; font-weight: bold; padding: 15px;
             text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
             background: rgba(0, 255, 65, 0.02); color: var(--neon);
-            transition: all 0.2s; position: relative; overflow: hidden;
+            transition: all 0.2s; position: relative;
         }
-        .btn::before {
-            content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: 0.5s;
-        }
-        .btn:hover::before { left: 100%; }
         .btn:active { transform: translateY(2px); background: var(--neon-dim); }
-        
-        .btn-sos { 
-            background: rgba(255, 0, 60, 0.1); border-color: var(--danger); color: var(--danger);
-            animation: pulse 1s infinite;
-        }
+        .btn-sos { background: rgba(255, 0, 60, 0.1); border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; }
 
         .terminal-log {
             font-size: 10px; color: var(--neon); height: 100px; overflow-y: auto;
@@ -136,12 +98,13 @@
 
         #commandPopup {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; background: #600; color: white; padding: 20px;
+            width: 85%; background: #400; color: white; padding: 20px;
             font-family: 'Orbitron'; z-index: 2000; border: 2px solid white;
             box-shadow: 0 0 100px rgba(255,0,0,0.8);
         }
 
         .hidden { display: none !important; }
+        .side-info { position: absolute; left: -15px; top: 50%; transform: rotate(-90deg); font-size: 7px; letter-spacing: 2px; color: var(--neon-dim); }
     </style>
 </head>
 <body>
@@ -149,16 +112,14 @@
 <div class="scanner-bar"></div>
 <div class="background-fx"></div>
 
-<div class="corner top-l"></div>
-<div class="corner top-r"></div>
-<div class="corner bot-l"></div>
-<div class="corner bot-r"></div>
+<div class="corner top-l"></div><div class="corner top-r"></div>
+<div class="corner bot-l"></div><div class="corner bot-r"></div>
 
 <div class="ui-wrapper">
     <header>
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">NEURO-LINK <span style="color:white">V5.2</span></div>
-            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">QUANTUM_SYNC_ACTIVE</div>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">NEURO-LINK <span style="color:white">V5.2.1</span></div>
+            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">SIGNAL_STABLE_100%</div>
         </div>
         <div style="text-align: right;">
             <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
@@ -167,10 +128,10 @@
     </header>
 
     <div id="loginArea" class="status-panel">
-        <div class="side-info">SYSTEM_AUTH_REQUIRED</div>
+        <div class="side-info">SECURE_ACCESS_REQUIRED</div>
         <div style="text-align: center; margin: 60px 0;">
             <div style="font-size: 14px; letter-spacing: 10px; color: white; margin-bottom: 5px;">BIO-AUTH</div>
-            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">NEURAL PATTERN SCANNER READY</div>
+            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">WAITING FOR NEURAL HANDSHAKE...</div>
         </div>
         <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 18px; margin-bottom: 20px; border-style: dashed;" placeholder="PILOT_ID" maxlength="12">
         <button class="btn" style="border-width: 2px;" onclick="initiateLogin()">SYNC CONSCIOUSNESS</button>
@@ -179,11 +140,9 @@
     <div id="loadingArea" class="status-panel hidden">
         <div style="text-align: center; margin-top: 40px;">
             <div id="loadMsg" style="font-size: 16px; letter-spacing: 5px; color: white; font-family: 'Orbitron';">SYNCING</div>
-            <div class="progress-track">
-                <div id="progressFill" class="progress-fill"></div>
-            </div>
+            <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
             <div id="subMsg" style="font-size: 9px; color: var(--accent); margin-bottom: 10px;">MAPPING NEURONS...</div>
-            <div class="terminal-log" id="miniLog" style="text-align: left; height: 140px; font-size: 8px; border-color: rgba(0,255,65,0.1);"></div>
+            <div class="terminal-log" id="miniLog" style="text-align: left; height: 140px; font-size: 8px;"></div>
         </div>
     </div>
 
@@ -198,10 +157,10 @@
         </div>
         
         <div class="hud-grid">
-            <div class="hud-item"><label>GEO.LATITUDE</label><span id="lat">WAIT...</span></div>
-            <div class="hud-item"><label>GEO.LONGITUDE</label><span id="lon">WAIT...</span></div>
+            <div class="hud-item"><label>GEO.LATITUDE</label><span id="lat">0.00000</span></div>
+            <div class="hud-item"><label>GEO.LONGITUDE</label><span id="lon">0.00000</span></div>
             <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>CORE.STATUS</label><span style="color: var(--accent);">STABLE</span></div>
+            <div class="hud-item"><label>CORE.STATUS</label><span id="coreStatus" style="color: var(--neon);">ACTIVE</span></div>
             <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
                 <label>ENVIRONMENTAL TELEMETRY</label>
                 <span id="alt" style="font-size: 11px;">ALT: 0M | ACCURACY: --</span>
@@ -219,13 +178,13 @@
 
 <div id="commandPopup" class="hidden">
     <div style="font-size: 10px; border-bottom: 1px solid white; padding-bottom: 5px; margin-bottom: 10px;">!!! CRITICAL OVERRIDE !!!</div>
-    <div id="commandText" style="font-size: 18px; text-align: center; margin: 20px 0; font-weight: bold; line-height: 1.4;">-- NONE --</div>
-    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:12px; font-size:12px; font-weight: bold; cursor: pointer;">ACKNOWLEDGE</button>
+    <div id="commandText" style="font-size: 18px; text-align: center; margin: 20px 0; font-weight: bold;">-- NONE --</div>
+    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:12px; font-weight: bold; cursor: pointer;">ACKNOWLEDGE</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, update, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.app";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -237,16 +196,19 @@
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    let watchId = null, myCallsign = "", lastCmdTime = 0;
+    let app, db, watchId = null, myCallsign = "", lastCmdTime = 0;
 
-    // UI Clock
+    // Core Init
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+    } catch (e) {
+        console.error("Firebase Init Failed", e);
+    }
+
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
-        if(myCallsign) {
-            document.getElementById('heartRate').innerText = Math.floor(Math.random() * (82 - 65) + 65);
-        }
+        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (80 - 65) + 65);
     }, 1000);
 
     window.initiateLogin = () => {
@@ -258,9 +220,8 @@
         
         startSequence([
             "BOOTING NEURAL KERNEL...",
-            "HANDSHAKING WITH FIREBASE...",
-            "ENCRYPTING BIO-STREAM...",
-            "QUANTUM TUNNEL ESTABLISHED.",
+            "CHECKING SENSOR PERMISSIONS...",
+            "HANDSHAKING WITH DATABASE...",
             "LINK START."
         ], showDashboard);
     };
@@ -268,27 +229,17 @@
     function startSequence(messages, callback) {
         let progress = 0;
         const bar = document.getElementById('progressFill');
-        const subMsg = document.getElementById('subMsg');
         const miniLog = document.getElementById('miniLog');
-        bar.style.width = "0%";
-
         const loader = setInterval(() => {
-            progress += Math.random() * 20;
-            if(progress > 100) progress = 100;
+            progress += 5;
             bar.style.width = progress + "%";
-            
-            let msgIndex = Math.floor((progress / 100) * messages.length);
-            if(messages[msgIndex] && !miniLog.innerHTML.includes(messages[msgIndex])) {
-                subMsg.innerText = messages[msgIndex];
-                miniLog.innerHTML += `<div style="color:white; margin-bottom:4px;">> ${messages[msgIndex]}</div>`;
+            let idx = Math.floor((progress/100) * messages.length);
+            if(messages[idx] && !miniLog.innerHTML.includes(messages[idx])) {
+                miniLog.innerHTML += `<div>> ${messages[idx]}</div>`;
                 miniLog.scrollTop = miniLog.scrollHeight;
             }
-
-            if(progress === 100) {
-                clearInterval(loader);
-                setTimeout(callback, 800);
-            }
-        }, 250);
+            if(progress >= 100) { clearInterval(loader); setTimeout(callback, 500); }
+        }, 100);
     }
 
     function showDashboard() {
@@ -302,53 +253,46 @@
     function startTracking() {
         if ("geolocation" in navigator) {
             watchId = navigator.geolocation.watchPosition((p) => {
-                const { latitude, longitude, speed, accuracy, heading, altitude } = p.coords;
-                const kmh = speed ? (speed * 3.6).toFixed(1) : "0.0";
-                
+                const { latitude, longitude, speed, accuracy, altitude } = p.coords;
                 document.getElementById('lat').innerText = latitude.toFixed(5);
                 document.getElementById('lon').innerText = longitude.toFixed(5);
-                document.getElementById('spd').innerText = kmh + " KM/H";
+                document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
                 document.getElementById('alt').innerText = `ALT: ${altitude ? Math.round(altitude) : 0}M | ACC: ${Math.round(accuracy)}M`;
                 
-                const userRef = ref(db, "live/" + myCallsign);
-                set(userRef, {
-                    latitude, longitude, speed: kmh, accuracy: Math.round(accuracy),
-                    waktu: Date.now(), sos: false, heading: heading || 0, altitude: altitude || 0
-                });
-                onDisconnect(userRef).remove();
-            }, (err) => addLog("GPS_ERROR: " + err.message), { enableHighAccuracy: true });
+                if(db) {
+                    const userRef = ref(db, "live/" + myCallsign);
+                    set(userRef, { latitude, longitude, speed: (speed||0), accuracy, waktu: Date.now(), sos: false });
+                    onDisconnect(userRef).remove();
+                }
+            }, (err) => {
+                addLog("SENSOR_FAIL: " + err.message);
+                document.getElementById('coreStatus').innerText = "ERROR";
+                document.getElementById('coreStatus').style.color = "var(--danger)";
+            }, { enableHighAccuracy: true, timeout: 5000 });
+        } else {
+            addLog("HARDWARE_FAIL: NO_GPS");
         }
     }
 
     function listenForCommands() {
+        if(!db) return;
         onValue(ref(db, "commands/global"), (snapshot) => {
             const data = snapshot.val();
             if (data && data.timestamp > lastCmdTime) {
                 lastCmdTime = data.timestamp;
                 document.getElementById('commandText').innerText = data.text;
                 document.getElementById('commandPopup').classList.remove('hidden');
-                if(navigator.vibrate) navigator.vibrate([400, 200, 400]);
-                addLog("DIRECTIVE_RCVD: " + data.text);
             }
         });
     }
 
     window.dismissCommand = () => document.getElementById('commandPopup').classList.add('hidden');
-
-    window.sendSOS = () => {
-        update(ref(db, "live/" + myCallsign), { sos: true });
-        addLog("CRITICAL: SOS_SIGNAL_SENT");
-        if(navigator.vibrate) navigator.vibrate([1000, 200, 1000]);
-    };
-
-    window.initiateTerminate = () => {
-        if(!confirm("CONFIRM NEURAL DISCONNECT?")) return;
-        remove(ref(db, "live/" + myCallsign)).then(() => location.reload());
-    };
+    window.sendSOS = () => { if(db) update(ref(db, "live/" + myCallsign), { sos: true }); addLog("SOS_SENT"); };
+    window.initiateTerminate = () => { if(confirm("DISCONNECT?")) location.reload(); };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
-        box.innerHTML += `<br><span style="color:var(--accent)">></span> [${new Date().toLocaleTimeString()}] ${msg}`;
+        box.innerHTML += `<br><span>></span> [${new Date().toLocaleTimeString()}] ${msg}`;
         box.scrollTop = box.scrollHeight;
     }
 </script>
