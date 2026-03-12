@@ -12,7 +12,7 @@
             --danger: #ff003c;
             --bg: #000500;
             --accent: #00e5ff;
-            --neural-grid: rgba(0, 255, 65, 0.03);
+            --neural-grid: rgba(0, 255, 65, 0.05);
         }
 
         body, html {
@@ -21,46 +21,39 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- HD DYNAMIC WALLPAPER ENGINE --- */
+        /* --- ADVANCED MOVING WALLPAPER ENGINE --- */
         #bg-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-            filter: brightness(0.6);
+            background: radial-gradient(circle at center, #001a05 0%, #000000 100%);
+        }
+
+        .scanline {
+            position: fixed; inset: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.02) 50%);
+            background-size: 100% 4px; z-index: 1001; pointer-events: none;
         }
 
         .overlay-vignette {
             position: fixed; inset: 0;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
             z-index: -1; pointer-events: none;
-        }
-
-        body::before {
-            content: " "; position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
-            z-index: 1000; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
         @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
         .scanner-bar {
-            position: fixed; width: 100%; height: 5px;
-            background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
-            z-index: 5; animation: scan 8s linear infinite; opacity: 0.5;
-        }
-
-        .background-fx {
-            position: fixed; inset: 0;
-            background-image: linear-gradient(var(--neural-grid) 1px, transparent 1px), linear-gradient(90deg, var(--neural-grid) 1px, transparent 1px);
-            background-size: 40px 40px; z-index: -1;
+            position: fixed; width: 100%; height: 10px;
+            background: linear-gradient(to bottom, transparent, var(--neon), transparent);
+            z-index: 5; animation: scan 4s linear infinite; opacity: 0.1;
         }
 
         /* UI DECORATION */
-        .corner { position: fixed; width: 20px; height: 20px; border: 2px solid var(--neon); z-index: 100; opacity: 0.6; }
-        .top-l { top: 10px; left: 10px; border-right: none; border-bottom: none; }
-        .top-r { top: 10px; right: 10px; border-left: none; border-bottom: none; }
-        .bot-l { bottom: 10px; left: 10px; border-right: none; border-top: none; }
-        .bot-r { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+        .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
+        .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .bot-l { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .bot-r { bottom: 15px; right: 15px; border-left: none; border-top: none; }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .sync-pulse { animation: pulse 2s infinite; color: var(--accent); }
 
         .ui-wrapper {
@@ -71,59 +64,67 @@
         header {
             display: flex; justify-content: space-between; align-items: flex-start;
             border-bottom: 1px solid var(--neon-dim); padding-bottom: 10px; margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--neon);
         }
 
         .status-panel {
-            background: rgba(0, 15, 0, 0.85); border: 1px solid var(--neon-dim);
-            flex: 1; display: flex; flex-direction: column; padding: 15px;
-            position: relative; backdrop-filter: blur(10px);
-            box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.05);
+            background: rgba(0, 10, 0, 0.7); border: 1px solid var(--neon-dim);
+            flex: 1; display: flex; flex-direction: column; padding: 20px;
+            position: relative; backdrop-filter: blur(15px);
+            box-shadow: inset 0 0 50px rgba(0, 255, 65, 0.1);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
-        .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.05); margin: 20px 0; overflow: hidden; border: 1px solid var(--neon-dim); }
-        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 15px var(--neon); transition: width 0.3s ease; }
+        .progress-track { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon); }
 
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .hud-item {
-            background: rgba(0, 255, 65, 0.03); border: 1px solid rgba(0, 255, 65, 0.1);
-            border-left: 3px solid var(--neon); padding: 10px;
+            background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.2);
+            border-left: 4px solid var(--neon); padding: 12px;
+            transition: all 0.3s;
         }
-        .hud-item label { font-size: 7px; color: var(--accent); display: block; margin-bottom: 4px; }
-        .hud-item span { font-size: 14px; font-family: 'Orbitron'; color: white; }
+        .hud-item:hover { background: rgba(0, 255, 65, 0.15); border-color: var(--neon); }
+        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 5px; letter-spacing: 1px; }
+        .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; text-shadow: 0 0 5px var(--neon); }
 
         .btn {
-            font-family: 'Orbitron'; font-weight: bold; padding: 15px;
+            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
             text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.02); color: var(--neon);
-            transition: all 0.2s; position: relative;
+            background: rgba(0, 255, 65, 0.05); color: var(--neon);
+            transition: all 0.3s; position: relative; overflow: hidden;
         }
-        .btn:active { transform: translateY(2px); background: var(--neon-dim); }
+        .btn::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg); transition: 0.5s;
+        }
+        .btn:hover::after { left: 120%; }
+        .btn:active { transform: scale(0.95); background: var(--neon-dim); }
         .btn-sos { background: rgba(255, 0, 60, 0.1); border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; }
 
         .terminal-log {
-            font-size: 10px; color: var(--neon); height: 100px; overflow-y: auto;
-            margin-top: 15px; border: 1px solid var(--neon-dim); padding: 10px;
-            background: rgba(0,0,0,0.5); scrollbar-width: none;
+            font-size: 11px; color: var(--neon); height: 120px; overflow-y: auto;
+            margin-top: 15px; border: 1px solid var(--neon-dim); padding: 12px;
+            background: rgba(0,0,0,0.6); scrollbar-width: none;
         }
 
         #commandPopup {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; background: #400; color: white; padding: 20px;
-            font-family: 'Orbitron'; z-index: 2000; border: 2px solid white;
-            box-shadow: 0 0 100px rgba(255,0,0,0.8);
+            width: 85%; background: #400; color: white; padding: 25px;
+            font-family: 'Orbitron'; z-index: 2000; border: 3px solid white;
+            box-shadow: 0 0 150px rgba(255,0,0,1);
         }
 
         .hidden { display: none !important; }
-        .side-info { position: absolute; left: -15px; top: 50%; transform: rotate(-90deg); font-size: 7px; letter-spacing: 2px; color: var(--neon-dim); }
     </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<div class="scanline"></div>
 <div class="overlay-vignette"></div>
 <div class="scanner-bar"></div>
-<div class="background-fx"></div>
 
 <div class="corner top-l"></div><div class="corner top-r"></div>
 <div class="corner bot-l"></div><div class="corner bot-r"></div>
@@ -131,120 +132,136 @@
 <div class="ui-wrapper">
     <header>
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">Tracking Yonif TP 859/RBK <span style="color:white">V5.2.2</span></div>
-            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">DB_SYNC_READY</div>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 2px;">Yonif TP 859/RBK <span style="color:white; opacity:0.7">TACTICAL</span></div>
+            <div id="status-tag" class="sync-pulse" style="font-size: 9px; font-weight: bold;">LINK_STABLE_V5.2.2</div>
         </div>
         <div style="text-align: right;">
-            <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
-            <div style="font-size: 7px; color: var(--accent);">STARDATE 2065.73</div>
+            <div id="clock" style="font-family: 'Orbitron'; font-size: 15px; color: white;">00:00:00</div>
+            <div style="font-size: 8px; color: var(--accent); letter-spacing: 1px;">OPS_LOCAL_TIME</div>
         </div>
     </header>
 
     <div id="loginArea" class="status-panel">
-        <div class="side-info">SECURE_ACCESS_REQUIRED</div>
-        <div style="text-align: center; margin: 60px 0;">
-            <div style="font-size: 14px; letter-spacing: 10px; color: white; margin-bottom: 5px;">BIO-AUTH</div>
-            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">INITIALIZING QUANTUM LINK...</div>
+        <div style="text-align: center; margin: 50px 0;">
+            <div style="font-size: 18px; letter-spacing: 8px; color: white; margin-bottom: 10px; font-family: 'Orbitron';">AUTHENTICATION</div>
+            <div style="font-size: 9px; color: var(--accent);">WAITING FOR BIOMETRIC HANDSHAKE...</div>
         </div>
-        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 18px; margin-bottom: 20px; border-style: dashed;" placeholder="PILOT_ID" maxlength="12">
-        <button class="btn" style="border-width: 2px;" onclick="initiateLogin()">SYNC CONSCIOUSNESS</button>
+        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 20px; margin-bottom: 25px; border-style: dashed;" placeholder="ENTER_CALLSIGN" maxlength="12">
+        <button class="btn" style="border-width: 2px; font-size: 16px;" onclick="initiateLogin()">ESTABLISH LINK</button>
     </div>
 
     <div id="loadingArea" class="status-panel hidden">
         <div style="text-align: center; margin-top: 40px;">
-            <div id="loadMsg" style="font-size: 16px; letter-spacing: 5px; color: white; font-family: 'Orbitron';">SYNCING</div>
+            <div id="loadMsg" style="font-size: 18px; letter-spacing: 6px; color: white; font-family: 'Orbitron';">SYNCING...</div>
             <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-            <div id="subMsg" style="font-size: 9px; color: var(--accent); margin-bottom: 10px;">MAPPING NEURONS...</div>
-            <div class="terminal-log" id="miniLog" style="text-align: left; height: 140px; font-size: 8px;"></div>
+            <div class="terminal-log" id="miniLog" style="text-align: left; height: 160px; font-size: 9px; opacity: 0.8;"></div>
         </div>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
-        <div class="side-info">LIVE_TACTICAL_FEED</div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 9px;">
-            <span id="callsignLabel" style="color: white; border: 1px solid var(--neon); padding: 3px 12px; background: rgba(0,255,65,0.1); font-weight: bold;">---</span>
-            <div style="display: flex; gap: 15px; color: var(--accent);">
-                <span>HR: <b id="heartRate" style="color:white">--</b></span>
-                <span>WKL: <b id="wklStatus" style="color:white">OFF</b></span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span id="callsignLabel" style="color: #000; border: 1px solid var(--neon); padding: 5px 15px; background: var(--neon); font-weight: bold; font-family: 'Orbitron'; font-size: 12px;">---</span>
+            <div style="display: flex; gap: 15px; color: var(--accent); font-size: 10px; align-items: center;">
+                <span>VITAL_HR: <b id="heartRate" style="color:white">--</b></span>
+                <span id="wklStatus" style="border: 1px solid var(--accent); padding: 2px 6px;">WAKE: OFF</span>
             </div>
         </div>
         
         <div class="hud-grid">
-            <div class="hud-item"><label>GEO.LATITUDE</label><span id="lat">0.00000</span></div>
-            <div class="hud-item"><label>GEO.LONGITUDE</label><span id="lon">0.00000</span></div>
+            <div class="hud-item"><label>LATITUDE</label><span id="lat">0.00000</span></div>
+            <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.00000</span></div>
             <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>SYNC.STATUS</label><span id="coreStatus" style="color: var(--neon);">CONNECTED</span></div>
+            <div class="hud-item"><label>SIGNAL</label><span id="coreStatus" style="color: var(--neon);">EXCELLENT</span></div>
             <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
                 <label>ENVIRONMENTAL TELEMETRY</label>
-                <span id="alt" style="font-size: 11px;">ALT: 0M | ACCURACY: --</span>
+                <span id="alt" style="font-size: 12px;">ALT: 0M | ACCURACY: --</span>
             </div>
         </div>
 
-        <div class="terminal-log" id="logBox">> CORE_LISTENING_ACTIVE...</div>
+        <div class="terminal-log" id="logBox">> SYSTEM_READY...</div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px;">
-            <button class="btn btn-sos" onclick="sendSOS()">SIGNAL SOS</button>
-            <button class="btn" style="font-size: 10px;" onclick="initiateTerminate()">TERMINATE</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+            <button class="btn btn-sos" onclick="sendSOS()">MAYDAY / SOS</button>
+            <button class="btn" style="font-size: 11px; border-color: rgba(255,255,255,0.3); color: white;" onclick="initiateTerminate()">EXIT LINK</button>
         </div>
     </div>
 </div>
 
 <div id="commandPopup" class="hidden">
-    <div style="font-size: 10px; border-bottom: 1px solid white; padding-bottom: 5px; margin-bottom: 10px;">!!! CRITICAL OVERRIDE !!!</div>
-    <div id="commandText" style="font-size: 18px; text-align: center; margin: 20px 0; font-weight: bold;">-- NONE --</div>
-    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:12px; font-weight: bold; cursor: pointer;">ACKNOWLEDGE</button>
+    <div style="font-size: 11px; border-bottom: 1px solid white; padding-bottom: 8px; margin-bottom: 15px; letter-spacing: 2px;">CRITICAL COMMAND INCOMING</div>
+    <div id="commandText" style="font-size: 22px; text-align: center; margin: 25px 0; font-weight: bold;">-- NONE --</div>
+    <button onclick="dismissCommand()" style="width: 100%; background:white; border:none; color:black; font-family:'Orbitron'; padding:15px; font-weight: bold; cursor: pointer;">ACKNOWLEDGE</button>
 </div>
 
 <script>
-    // --- HD CYBER MATRIX ANIMATION ENGINE ---
+    // --- NEON PULSE NEBULA ENGINE (HD MOVING WALLPAPER) ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
-
-    let width, height, columns;
-    const fontSize = 16;
-    const chars = "0101010101ABCDEFHIJKLMNOPQRSTUVWXYZ0123456789%@#$*";
-    let drops = [];
+    let particles = [];
 
     function initCanvas() {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
-        columns = Math.floor(width / fontSize);
-        drops = [];
-        for (let i = 0; i < columns; i++) drops[i] = Math.random() * -100;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
 
-    function drawMatrix() {
-        ctx.fillStyle = "rgba(0, 5, 0, 0.1)"; // Trail effect
-        ctx.fillRect(0, 0, width, height);
-
-        ctx.font = fontSize + "px 'Share Tech Mono'";
-        
-        for (let i = 0; i < drops.length; i++) {
-            const text = chars.charAt(Math.floor(Math.random() * chars.length));
-            const opacity = Math.random();
-            ctx.fillStyle = `rgba(0, 255, 65, ${opacity * 0.4})`; // Neon Green HD
-            
-            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-            if (drops[i] * fontSize > height && Math.random() > 0.975) {
-                drops[i] = 0;
-            }
-            drops[i]++;
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = (Math.random() - 0.5) * 0.8;
+            this.speedY = (Math.random() - 0.5) * 0.8;
+            this.life = Math.random() * 0.5 + 0.2;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = `rgba(0, 255, 65, ${this.life})`;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ff41';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
         }
     }
 
-    function animate() {
-        drawMatrix();
-        setTimeout(() => {
-            requestAnimationFrame(animate);
-        }, 50); // Locked 20fps for power saving & HD feel
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+    function connect() {
+        for (let a = 0; a < particles.length; a++) {
+            for (let b = a; b < particles.length; b++) {
+                let dx = particles[a].x - particles[b].x;
+                let dy = particles[a].y - particles[b].y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 150) {
+                    ctx.strokeStyle = `rgba(0, 255, 65, ${0.1 - dist/1500})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animateWallpaper() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        connect();
+        requestAnimationFrame(animateWallpaper);
     }
 
     window.addEventListener('resize', initCanvas);
     initCanvas();
-    animate();
+    animateWallpaper();
 </script>
 
 <script type="module">
@@ -266,46 +283,36 @@
     try {
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
-    } catch (e) {
-        console.error("Firebase Sync Fail:", e);
-    }
+    } catch (e) { console.error(e); }
 
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
-        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
+        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (85 - 65) + 65);
     }, 1000);
 
     async function requestWakeLock() {
         try {
             if ('wakeLock' in navigator) {
                 wakeLock = await navigator.wakeLock.request('screen');
-                document.getElementById('wklStatus').innerText = "ACTIVE";
+                document.getElementById('wklStatus').innerText = "WAKE: ACTIVE";
                 document.getElementById('wklStatus').style.color = "var(--neon)";
-                addLog("WAKE_LOCK: SYSTEM_AWAKE_CONFIRMED");
+                addLog("SYSTEM: WAKE_LOCK_ENGAGED");
             }
-        } catch (err) {
-            document.getElementById('wklStatus').innerText = "FAIL";
-        }
+        } catch (err) { }
     }
-
-    document.addEventListener('visibilitychange', () => {
-        if (wakeLock !== null && document.visibilityState === 'visible') {
-            requestWakeLock();
-        }
-    });
 
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
-        if(!val) { alert("ERROR: PILOT_ID REQUIRED"); return; }
+        if(!val) return alert("REQUIRED: CALLSIGN");
         myCallsign = val;
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
         
         startSequence([
-            "BOOTING NEURAL KERNEL...",
-            "WAKE_LOCK_INITIATED...",
-            "ESTABLISHING FIREBASE HANDSHAKE...",
-            "LINK START."
+            "LOADING NEURAL KERNEL...",
+            "PINGING ASIA-SOUTHEAST GATEWAY...",
+            "ENCRYPTING GEOLOCATION STREAM...",
+            "CONSCIOUSNESS LINK ESTABLISHED."
         ], showDashboard);
     };
 
@@ -314,7 +321,7 @@
         const bar = document.getElementById('progressFill');
         const miniLog = document.getElementById('miniLog');
         const loader = setInterval(() => {
-            progress += 5;
+            progress += 2;
             bar.style.width = progress + "%";
             let idx = Math.floor((progress/100) * messages.length);
             if(messages[idx] && !miniLog.innerHTML.includes(messages[idx])) {
@@ -324,9 +331,9 @@
             if(progress >= 100) { 
                 clearInterval(loader); 
                 requestWakeLock();
-                setTimeout(callback, 400); 
+                setTimeout(callback, 500); 
             }
-        }, 80);
+        }, 50);
     }
 
     function showDashboard() {
@@ -339,37 +346,21 @@
 
     function startTracking() {
         if ("geolocation" in navigator) {
-            const options = { 
-                enableHighAccuracy: true, 
-                timeout: 15000, 
-                maximumAge: 0 
-            };
-
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
-                
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
                 document.getElementById('alt').innerText = `ALT: ${altitude ? Math.round(altitude) : 0}M | ACC: ${Math.round(accuracy)}M`;
                 
-                if(db && myCallsign) {
+                if(db) {
                     const userRef = ref(db, "live/" + myCallsign);
-                    update(userRef, { 
-                        lat: latitude, 
-                        lon: longitude, 
-                        speed: (speed||0), 
-                        accuracy: Math.round(accuracy), 
-                        waktu: Date.now(), 
-                        sos: false 
-                    });
+                    update(userRef, { lat: latitude, lon: longitude, speed: (speed||0), accuracy: Math.round(accuracy), waktu: Date.now(), sos: false });
                     onDisconnect(userRef).update({ waktu: Date.now() - 60000 });
                 }
             }, (err) => {
-                addLog("SYNC_ERR: " + err.message);
-                document.getElementById('coreStatus').innerText = "RECONNECTING";
-                document.getElementById('coreStatus').style.color = "var(--danger)";
-            }, options);
+                addLog("ERROR: " + err.message);
+            }, { enableHighAccuracy: true });
         }
     }
 
@@ -381,25 +372,18 @@
                 lastCmdTime = data.timestamp;
                 document.getElementById('commandText').innerText = data.text;
                 document.getElementById('commandPopup').classList.remove('hidden');
-                if(navigator.vibrate) navigator.vibrate([300, 100, 300]);
+                if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
             }
         });
     }
 
     window.dismissCommand = () => document.getElementById('commandPopup').classList.add('hidden');
-    
     window.sendSOS = () => { 
         if(db) update(ref(db, "live/" + myCallsign), { sos: true }); 
-        addLog("CRITICAL: SOS_BROADCASTED");
-        if(navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+        addLog("CRITICAL: SOS_SENT");
+        if(navigator.vibrate) navigator.vibrate([1000, 200, 1000]);
     };
-
-    window.initiateTerminate = () => { 
-        if(confirm("CONFIRM NEURAL DISCONNECT?")) {
-            if(wakeLock) wakeLock.release();
-            location.reload(); 
-        }
-    };
+    window.initiateTerminate = () => { if(confirm("DISCONNECT LINK?")) location.reload(); };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
