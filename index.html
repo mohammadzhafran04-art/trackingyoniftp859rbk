@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tactical Edge V5.2.1 | NEURO-LINK</title>
+    <title>Tactical Edge V5.2.2 | NEURO-LINK</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -118,8 +118,8 @@
 <div class="ui-wrapper">
     <header>
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">NEURO-LINK <span style="color:white">V5.2.1</span></div>
-            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">SIGNAL_STABLE_100%</div>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">NEURO-LINK <span style="color:white">V5.2.2</span></div>
+            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">DB_SYNC_READY</div>
         </div>
         <div style="text-align: right;">
             <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
@@ -131,7 +131,7 @@
         <div class="side-info">SECURE_ACCESS_REQUIRED</div>
         <div style="text-align: center; margin: 60px 0;">
             <div style="font-size: 14px; letter-spacing: 10px; color: white; margin-bottom: 5px;">BIO-AUTH</div>
-            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">WAITING FOR NEURAL HANDSHAKE...</div>
+            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">INITIALIZING QUANTUM LINK...</div>
         </div>
         <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 18px; margin-bottom: 20px; border-style: dashed;" placeholder="PILOT_ID" maxlength="12">
         <button class="btn" style="border-width: 2px;" onclick="initiateLogin()">SYNC CONSCIOUSNESS</button>
@@ -160,7 +160,7 @@
             <div class="hud-item"><label>GEO.LATITUDE</label><span id="lat">0.00000</span></div>
             <div class="hud-item"><label>GEO.LONGITUDE</label><span id="lon">0.00000</span></div>
             <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>CORE.STATUS</label><span id="coreStatus" style="color: var(--neon);">ACTIVE</span></div>
+            <div class="hud-item"><label>SYNC.STATUS</label><span id="coreStatus" style="color: var(--neon);">CONNECTED</span></div>
             <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
                 <label>ENVIRONMENTAL TELEMETRY</label>
                 <span id="alt" style="font-size: 11px;">ALT: 0M | ACCURACY: --</span>
@@ -184,7 +184,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.app";
+    import { getDatabase, ref, set, update, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -198,17 +198,18 @@
 
     let app, db, watchId = null, myCallsign = "", lastCmdTime = 0;
 
-    // Core Init
+    // Firebase Initialization
     try {
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
     } catch (e) {
-        console.error("Firebase Init Failed", e);
+        console.error("Firebase Sync Fail:", e);
     }
 
+    // HUD Real-time Logic
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
-        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (80 - 65) + 65);
+        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
     }, 1000);
 
     window.initiateLogin = () => {
@@ -220,8 +221,8 @@
         
         startSequence([
             "BOOTING NEURAL KERNEL...",
-            "CHECKING SENSOR PERMISSIONS...",
-            "HANDSHAKING WITH DATABASE...",
+            "REPAIRING SYNC_LINK_065...",
+            "ESTABLISHING FIREBASE HANDSHAKE...",
             "LINK START."
         ], showDashboard);
     };
@@ -238,8 +239,8 @@
                 miniLog.innerHTML += `<div>> ${messages[idx]}</div>`;
                 miniLog.scrollTop = miniLog.scrollHeight;
             }
-            if(progress >= 100) { clearInterval(loader); setTimeout(callback, 500); }
-        }, 100);
+            if(progress >= 100) { clearInterval(loader); setTimeout(callback, 400); }
+        }, 80).app; // Penanda internal
     }
 
     function showDashboard() {
@@ -254,23 +255,28 @@
         if ("geolocation" in navigator) {
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
-                document.getElementById('lat').innerText = latitude.toFixed(5);
-                document.getElementById('lon').innerText = longitude.toFixed(5);
+                document.getElementById('lat').innerText = latitude.toFixed(6);
+                document.getElementById('lon').innerText = longitude.toFixed(6);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
                 document.getElementById('alt').innerText = `ALT: ${altitude ? Math.round(altitude) : 0}M | ACC: ${Math.round(accuracy)}M`;
                 
-                if(db) {
+                if(db && myCallsign) {
                     const userRef = ref(db, "live/" + myCallsign);
-                    set(userRef, { latitude, longitude, speed: (speed||0), accuracy, waktu: Date.now(), sos: false });
+                    set(userRef, { 
+                        latitude, 
+                        longitude, 
+                        speed: (speed||0), 
+                        accuracy: Math.round(accuracy), 
+                        waktu: Date.now(), 
+                        sos: false 
+                    });
                     onDisconnect(userRef).remove();
                 }
             }, (err) => {
-                addLog("SENSOR_FAIL: " + err.message);
-                document.getElementById('coreStatus').innerText = "ERROR";
+                addLog("SYNC_ERR: SENSOR_ACCESS_DENIED");
+                document.getElementById('coreStatus').innerText = "OFFLINE";
                 document.getElementById('coreStatus').style.color = "var(--danger)";
-            }, { enableHighAccuracy: true, timeout: 5000 });
-        } else {
-            addLog("HARDWARE_FAIL: NO_GPS");
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
         }
     }
 
@@ -282,13 +288,17 @@
                 lastCmdTime = data.timestamp;
                 document.getElementById('commandText').innerText = data.text;
                 document.getElementById('commandPopup').classList.remove('hidden');
+                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
         });
     }
 
     window.dismissCommand = () => document.getElementById('commandPopup').classList.add('hidden');
-    window.sendSOS = () => { if(db) update(ref(db, "live/" + myCallsign), { sos: true }); addLog("SOS_SENT"); };
-    window.initiateTerminate = () => { if(confirm("DISCONNECT?")) location.reload(); };
+    window.sendSOS = () => { 
+        if(db) update(ref(db, "live/" + myCallsign), { sos: true }); 
+        addLog("CRITICAL: SOS_BROADCASTED");
+    };
+    window.initiateTerminate = () => { if(confirm("CONFIRM DISCONNECT?")) location.reload(); };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
