@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tactical Edge V5.2.2 | NEURO-LINK</title>
+    <title>Tactical Edge V5.2.2 | INDONESIA NEURO-LINK</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,6 +13,7 @@
             --bg: #000500;
             --accent: #00e5ff;
             --neural-grid: rgba(0, 255, 65, 0.05);
+            --indo-red: #ff003c;
         }
 
         body, html {
@@ -21,16 +22,35 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* LIVE HD WALLPAPER ENGINE */
-        #bg-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-            filter: blur(1px); /* Memberikan efek depth of field */
+        /* --- BACKGROUND LAYER: INDONESIA MAP HD --- */
+        .indo-map-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            /* Menggunakan siluet peta dunia yang difokuskan ke Indonesia melalui filter */
+            background-image: url('https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg');
+            background-size: 90% auto;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.2;
+            filter: grayscale(100%) brightness(0.6) sepia(100%) hue-rotate(85deg) saturate(4);
+            animation: pulseMap 8s infinite ease-in-out;
         }
 
-        /* Overlay gradien untuk efek sinematik */
+        @keyframes pulseMap {
+            0%, 100% { transform: scale(1); opacity: 0.15; }
+            50% { transform: scale(1.05); opacity: 0.25; }
+        }
+
+        /* CYBER MATRIX HD WALLPAPER ENGINE */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            filter: blur(0.5px);
+        }
+
         .overlay-vignette {
             position: fixed; inset: 0;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.85) 100%);
             z-index: -1; pointer-events: none;
         }
 
@@ -44,17 +64,11 @@
         @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
         .scanner-bar {
             position: fixed; width: 100%; height: 5px;
-            background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
-            z-index: 5; animation: scan 8s linear infinite; opacity: 0.5;
+            background: linear-gradient(to bottom, transparent, var(--indo-red), var(--neon), transparent);
+            z-index: 5; animation: scan 8s linear infinite; opacity: 0.4;
         }
 
-        .background-fx {
-            position: fixed; inset: 0;
-            background-image: linear-gradient(var(--neural-grid) 1px, transparent 1px), linear-gradient(90deg, var(--neural-grid) 1px, transparent 1px);
-            background-size: 50px 50px; z-index: -1; opacity: 0.3;
-        }
-
-        /* UI DECORATION */
+        /* UI ELEMENTS */
         .corner { position: fixed; width: 25px; height: 25px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
         .top-l { top: 10px; left: 10px; border-right: none; border-bottom: none; }
         .top-r { top: 10px; right: 10px; border-left: none; border-bottom: none; }
@@ -75,10 +89,9 @@
         }
 
         .status-panel {
-            background: rgba(0, 10, 0, 0.75); border: 1px solid var(--neon-dim);
+            background: rgba(0, 10, 0, 0.5); border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 15px;
-            position: relative; backdrop-filter: blur(8px);
-            box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.05);
+            position: relative; backdrop-filter: blur(4px);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
@@ -105,7 +118,7 @@
         .terminal-log {
             font-size: 10px; color: var(--neon); height: 100px; overflow-y: auto;
             margin-top: 15px; border: 1px solid var(--neon-dim); padding: 10px;
-            background: rgba(0,0,0,0.6); scrollbar-width: none;
+            background: rgba(0,0,0,0.6);
         }
 
         #commandPopup {
@@ -116,15 +129,15 @@
         }
 
         .hidden { display: none !important; }
-        .side-info { position: absolute; left: -15px; top: 50%; transform: rotate(-90deg); font-size: 7px; letter-spacing: 2px; color: var(--neon-dim); }
+        .side-info { position: absolute; left: -15px; top: 50%; transform: rotate(-90deg); font-size: 7px; color: var(--neon-dim); }
     </style>
 </head>
 <body>
 
+<div class="indo-map-bg"></div>
 <canvas id="bg-canvas"></canvas>
 <div class="overlay-vignette"></div>
 <div class="scanner-bar"></div>
-<div class="background-fx"></div>
 
 <div class="corner top-l"></div><div class="corner top-r"></div>
 <div class="corner bot-l"></div><div class="corner bot-r"></div>
@@ -132,20 +145,22 @@
 <div class="ui-wrapper">
     <header>
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">NEURO-LINK <span style="color:white">V5.2.2</span></div>
-            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">DB_SYNC_READY</div>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 3px;">
+                <span style="border-bottom: 2px solid var(--indo-red);">INDONESIA</span> <span style="color:white">V5.2.2</span>
+            </div>
+            <div id="status-tag" class="sync-pulse" style="font-size: 8px;">NUSANTARA_LINK_READY</div>
         </div>
         <div style="text-align: right;">
             <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
-            <div style="font-size: 7px; color: var(--accent);">STARDATE 2065.73</div>
+            <div style="font-size: 7px; color: var(--accent);">WIB_TACTICAL_ZONE</div>
         </div>
     </header>
 
     <div id="loginArea" class="status-panel">
-        <div class="side-info">SECURE_ACCESS_REQUIRED</div>
+        <div class="side-info">TERITORIAL_SECURE</div>
         <div style="text-align: center; margin: 60px 0;">
             <div style="font-size: 14px; letter-spacing: 10px; color: white; margin-bottom: 5px;">BIO-AUTH</div>
-            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">INITIALIZING QUANTUM LINK...</div>
+            <div style="font-size: 8px; color: var(--accent); opacity: 0.7;">MEMETAKAN KOORDINAT NKRI...</div>
         </div>
         <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 18px; margin-bottom: 20px; border-style: dashed;" placeholder="PILOT_ID" maxlength="12">
         <button class="btn" style="border-width: 2px;" onclick="initiateLogin()">SYNC CONSCIOUSNESS</button>
@@ -155,13 +170,13 @@
         <div style="text-align: center; margin-top: 40px;">
             <div id="loadMsg" style="font-size: 16px; letter-spacing: 5px; color: white; font-family: 'Orbitron';">SYNCING</div>
             <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-            <div id="subMsg" style="font-size: 9px; color: var(--accent); margin-bottom: 10px;">MAPPING NEURONS...</div>
+            <div id="subMsg" style="font-size: 9px; color: var(--accent); margin-bottom: 10px;">SCANNING SATELLITE...</div>
             <div class="terminal-log" id="miniLog" style="text-align: left; height: 140px; font-size: 8px;"></div>
         </div>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
-        <div class="side-info">LIVE_TACTICAL_FEED</div>
+        <div class="side-info">LIVE_NUSANTARA_FEED</div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 9px;">
             <span id="callsignLabel" style="color: white; border: 1px solid var(--neon); padding: 3px 12px; background: rgba(0,255,65,0.1); font-weight: bold;">---</span>
             <div style="display: flex; gap: 15px; color: var(--accent);">
@@ -171,8 +186,8 @@
         </div>
         
         <div class="hud-grid">
-            <div class="hud-item"><label>GEO.LATITUDE</label><span id="lat">0.00000</span></div>
-            <div class="hud-item"><label>GEO.LONGITUDE</label><span id="lon">0.00000</span></div>
+            <div class="hud-item"><label>LATITUDE</label><span id="lat">0.00000</span></div>
+            <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.00000</span></div>
             <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
             <div class="hud-item"><label>SYNC.STATUS</label><span id="coreStatus" style="color: var(--neon);">CONNECTED</span></div>
             <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
@@ -197,63 +212,43 @@
 </div>
 
 <script>
-    // --- CYBER MATRIX HD WALLPAPER ENGINE ---
+    /* MATRIX ENGINE */
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
-
     let width, height, columns;
     const fontSize = 16;
-    const chars = "0101010101ABCDEFHIJKLMNOPQRSTUVWXYZ0123456789%@#$*";
+    const chars = "01NKRI01INDONESIA01";
     let drops = [];
 
     function initCanvas() {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+        width = window.innerWidth; height = window.innerHeight;
+        canvas.width = width; canvas.height = height;
         columns = Math.floor(width / fontSize);
-        drops = [];
         for (let i = 0; i < columns; i++) drops[i] = Math.random() * -100;
     }
 
     function drawMatrix() {
-        // Efek trail hitam transparan (membuat bayangan kode)
         ctx.fillStyle = "rgba(0, 5, 0, 0.1)";
         ctx.fillRect(0, 0, width, height);
-
         ctx.font = fontSize + "px 'Share Tech Mono'";
-        
         for (let i = 0; i < drops.length; i++) {
             const text = chars.charAt(Math.floor(Math.random() * chars.length));
-            
-            // Variasi warna hijau untuk efek HD
-            const opacity = Math.random();
-            ctx.fillStyle = `rgba(0, 255, 65, ${opacity * 0.3})`;
-            
+            ctx.fillStyle = Math.random() > 0.98 ? "#fff" : "rgba(0, 255, 65, 0.35)";
             ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-            if (drops[i] * fontSize > height && Math.random() > 0.975) {
-                drops[i] = 0;
-            }
+            if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
             drops[i]++;
         }
     }
 
-    function animate() {
-        drawMatrix();
-        setTimeout(() => {
-            requestAnimationFrame(animate);
-        }, 50); // Frame rate stabil agar tidak lag di HP
-    }
-
+    function animate() { drawMatrix(); setTimeout(() => requestAnimationFrame(animate), 50); }
     window.addEventListener('resize', initCanvas);
-    initCanvas();
-    animate();
+    initCanvas(); animate();
 </script>
 
 <script type="module">
+    /* FIREBASE & LOGIC (UTUH) */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -266,11 +261,8 @@
     };
 
     let app, db, watchId = null, myCallsign = "", lastCmdTime = 0, wakeLock = null;
-
-    try {
-        app = initializeApp(firebaseConfig);
-        db = getDatabase(app);
-    } catch (e) { console.error(e); }
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
 
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
@@ -354,7 +346,6 @@
     }
 
     function listenForCommands() {
-        if(!db) return;
         onValue(ref(db, "commands/global"), (snapshot) => {
             const data = snapshot.val();
             if (data && data.timestamp > lastCmdTime) {
@@ -372,9 +363,7 @@
         addLog("CRITICAL: SOS_BROADCASTED");
     };
 
-    window.initiateTerminate = () => { 
-        if(confirm("CONFIRM NEURAL DISCONNECT?")) location.reload(); 
-    };
+    window.initiateTerminate = () => { if(confirm("CONFIRM NEURAL DISCONNECT?")) location.reload(); };
 
     function addLog(msg) {
         const box = document.getElementById('logBox');
