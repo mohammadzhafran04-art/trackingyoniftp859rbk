@@ -1,114 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HQ Command Center | YONIF TP 859</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --neon: #00ff41;
             --bg: #020502;
-            --panel: rgba(5, 15, 5, 0.9);
+            --panel: rgba(5, 15, 5, 0.95);
         }
 
-        body {
-            margin: 0;
+        body, html {
+            margin: 0; padding: 0;
             font-family: 'Rajdhani', sans-serif;
             background: var(--bg);
             color: var(--neon);
+            height: 100vh; width: 100vw;
             overflow: hidden;
         }
 
         .main-ui {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
+            grid-template-rows: 70px 1fr;
             height: 100vh;
             gap: 10px;
             padding: 10px;
             box-sizing: border-box;
         }
 
-        /* Tactical Header */
         .top-bar {
             grid-column: span 3;
             background: var(--panel);
             border: 1px solid var(--neon);
-            padding: 15px;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-transform: uppercase;
-            letter-spacing: 2px;
             box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.2);
         }
 
         .side-panel {
             background: var(--panel);
             border: 1px solid var(--neon);
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             overflow-y: auto;
         }
 
+        /* FIX: Map Container */
         #map {
+            width: 100%;
+            height: 100%;
             border: 1px solid var(--neon);
             background: #000;
-            filter: hue-rotate(90deg) brightness(0.8) contrast(1.2); /* Effect Night Vision */
+            z-index: 1;
         }
 
-        /* Marker & List Styling */
         .personnel-card {
             background: rgba(0, 255, 65, 0.05);
             border: 1px solid rgba(0, 255, 65, 0.3);
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
         }
 
-        .personnel-card:hover {
-            background: rgba(0, 255, 65, 0.2);
-            border-color: var(--neon);
-        }
+        .personnel-card:hover { background: rgba(0, 255, 65, 0.2); }
 
         .status-tag {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            float: right;
+            font-size: 10px; padding: 2px 6px; border-radius: 3px; float: right; font-weight: bold;
         }
-
         .online { background: var(--neon); color: black; }
         .offline { background: #ff003c; color: white; }
 
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .stat-item {
-            border: 1px solid var(--neon);
-            padding: 10px;
-            text-align: center;
-        }
-
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-item { border: 1px solid var(--neon); padding: 10px; text-align: center; }
         .stat-val { font-size: 24px; font-weight: bold; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--neon); }
-
         .logout-btn {
-            background: transparent;
-            border: 1px solid #ff003c;
-            color: #ff003c;
-            padding: 5px 15px;
-            cursor: pointer;
-            font-family: inherit;
+            background: transparent; border: 1px solid #ff003c; color: #ff003c;
+            padding: 5px 15px; cursor: pointer; font-family: inherit;
+        }
+
+        /* Night Vision Effect for Map */
+        .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out {
+            filter: invert(100%) hue-rotate(180deg) brightness(1.2) saturate(0.5) contrast(1.2);
         }
     </style>
 </head>
@@ -116,14 +100,14 @@
 
 <div class="main-ui">
     <div class="top-bar">
-        <div>🛰 WAR ROOM: STRATEGIC MONITORING SYSTEM</div>
+        <div style="font-weight: bold; letter-spacing: 2px;">🛰 WAR ROOM: STRATEGIC MONITORING</div>
         <div id="clock">00:00:00</div>
-        <button class="logout-btn" onclick="logout()">TERMINATE ACCESS</button>
+        <button class="logout-btn" onclick="location.href='index.html'">TERMINATE ACCESS</button>
     </div>
 
     <div class="side-panel">
         <section>
-            <h3 style="margin-top:0">BATTALION STATS</h3>
+            <h3 style="margin-top:0; font-size: 14px; border-bottom: 1px solid var(--neon);">BATTALION STATS</h3>
             <div class="stat-grid">
                 <div class="stat-item">
                     <div class="stat-val" id="totalAnggota">0</div>
@@ -137,58 +121,70 @@
         </section>
 
         <section>
-            <h3>PERSONNEL LOCATOR</h3>
+            <h3 style="font-size: 14px; border-bottom: 1px solid var(--neon);">PERSONNEL LOCATOR</h3>
             <input type="text" id="searchNama" placeholder="SEARCH ID..." 
-                   style="width:100%; background:black; border:1px solid var(--neon); color:var(--neon); padding:10px; box-sizing:border-box;">
-            <div id="listAnggota" style="margin-top:15px"></div>
+                   style="width:100%; background:black; border:1px solid var(--neon); color:var(--neon); padding:8px; box-sizing:border-box; font-family: inherit;">
+            <div id="listAnggota" style="margin-top:10px"></div>
         </section>
     </div>
 
     <div id="map"></div>
 
     <div class="side-panel">
-        <h3>UNIT INTELLIGENCE</h3>
+        <h3 style="margin-top:0; font-size: 14px; border-bottom: 1px solid var(--neon);">UNIT INTELLIGENCE</h3>
         <div id="detailBox" style="font-size: 14px; line-height: 1.6;">
-            SELECT UNIT FROM MAP OR LIST TO DEPLOY DATA...
+            AWAITING UNIT DATA...
         </div>
         
-        <div style="margin-top: auto; font-size: 10px; opacity: 0.5;">
+        <div style="margin-top: auto; font-size: 10px; opacity: 0.5; border-top: 1px solid var(--neon); padding-top: 10px;">
             ENCRYPTION: AES-256 ACTIVE<br>
-            COORDINATE SYSTEM: WGS-84
+            COORDINATE SYSTEM: WGS-84<br>
+            SIGNAL: ENCRYPTED BATTALION LINK
         </div>
     </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey:"AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-        authDomain:"real-time-location-30d91.firebaseapp.com",
-        databaseURL:"https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId:"real-time-location-30d91",
-        storageBucket:"real-time-location-30d91.firebasestorage.app",
-        messagingSenderId:"1092565406651",
-        appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+        apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+        authDomain: "real-time-location-30d91.firebaseapp.com",
+        databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "real-time-location-30d91",
+        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        messagingSenderId: "1092565406651",
+        appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const map = L.map('map', { zoomControl: false }).setView([-2, 118], 5);
-    
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+    // Inisialisasi Peta
+    const map = L.map('map', { 
+        zoomControl: true,
+        attributionControl: false 
+    }).setView([-2.5489, 118.0149], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let markers = {};
-    
-    // Update Clock
+
+    // Update Jam
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
     }, 1000);
 
+    // Ambil Data Firebase
     onValue(ref(db, "live"), (snapshot) => {
         const data = snapshot.val();
-        if(!data) return;
+        if(!data) {
+            document.getElementById("listAnggota").innerHTML = "NO ACTIVE UNITS";
+            return;
+        }
 
         const list = document.getElementById("listAnggota");
         list.innerHTML = "";
@@ -196,48 +192,55 @@
 
         Object.keys(data).forEach(id => {
             const val = data[id];
-            const isOnline = (Date.now() - val.waktu) < 30000;
+            const isOnline = (Date.now() - val.waktu) < 60000; // Online jika update < 1 menit
             
             count++;
             if(isOnline) active++;
 
-            // Update Map Marker
+            // Update atau Tambah Marker
             if(!markers[id]) {
                 markers[id] = L.circleMarker([val.latitude, val.longitude], {
-                    radius: 8, color: isOnline ? '#00ff41' : '#ff003c', fillOpacity: 0.8
-                }).addTo(map);
+                    radius: 10,
+                    color: isOnline ? '#00ff41' : '#ff003c',
+                    fillColor: isOnline ? '#00ff41' : '#ff003c',
+                    fillOpacity: 0.6
+                }).addTo(map).bindPopup(`<b>${id}</b>`);
             } else {
                 markers[id].setLatLng([val.latitude, val.longitude]);
-                markers[id].setStyle({color: isOnline ? '#00ff41' : '#ff003c'});
+                markers[id].setStyle({color: isOnline ? '#00ff41' : '#ff003c', fillColor: isOnline ? '#00ff41' : '#ff003c'});
             }
 
-            // Update List
-            const div = document.createElement("div");
-            div.className = "personnel-card";
-            div.innerHTML = `
-                <span class="status-tag ${isOnline?'online':'offline'}">${isOnline?'ACT':'OFF'}</span>
+            // Tambah ke List Kiri
+            const card = document.createElement("div");
+            card.className = "personnel-card";
+            card.innerHTML = `
+                <span class="status-tag ${isOnline?'online':'offline'}">${isOnline?'ACTIVE':'LOST'}</span>
                 <strong>${id}</strong><br>
-                <small>SPD: ${val.speed} KM/H</small>
+                <small>SPD: ${val.speed || 0} KM/H | ACC: ${val.accuracy || 0}M</small>
             `;
-            div.onclick = () => {
-                map.flyTo([val.latitude, val.longitude], 15);
-                document.getElementById("detailBox").innerHTML = `
-                    <h2 style="color:white; margin:0">${id}</h2>
-                    <hr border="1" color="#00ff41">
-                    POSITION: ${val.latitude.toFixed(5)}, ${val.longitude.toFixed(5)}<br>
-                    VELOCITY: ${val.speed} KM/H<br>
-                    ACCURACY: ${val.accuracy} METERS<br>
-                    LAST CONTACT: ${new Date(val.waktu).toLocaleTimeString()}
-                `;
+            card.onclick = () => {
+                map.flyTo([val.latitude, val.longitude], 16);
+                markers[id].openPopup();
+                showDetail(id, val, isOnline);
             };
-            list.appendChild(div);
+            list.appendChild(card);
         });
 
         document.getElementById("totalAnggota").innerText = count;
         document.getElementById("onlineAnggota").innerText = active;
     });
 
-    window.logout = () => { localStorage.clear(); location.href='login.html'; };
+    function showDetail(id, val, isOnline) {
+        document.getElementById("detailBox").innerHTML = `
+            <h2 style="color:white; margin:0">${id}</h2>
+            <hr border="1" color="#00ff41">
+            <p>STATUS: <b style="color:${isOnline?'#00ff41':'#ff003c'}">${isOnline?'OPERATIONAL':'SIGNAL LOST'}</b></p>
+            <p>LAT: ${val.latitude.toFixed(5)}</p>
+            <p>LON: ${val.longitude.toFixed(5)}</p>
+            <p>VELOCITY: ${val.speed || 0} KM/H</p>
+            <p>LAST CONTACT: ${new Date(val.waktu).toLocaleTimeString()}</p>
+        `;
+    }
 </script>
 </body>
 </html>
