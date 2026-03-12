@@ -10,7 +10,7 @@
             --neon: #00ff41;
             --neon-dim: rgba(0, 255, 65, 0.15);
             --danger: #ff003c;
-            --bg: #000500;
+            --bg: #000800; /* Hitam pekat militer */
             --accent: #00e5ff;
         }
 
@@ -20,52 +20,48 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- LOGO WALLPAPER ENGINE (FIXED) --- */
-        #bg-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-        }
-
-        /* Container logo agar presisi di tengah */
-        .logo-container {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85vw; max-width: 450px; z-index: -1;
-            display: flex; justify-content: center; align-items: center;
+        /* --- LOGO WALLPAPER SYSTEM (FIXED LAYER) --- */
+        .wallpaper-engine {
+            position: fixed;
+            inset: 0;
+            z-index: 0; /* Di atas background hitam */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
         }
 
         .logo-main {
-            width: 100%; height: auto;
-            opacity: 0.2; /* Tingkat transparansi logo di background */
-            filter: drop-shadow(0 0 20px var(--neon-dim)) saturate(1.2);
-            animation: corePulse 5s infinite ease-in-out;
+            width: 85vw;
+            max-width: 450px;
+            height: auto;
+            opacity: 0.25; /* Transparansi logo */
+            filter: drop-shadow(0 0 15px var(--neon-dim)) saturate(1.3);
+            animation: corePulse 6s infinite ease-in-out;
         }
 
         @keyframes corePulse {
-            0%, 100% { transform: scale(1); opacity: 0.15; filter: blur(1px); }
-            50% { transform: scale(1.08); opacity: 0.3; filter: blur(0px); }
+            0%, 100% { transform: scale(1); opacity: 0.2; filter: blur(1px); }
+            50% { transform: scale(1.05); opacity: 0.35; filter: blur(0px); }
         }
+
+        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.5; }
 
         .scanline {
             position: fixed; inset: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.02) 50%);
-            background-size: 100% 4px; z-index: 1001; pointer-events: none;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.03) 50%);
+            background-size: 100% 4px; z-index: 100; pointer-events: none;
         }
 
-        .overlay-vignette {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
-            z-index: -1; pointer-events: none;
-        }
-
-        /* UI ELEMENTS */
-        .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
-        .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
-        .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
-        .bot-l { bottom: 15px; left: 15px; border-right: none; border-top: none; }
-        .bot-r { bottom: 15px; right: 15px; border-left: none; border-top: none; }
-
+        /* UI WRAPPER HARUS DI ATAS SEMUA (z-index: 10) */
         .ui-wrapper {
-            position: relative; z-index: 10; height: 100%;
-            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box;
+            position: relative; 
+            z-index: 10; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 25px; 
+            box-sizing: border-box;
         }
 
         header {
@@ -75,9 +71,10 @@
         }
 
         .status-panel {
-            background: rgba(0, 10, 0, 0.8); border: 1px solid var(--neon-dim);
+            background: rgba(0, 15, 0, 0.7); /* Transparan dikit biar logo tembus */
+            border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(8px);
+            position: relative; backdrop-filter: blur(4px);
             clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
         }
 
@@ -95,31 +92,36 @@
         .btn {
             font-family: 'Orbitron'; font-weight: bold; padding: 18px;
             text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.05); color: var(--neon); transition: all 0.3s;
+            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: all 0.3s;
         }
         .btn:active { transform: scale(0.95); background: var(--neon-dim); }
 
         .terminal-log {
-            font-size: 11px; color: var(--neon); height: 120px; overflow-y: auto;
+            font-size: 11px; color: var(--neon); height: 100px; overflow-y: auto;
             margin-top: 15px; border: 1px solid var(--neon-dim); padding: 12px;
-            background: rgba(0,0,0,0.6); scrollbar-width: none;
+            background: rgba(0,0,0,0.5); scrollbar-width: none;
         }
 
         .hidden { display: none !important; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .sync-pulse { animation: pulse 2s infinite; color: var(--accent); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        /* Corner Accents */
+        .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
+        .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .bot-l { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .bot-r { bottom: 15px; right: 15px; border-left: none; border-top: none; }
     </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
-
-<div class="logo-container">
-    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-main" onerror="this.src='https://i.ibb.co/Xf8R3mN/IMG-2984-1.jpg'">
+<div class="wallpaper-engine">
+    <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" class="logo-main" alt="RBK LOGO">
 </div>
 
+<canvas id="bg-canvas"></canvas>
 <div class="scanline"></div>
-<div class="overlay-vignette"></div>
 
 <div class="corner top-l"></div><div class="corner top-r"></div>
 <div class="corner bot-l"></div><div class="corner bot-r"></div>
@@ -137,7 +139,7 @@
     </header>
 
     <div id="loginArea" class="status-panel">
-        <div style="text-align: center; margin: 50px 0;">
+        <div style="text-align: center; margin: 60px 0;">
             <div style="font-size: 18px; letter-spacing: 8px; color: white; margin-bottom: 10px; font-family: 'Orbitron';">AUTHENTICATION</div>
             <div style="font-size: 9px; color: var(--accent);">WAITING FOR BIOMETRIC HANDSHAKE...</div>
         </div>
@@ -158,7 +160,7 @@
             <span id="callsignLabel" style="color: #000; border: 1px solid var(--neon); padding: 5px 15px; background: var(--neon); font-weight: bold; font-family: 'Orbitron'; font-size: 12px;">---</span>
             <div style="display: flex; gap: 15px; color: var(--accent); font-size: 10px; align-items: center;">
                 <span>VITAL_HR: <b id="heartRate" style="color:white">--</b></span>
-                <span id="wklStatus" style="border: 1px solid var(--accent); padding: 2px 6px;">WAKE: OFF</span>
+                <span style="border: 1px solid var(--accent); padding: 2px 6px;">WAKE: ON</span>
             </div>
         </div>
         
@@ -172,7 +174,7 @@
         <div class="terminal-log" id="logBox">> SYSTEM_READY...</div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-            <button class="btn" style="background:rgba(255,0,0,0.1); color:#ff003c; border-color:#ff003c;" onclick="sendSOS()">MAYDAY</button>
+            <button class="btn" style="background:rgba(255,0,0,0.1); color:#ff003c; border-color:#ff003c;">MAYDAY</button>
             <button class="btn" style="font-size: 11px; border-color: rgba(255,255,255,0.3); color: white;" onclick="initiateTerminate()">EXIT LINK</button>
         </div>
     </div>
@@ -180,7 +182,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -192,28 +194,18 @@
     let app = initializeApp(firebaseConfig);
     let db = getDatabase(app);
     let myCallsign = "";
-    let wakeLock = null;
 
-    // Clock & Heart Rate
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
         if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (85 - 65) + 65);
     }, 1000);
 
-    // LOGIN SEQUENCE
     window.initiateLogin = () => {
         myCallsign = document.getElementById('idInput').value.trim().toUpperCase();
         if(!myCallsign) return alert("REQUIRED: CALLSIGN");
-        
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
-        
-        runSequence([
-            "BOOTING NEURAL KERNEL...",
-            "LINKING TO YONIF 859 NETWORK...",
-            "SYNCHRONIZING GEODATA...",
-            "ACCESS GRANTED."
-        ], 40, () => {
+        runSequence(["BOOTING NEURAL KERNEL...", "SYNCHRONIZING GEODATA...", "ACCESS GRANTED."], 40, () => {
             document.getElementById('loadingArea').classList.add('hidden');
             document.getElementById('trackingArea').classList.remove('hidden');
             document.getElementById('callsignLabel').innerText = myCallsign;
@@ -221,35 +213,19 @@
         });
     };
 
-    // EXIT SEQUENCE (MODIFIED: 3-5 SECONDS)
     window.initiateTerminate = () => {
         if(!confirm("TERMINATE CONNECTION?")) return;
-        
         document.getElementById('trackingArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
-        document.getElementById('loadMsg').innerText = "TERMINATING LINK...";
-        document.getElementById('miniLog').innerHTML = "";
-
-        runSequence([
-            "DE-ENCRYPTING DATA...",
-            "RELEASING NEURAL BINDING...",
-            "CLOSING FIREBASE PORT...",
-            "LINK SEVERED."
-        ], 80, () => location.reload());
+        document.getElementById('loadMsg').innerText = "TERMINATING...";
+        runSequence(["DE-ENCRYPTING...", "LINK SEVERED."], 80, () => location.reload());
     };
 
     function runSequence(msgs, speed, cb) {
         let p = 0;
         let bar = document.getElementById('progressFill');
-        let log = document.getElementById('miniLog');
         let timer = setInterval(() => {
-            p++;
-            bar.style.width = p + "%";
-            let idx = Math.floor((p/100) * msgs.length);
-            if(msgs[idx] && !log.innerHTML.includes(msgs[idx])) {
-                log.innerHTML += `<div>> ${msgs[idx]}</div>`;
-                log.scrollTop = log.scrollHeight;
-            }
+            p++; bar.style.width = p + "%";
             if(p >= 100) { clearInterval(timer); setTimeout(cb, 500); }
         }, speed);
     }
@@ -265,21 +241,18 @@
         }
     }
 
-    // Background Canvas Particles
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    let particles = Array.from({length: 30}, () => ({
+    let particles = Array.from({length: 25}, () => ({
         x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-        s: Math.random() * 2, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5
+        s: Math.random() * 2, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3
     }));
     function draw() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "rgba(0,255,65,0.2)";
+        ctx.fillStyle = "rgba(0,255,65,0.3)";
         particles.forEach(p => {
             p.x += p.vx; p.y += p.vy;
-            if(p.x<0 || p.x>canvas.width) p.vx*=-1;
-            if(p.y<0 || p.y>canvas.height) p.vy*=-1;
             ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
         });
         requestAnimationFrame(draw);
