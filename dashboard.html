@@ -55,7 +55,6 @@
             overflow-y: auto;
         }
 
-        /* FIX: Map Container */
         #map {
             width: 100%;
             height: 100%;
@@ -90,7 +89,7 @@
             padding: 5px 15px; cursor: pointer; font-family: inherit;
         }
 
-        /* Night Vision Effect for Map */
+        /* Night Vision Filter */
         .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out {
             filter: invert(100%) hue-rotate(180deg) brightness(1.2) saturate(0.5) contrast(1.2);
         }
@@ -175,53 +174,77 @@
 
     // Update Jam
     setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
     }, 1000);
 
-    // Ambil Data Firebase
+    // Fungsi Detail (Dibuat Global agar bisa diakses dari HTML)
+    window.showDetail = function(id, val, isOnline) {
+        document.getElementById("detailBox").innerHTML = `
+            <h2 style="color:white; margin:0">${id}</h2>
+            <hr style="border: 0; border-top: 1px solid var(--neon);">
+            <p>STATUS: <b style="color:${isOnline?'#00ff41':'#ff003c'}">${isOnline?'OPERATIONAL':'SIGNAL LOST'}</b></p>
+            <p>LAT: ${val.latitude ? val.latitude.toFixed(5) : 'N/A'}</p>
+            <p>LON: ${val.longitude ? val.longitude.toFixed(5) : 'N/A'}</p>
+            <p>VELOCITY: ${val.speed || 0} KM/H</p>
+            <p>LAST CONTACT: ${val.waktu ? new Date(val.waktu).toLocaleTimeString() : 'Unknown'}</p>
+        `;
+    };
+
+    // Ambil Data Firebase Real-time
     onValue(ref(db, "live"), (snapshot) => {
         const data = snapshot.val();
+        const list = document.getElementById("listAnggota");
+        
         if(!data) {
-            document.getElementById("listAnggota").innerHTML = "NO ACTIVE UNITS";
+            list.innerHTML = "NO ACTIVE UNITS";
             return;
         }
 
-        const list = document.getElementById("listAnggota");
         list.innerHTML = "";
         let count = 0, active = 0;
 
         Object.keys(data).forEach(id => {
             const val = data[id];
-            const isOnline = (Date.now() - val.waktu) < 60000; // Online jika update < 1 menit
+            // Threshold Online: 5 menit (300.000 ms) agar tidak gampang 'Lost' jika sinyal lemah
+            const isOnline = (Date.now() - (val.waktu || 0)) < 300000 && val.status !== "OFFLINE";
             
             count++;
             if(isOnline) active++;
 
-            // Update atau Tambah Marker
-            if(!markers[id]) {
-                markers[id] = L.circleMarker([val.latitude, val.longitude], {
-                    radius: 10,
-                    color: isOnline ? '#00ff41' : '#ff003c',
-                    fillColor: isOnline ? '#00ff41' : '#ff003c',
-                    fillOpacity: 0.6
-                }).addTo(map).bindPopup(`<b>${id}</b>`);
-            } else {
-                markers[id].setLatLng([val.latitude, val.longitude]);
-                markers[id].setStyle({color: isOnline ? '#00ff41' : '#ff003c', fillColor: isOnline ? '#00ff41' : '#ff003c'});
+            // Marker Logic
+            if(val.latitude && val.longitude) {
+                if(!markers[id]) {
+                    markers[id] = L.circleMarker([val.latitude, val.longitude], {
+                        radius: 10,
+                        color: isOnline ? '#00ff41' : '#ff003c',
+                        fillColor: isOnline ? '#00ff41' : '#ff003c',
+                        fillOpacity: 0.6
+                    }).addTo(map).bindPopup(`<b>${id}</b>`);
+                } else {
+                    markers[id].setLatLng([val.latitude, val.longitude]);
+                    markers[id].setStyle({
+                        color: isOnline ? '#00ff41' : '#ff003c', 
+                        fillColor: isOnline ? '#00ff41' : '#ff003c'
+                    });
+                }
             }
 
-            // Tambah ke List Kiri
+            // List UI Logic
             const card = document.createElement("div");
             card.className = "personnel-card";
             card.innerHTML = `
                 <span class="status-tag ${isOnline?'online':'offline'}">${isOnline?'ACTIVE':'LOST'}</span>
                 <strong>${id}</strong><br>
-                <small>SPD: ${val.speed || 0} KM/H | ACC: ${val.accuracy || 0}M</small>
+                <small>SPD: ${val.speed || 0} KM/H | ACC: ${Math.round(val.accuracy || 0)}M</small>
             `;
+            
             card.onclick = () => {
-                map.flyTo([val.latitude, val.longitude], 16);
-                markers[id].openPopup();
-                showDetail(id, val, isOnline);
+                if(val.latitude && val.longitude) {
+                    map.flyTo([val.latitude, val.longitude], 16);
+                    markers[id].openPopup();
+                }
+                window.showDetail(id, val, isOnline);
             };
             list.appendChild(card);
         });
@@ -229,18 +252,6 @@
         document.getElementById("totalAnggota").innerText = count;
         document.getElementById("onlineAnggota").innerText = active;
     });
-
-    function showDetail(id, val, isOnline) {
-        document.getElementById("detailBox").innerHTML = `
-            <h2 style="color:white; margin:0">${id}</h2>
-            <hr border="1" color="#00ff41">
-            <p>STATUS: <b style="color:${isOnline?'#00ff41':'#ff003c'}">${isOnline?'OPERATIONAL':'SIGNAL LOST'}</b></p>
-            <p>LAT: ${val.latitude.toFixed(5)}</p>
-            <p>LON: ${val.longitude.toFixed(5)}</p>
-            <p>VELOCITY: ${val.speed || 0} KM/H</p>
-            <p>LAST CONTACT: ${new Date(val.waktu).toLocaleTimeString()}</p>
-        `;
-    }
 </script>
 </body>
 </html>
