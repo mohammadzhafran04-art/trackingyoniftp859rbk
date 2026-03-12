@@ -116,6 +116,7 @@
             border: 1px dashed var(--army-green);
             text-align: center;
             color: var(--army-green);
+            font-weight: bold;
         }
 
         .data-grid {
@@ -153,9 +154,11 @@
 </div>
 
 <script type="module">
+    // 1. IMPORT FIREBASE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // 2. KONFIGURASI
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
         authDomain: "real-time-location-30d91.firebaseapp.com",
@@ -166,20 +169,25 @@
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
+    // 3. INISIALISASI
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Fungsi WakeLock agar layar tidak mati
     let wakeLock = null;
+
+    // Fungsi mencegah layar mati
     async function requestWakeLock() {
         try {
-            wakeLock = await navigator.wakeLock.request('screen');
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log("WakeLock Aktif");
+            }
         } catch (err) {
-            console.log("WakeLock Gagal");
+            console.error("WakeLock Gagal:", err);
         }
     }
 
-    // Menjalankan fungsi saat tombol diklik
+    // 4. LOGIKA TOMBOL MULAI
     document.getElementById('btnMulai').addEventListener('click', () => {
         const nama = document.getElementById("nama").value.trim();
         
@@ -192,22 +200,28 @@
         requestWakeLock();
 
         if ("geolocation" in navigator) {
+            // Mengatur onDisconnect: Jika browser ditutup, status jadi OFFLINE di dashboard
+            const statusRef = ref(db, "live/" + nama + "/status");
+            onDisconnect(statusRef).set("OFFLINE");
+
             navigator.geolocation.watchPosition(async (pos) => {
                 const { latitude, longitude, speed, accuracy } = pos.coords;
                 const spdKmh = Math.round((speed || 0) * 3.6);
 
-                try {
-                    // Kirim ke Firebase
-                    await set(ref(db, "live/" + nama), {
-                        latitude,
-                        longitude,
-                        speed: spdKmh,
-                        accuracy: Math.round(accuracy),
-                        waktu: Date.now(),
-                        status: "ONLINE"
-                    });
+                const payload = {
+                    latitude,
+                    longitude,
+                    speed: spdKmh,
+                    accuracy: Math.round(accuracy),
+                    waktu: Date.now(),
+                    status: "ONLINE"
+                };
 
-                    document.getElementById("status").innerHTML = "<span style='color:lime'>▣ TRANSMITTING DATA...</span>";
+                try {
+                    // Kirim ke Firebase ke folder 'live'
+                    await set(ref(db, "live/" + nama), payload);
+
+                    document.getElementById("status").innerHTML = "<span style='color:lime'>▣ DATA TERKIRIM KE HQ</span>";
                     document.getElementById("info").innerHTML = `
                         <div class="data-grid">
                             <div class="data-box">LAT: ${latitude.toFixed(5)}</div>
@@ -218,17 +232,21 @@
                     `;
                 } catch (error) {
                     document.getElementById("status").innerHTML = "<span style='color:red'>FAILED TO UPLOAD DATA</span>";
-                    console.error(error);
+                    console.error("Firebase Error:", error);
                 }
 
             }, (err) => {
-                document.getElementById("status").innerHTML = "<span style='color:red'>GPS ERROR: " + err.message + "</span>";
+                let msg = "GPS Error";
+                if(err.code == 1) msg = "IZIN LOKASI DITOLAK";
+                if(err.code == 3) msg = "TIMEOUT (CARI TEMPAT TERBUKA)";
+                document.getElementById("status").innerHTML = `<span style='color:red'>${msg}: ${err.message}</span>`;
             }, {
                 enableHighAccuracy: true,
-                maximumAge: 0
+                maximumAge: 0,
+                timeout: 10000
             });
         } else {
-            alert("GPS Tidak Didukung di HP ini");
+            alert("GPS Tidak Didukung di perangkat ini.");
         }
     });
 </script>
