@@ -9,7 +9,6 @@
         :root {
             --army-green: #00ff41;
             --dark-bg: #050a05;
-            --glass: rgba(0, 255, 65, 0.05);
         }
 
         body {
@@ -35,6 +34,7 @@
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
             text-transform: uppercase;
             letter-spacing: 4px;
+            font-weight: bold;
         }
 
         .scan-line {
@@ -69,17 +69,7 @@
             border: 1px solid var(--army-green);
             border-radius: 2px;
             position: relative;
-            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
-        }
-
-        .card::before {
-            content: "SECURE LINK ACTIVE";
-            position: absolute;
-            top: 5px;
-            right: 20px;
-            font-size: 10px;
-            color: var(--army-green);
-            opacity: 0.5;
+            box-sizing: border-box;
         }
 
         h2 {
@@ -100,11 +90,6 @@
             font-family: inherit;
             margin-bottom: 20px;
             outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            box-shadow: inset 0 0 10px var(--army-green);
         }
 
         button {
@@ -130,7 +115,7 @@
             padding: 15px;
             border: 1px dashed var(--army-green);
             text-align: center;
-            min-height: 50px;
+            color: var(--army-green);
         }
 
         .data-grid {
@@ -153,16 +138,16 @@
 <div class="scan-line"></div>
 
 <div class="header">
-    📡 TRANSMITTER LOKASI SATUAN YONIF TP 859/RBK
+    📡 TRANSMITTER LOKASI YONIF TP 859/RBK
 </div>
 
 <div class="container">
     <div class="card">
-        <h2>ID AUTHENTICATION</h2>
-        <input type="text" id="nama" placeholder="MASUKKAN NAMA / NRP">
-        <button onclick="mulaiTracking()">INITIATE LINK</button>
+        <h2>UNIT AUTHENTICATION</h2>
+        <input type="text" id="nama" placeholder="NAMA / NRP">
+        <button id="btnMulai">AKTIFKAN TRACKING</button>
         
-        <div id="status">WAITING FOR UPLINK...</div>
+        <div id="status">SISTEM SIAP...</div>
         <div id="info"></div>
     </div>
 </div>
@@ -172,44 +157,80 @@
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey:"AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-        authDomain:"real-time-location-30d91.firebaseapp.com",
-        databaseURL:"https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId:"real-time-location-30d91",
-        storageBucket:"real-time-location-30d91.firebasestorage.app",
-        messagingSenderId:"1092565406651",
-        appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
+        apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+        authDomain: "real-time-location-30d91.firebaseapp.com",
+        databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "real-time-location-30d91",
+        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        messagingSenderId: "1092565406651",
+        appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.mulaiTracking = function() {
-        const nama = document.getElementById("nama").value;
-        if(!nama) { alert("IDENTITAS WAJIB DIISI!"); return; }
-
-        document.getElementById("status").innerHTML = "SATELLITE LOCKING...";
-        
-        navigator.geolocation.watchPosition(async (pos) => {
-            const { latitude, longitude, speed, accuracy } = pos.coords;
-            const spd = Math.round((speed || 0) * 3.6);
-
-            await set(ref(db, "live/" + nama), {
-                latitude, longitude, speed: spd, accuracy,
-                waktu: Date.now(), status: "ONLINE"
-            });
-
-            document.getElementById("status").innerHTML = "<span style='color:lime'>▣ SIGNAL ACQUIRED - TRANSMITTING</span>";
-            document.getElementById("info").innerHTML = `
-                <div class="data-grid">
-                    <div class="data-box">LAT: ${latitude.toFixed(4)}</div>
-                    <div class="data-box">LON: ${longitude.toFixed(4)}</div>
-                    <div class="data-box">SPD: ${spd} KM/H</div>
-                    <div class="data-box">ACC: ${accuracy.toFixed(0)}M</div>
-                </div>
-            `;
-        }, (err) => alert(err.message), { enableHighAccuracy: true });
+    // Fungsi WakeLock agar layar tidak mati
+    let wakeLock = null;
+    async function requestWakeLock() {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+        } catch (err) {
+            console.log("WakeLock Gagal");
+        }
     }
+
+    // Menjalankan fungsi saat tombol diklik
+    document.getElementById('btnMulai').addEventListener('click', () => {
+        const nama = document.getElementById("nama").value.trim();
+        
+        if (!nama) {
+            alert("IDENTITAS UNIT WAJIB DIISI!");
+            return;
+        }
+
+        document.getElementById("status").innerHTML = "MENCARI SINYAL SATELIT...";
+        requestWakeLock();
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(async (pos) => {
+                const { latitude, longitude, speed, accuracy } = pos.coords;
+                const spdKmh = Math.round((speed || 0) * 3.6);
+
+                try {
+                    // Kirim ke Firebase
+                    await set(ref(db, "live/" + nama), {
+                        latitude,
+                        longitude,
+                        speed: spdKmh,
+                        accuracy: Math.round(accuracy),
+                        waktu: Date.now(),
+                        status: "ONLINE"
+                    });
+
+                    document.getElementById("status").innerHTML = "<span style='color:lime'>▣ TRANSMITTING DATA...</span>";
+                    document.getElementById("info").innerHTML = `
+                        <div class="data-grid">
+                            <div class="data-box">LAT: ${latitude.toFixed(5)}</div>
+                            <div class="data-box">LON: ${longitude.toFixed(5)}</div>
+                            <div class="data-box">SPD: ${spdKmh} KM/H</div>
+                            <div class="data-box">ACC: ${Math.round(accuracy)}M</div>
+                        </div>
+                    `;
+                } catch (error) {
+                    document.getElementById("status").innerHTML = "<span style='color:red'>FAILED TO UPLOAD DATA</span>";
+                    console.error(error);
+                }
+
+            }, (err) => {
+                document.getElementById("status").innerHTML = "<span style='color:red'>GPS ERROR: " + err.message + "</span>";
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 0
+            });
+        } else {
+            alert("GPS Tidak Didukung di HP ini");
+        }
+    });
 </script>
 </body>
 </html>
