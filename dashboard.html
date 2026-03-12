@@ -1,101 +1,243 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>859/RBK - HQ DASHBOARD</title>
+    <title>HQ Command Center | YONIF TP 859</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --danger: #ff0055; --bg: #010808; }
-        body { margin: 0; font-family: 'Rajdhani'; background: var(--bg); color: var(--neon); overflow: hidden; height: 100vh; }
-        .header { height: 50px; background: #001010; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
-        .container { display: grid; grid-template-columns: 300px 1fr 300px; height: calc(100vh - 52px); }
-        .panel { background: rgba(2, 12, 12, 0.95); border-right: 1px solid rgba(0, 242, 255, 0.2); padding: 15px; overflow-y: auto; }
-        #map { height: 100%; background: #000; filter: brightness(0.8) contrast(1.2) saturate(0.5) hue-rotate(150deg) invert(0.9); }
-        .unit-card { border: 1px solid rgba(0, 242, 255, 0.2); padding: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .unit-card.active { border-color: var(--neon); background: rgba(0, 242, 255, 0.1); }
-        .unit-card.sos { border-color: var(--danger); animation: blink 0.8s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } }
-        .cmd-btn { width: 100%; padding: 10px; margin-top: 5px; background: var(--neon); border: none; font-weight: bold; cursor: pointer; }
-        input { width: 100%; background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 8px; box-sizing: border-box; }
+        :root {
+            --neon: #00ff41;
+            --bg: #020502;
+            --panel: rgba(5, 15, 5, 0.9);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg);
+            color: var(--neon);
+            overflow: hidden;
+        }
+
+        .main-ui {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Tactical Header */
+        .top-bar {
+            grid-column: span 3;
+            background: var(--panel);
+            border: 1px solid var(--neon);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .side-panel {
+            background: var(--panel);
+            border: 1px solid var(--neon);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        #map {
+            border: 1px solid var(--neon);
+            background: #000;
+            filter: hue-rotate(90deg) brightness(0.8) contrast(1.2); /* Effect Night Vision */
+        }
+
+        /* Marker & List Styling */
+        .personnel-card {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .personnel-card:hover {
+            background: rgba(0, 255, 65, 0.2);
+            border-color: var(--neon);
+        }
+
+        .status-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            float: right;
+        }
+
+        .online { background: var(--neon); color: black; }
+        .offline { background: #ff003c; color: white; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            border: 1px solid var(--neon);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-val { font-size: 24px; font-weight: bold; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #ff003c;
+            color: #ff003c;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div style="font-family:'Orbitron';">859/RBK TACTICAL HQ</div>
-        <button onclick="logout()" style="background:#ff0055; color:white; border:none; cursor:pointer;">LOGOUT</button>
-    </div>
-    <div class="container">
-        <div class="panel">
-            <div style="opacity:0.5; font-size:12px; margin-bottom:10px;">UNIT_LIST</div>
-            <div id="list"></div>
-        </div>
-        <div id="map"></div>
-        <div class="panel">
-            <div style="opacity:0.5; font-size:12px; margin-bottom:10px;">UNIT_DETAILS</div>
-            <div id="details"><div style="text-align:center; margin-top:50px; opacity:0.3;">SELECT UNIT</div></div>
-        </div>
+
+<div class="main-ui">
+    <div class="top-bar">
+        <div>🛰 WAR ROOM: STRATEGIC MONITORING SYSTEM</div>
+        <div id="clock">00:00:00</div>
+        <button class="logout-btn" onclick="logout()">TERMINATE ACCESS</button>
     </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <div class="side-panel">
+        <section>
+            <h3 style="margin-top:0">BATTALION STATS</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-val" id="totalAnggota">0</div>
+                    <div style="font-size:10px">TOTAL UNIT</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" style="color:#00ff88" id="onlineAnggota">0</div>
+                    <div style="font-size:10px">ACTIVE</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3>PERSONNEL LOCATOR</h3>
+            <input type="text" id="searchNama" placeholder="SEARCH ID..." 
+                   style="width:100%; background:black; border:1px solid var(--neon); color:var(--neon); padding:10px; box-sizing:border-box;">
+            <div id="listAnggota" style="margin-top:15px"></div>
+        </section>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="side-panel">
+        <h3>UNIT INTELLIGENCE</h3>
+        <div id="detailBox" style="font-size: 14px; line-height: 1.6;">
+            SELECT UNIT FROM MAP OR LIST TO DEPLOY DATA...
+        </div>
+        
+        <div style="margin-top: auto; font-size: 10px; opacity: 0.5;">
+            ENCRYPTION: AES-256 ACTIVE<br>
+            COORDINATE SYSTEM: WGS-84
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    if(localStorage.getItem("auth") !== "true") window.location.href = "login.html";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-        databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "real-time-location-30d91"
+        apiKey:"AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
+        authDomain:"real-time-location-30d91.firebaseapp.com",
+        databaseURL:"https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId:"real-time-location-30d91",
+        storageBucket:"real-time-location-30d91.firebasestorage.app",
+        messagingSenderId:"1092565406651",
+        appId:"1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const map = L.map('map', {zoomControl: false}).setView([-2.5489, 118.0149], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const map = L.map('map', { zoomControl: false }).setView([-2, 118], 5);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-    let units = {}, markers = {}, selected = null;
+    let markers = {};
+    
+    // Update Clock
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
+    }, 1000);
 
-    window.logout = () => { localStorage.removeItem("auth"); window.location.href="login.html"; };
+    onValue(ref(db, "live"), (snapshot) => {
+        const data = snapshot.val();
+        if(!data) return;
 
-    window.sendCmd = (id, msg = null) => {
-        const val = msg || document.getElementById('cInp').value;
-        if(val) update(ref(db, `live/${id}`), { command: val });
-    };
+        const list = document.getElementById("listAnggota");
+        list.innerHTML = "";
+        let count = 0, active = 0;
 
-    onValue(ref(db, "live"), (snap) => {
-        const data = snap.val() || {};
-        const listDiv = document.getElementById("list");
-        listDiv.innerHTML = "";
-        
         Object.keys(data).forEach(id => {
-            const u = data[id];
-            const latlng = [u.lat, u.lon];
-            const isOnline = (Date.now() - u.waktu) < 60000;
+            const val = data[id];
+            const isOnline = (Date.now() - val.waktu) < 30000;
+            
+            count++;
+            if(isOnline) active++;
 
-            if(!markers[id]) markers[id] = L.circleMarker(latlng, {radius:8, color:'#fff', fillOpacity:1}).addTo(map);
-            markers[id].setLatLng(latlng).setStyle({fillColor: u.status === 'DANGER_SOS' ? '#f05' : (isOnline ? '#0f2' : '#444')});
+            // Update Map Marker
+            if(!markers[id]) {
+                markers[id] = L.circleMarker([val.latitude, val.longitude], {
+                    radius: 8, color: isOnline ? '#00ff41' : '#ff003c', fillOpacity: 0.8
+                }).addTo(map);
+            } else {
+                markers[id].setLatLng([val.latitude, val.longitude]);
+                markers[id].setStyle({color: isOnline ? '#00ff41' : '#ff003c'});
+            }
 
-            const card = document.createElement("div");
-            card.className = `unit-card ${selected === id ? 'active' : ''} ${u.status === 'DANGER_SOS' ? 'sos' : ''}`;
-            card.innerHTML = `<b>${id}</b><br><small>${isOnline ? 'ONLINE' : 'OFFLINE'} | ${u.battery || '--'}</small>`;
-            card.onclick = () => {
-                selected = id;
-                map.flyTo(latlng, 15);
-                document.getElementById("details").innerHTML = `
-                    <h3>${id}</h3>
-                    <p>SPD: ${u.speed} KM/H</p>
-                    <input id="cInp" placeholder="Send text...">
-                    <button class="cmd-btn" onclick="sendCmd('${id}')">SEND MESSAGE</button>
-                    <button class="cmd-btn" style="background:#ffaa00" onclick="sendCmd('${id}','ALARM_ON')">SIREN ON</button>
-                    <button class="cmd-btn" style="background:#444; color:#fff" onclick="sendCmd('${id}','ALARM_OFF')">SIREN OFF</button>
+            // Update List
+            const div = document.createElement("div");
+            div.className = "personnel-card";
+            div.innerHTML = `
+                <span class="status-tag ${isOnline?'online':'offline'}">${isOnline?'ACT':'OFF'}</span>
+                <strong>${id}</strong><br>
+                <small>SPD: ${val.speed} KM/H</small>
+            `;
+            div.onclick = () => {
+                map.flyTo([val.latitude, val.longitude], 15);
+                document.getElementById("detailBox").innerHTML = `
+                    <h2 style="color:white; margin:0">${id}</h2>
+                    <hr border="1" color="#00ff41">
+                    POSITION: ${val.latitude.toFixed(5)}, ${val.longitude.toFixed(5)}<br>
+                    VELOCITY: ${val.speed} KM/H<br>
+                    ACCURACY: ${val.accuracy} METERS<br>
+                    LAST CONTACT: ${new Date(val.waktu).toLocaleTimeString()}
                 `;
             };
-            listDiv.appendChild(card);
+            list.appendChild(div);
         });
+
+        document.getElementById("totalAnggota").innerText = count;
+        document.getElementById("onlineAnggota").innerText = active;
     });
+
+    window.logout = () => { localStorage.clear(); location.href='login.html'; };
 </script>
 </body>
 </html>
