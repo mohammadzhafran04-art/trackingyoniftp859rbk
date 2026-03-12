@@ -20,7 +20,7 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- LAYER 1: LOGO (DIPAKSA MUNCUL) --- */
+        /* --- LAYER 1: LOGO UTAMA (PALING BELAKANG DI ATAS BACKGROUND HITAM) --- */
         .wallpaper-engine {
             position: fixed;
             inset: 0;
@@ -29,54 +29,52 @@
             justify-content: center;
             align-items: center;
             pointer-events: none;
-            background-color: var(--bg); /* Dasar hitam pekat */
         }
 
         .logo-main {
             width: 85vw;
-            max-width: 400px;
+            max-width: 450px;
             height: auto;
-            opacity: 0.6 !important; /* Opacity tinggi agar tembus pandang */
-            filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.3));
+            opacity: 0.5 !important; /* Menaikkan opacity agar terlihat jelas di screenshot */
+            filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.4));
             animation: corePulse 6s infinite ease-in-out;
-            display: block !important;
         }
 
         @keyframes corePulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.7; }
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.03); opacity: 0.6; }
         }
 
-        /* --- LAYER 2: CANVAS --- */
+        /* --- LAYER 2: ANIMASI PARTIKEL --- */
         #bg-canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.3; }
 
-        /* --- LAYER 3: SCANLINE --- */
+        /* --- LAYER 3: SCANLINE (EFEK MONITOR) --- */
         .scanline {
             position: fixed; inset: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.05) 50%);
-            background-size: 100% 4px; z-index: 5; pointer-events: none;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.03) 50%);
+            background-size: 100% 4px; z-index: 100; pointer-events: none;
         }
 
-        /* --- LAYER 4: UI (DIBUAT SANGAT TRANSPARAN) --- */
+        /* --- LAYER 4: UI WRAPPER (ANTARMUKA PENGGUNA) --- */
         .ui-wrapper {
             position: relative; 
             z-index: 10; 
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            padding: 20px; 
+            padding: 25px; 
             box-sizing: border-box;
         }
 
         header {
             display: flex; justify-content: space-between; align-items: flex-start;
             border-bottom: 1px solid var(--neon-dim); padding-bottom: 10px; margin-bottom: 15px;
-            background: rgba(0,0,0,0.3);
+            text-shadow: 0 0 10px var(--neon);
         }
 
         .status-panel {
-            /* KUNCI: Background transparan (0.3) agar logo di belakang kelihatan */
-            background: rgba(0, 20, 0, 0.3) !important; 
+            /* DIBUAT TRANSPARAN AGAR LOGO DI BELAKANG TERLIHAT JELAS */
+            background: rgba(0, 15, 0, 0.5) !important; 
             border: 1px solid var(--neon-dim);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
             position: relative; backdrop-filter: blur(2px);
@@ -84,27 +82,34 @@
         }
 
         .btn {
-            font-family: 'Orbitron'; font-weight: bold; padding: 15px;
+            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
             text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: 0.3s;
+            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: all 0.3s;
         }
 
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .hud-item {
-            background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--neon); padding: 10px;
+            background: rgba(0, 255, 65, 0.05); border: 1px solid rgba(0, 255, 65, 0.2);
+            border-left: 4px solid var(--neon); padding: 12px;
         }
-        .hud-item label { font-size: 8px; color: var(--accent); display: block; }
-        .hud-item span { font-size: 14px; font-family: 'Orbitron'; color: white; }
+        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 5px; }
+        .hud-item span { font-size: 15px; font-family: 'Orbitron'; color: white; }
 
         .terminal-log {
-            font-size: 10px; color: var(--neon); height: 80px; overflow-y: auto;
-            margin-top: 10px; border: 1px solid var(--neon-dim); padding: 10px;
-            background: rgba(0,0,0,0.5);
+            font-size: 11px; color: var(--neon); height: 100px; overflow-y: auto;
+            margin-top: 15px; border: 1px solid var(--neon-dim); padding: 12px;
+            background: rgba(0,0,0,0.6);
         }
 
         .hidden { display: none !important; }
-        .sync-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .sync-pulse { animation: pulse 2s infinite; color: var(--accent); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        .corner { position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5; }
+        .top-l { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .top-r { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .bot-l { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .bot-r { bottom: 15px; right: 15px; border-left: none; border-top: none; }
     </style>
 </head>
 <body>
@@ -112,50 +117,60 @@
 <div class="wallpaper-engine">
     <img src="https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg" 
          class="logo-main" 
-         alt="LOGO RBK"
-         crossorigin="anonymous">
+         alt="RBK LOGO"
+         onload="console.log('Logo Loaded Successfully')"
+         onerror="this.src='https://via.placeholder.com/450?text=LOGO+ERROR'">
 </div>
 
 <canvas id="bg-canvas"></canvas>
 <div class="scanline"></div>
 
+<div class="corner top-l"></div><div class="corner top-r"></div>
+<div class="corner bot-l"></div><div class="corner bot-r"></div>
+
 <div class="ui-wrapper">
     <header>
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 14px;">Yonif TP 859/RBK <span style="color:white; opacity:0.6">TACTICAL</span></div>
-            <div id="status-tag" class="sync-pulse" style="font-size: 8px; font-weight: bold; color: var(--accent);">SYSTEM_LINK_STABLE</div>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 16px; letter-spacing: 2px;">Yonif TP 859/RBK <span style="color:white; opacity:0.7">TACTICAL</span></div>
+            <div id="status-tag" class="sync-pulse" style="font-size: 9px; font-weight: bold;">LINK_STABLE_V5.2.2</div>
         </div>
         <div style="text-align: right;">
-            <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
-            <div style="font-size: 7px; color: var(--accent);">OPS_TIME</div>
+            <div id="clock" style="font-family: 'Orbitron'; font-size: 15px; color: white;">00:00:00</div>
+            <div style="font-size: 8px; color: var(--accent); letter-spacing: 1px;">OPS_LOCAL_TIME</div>
         </div>
     </header>
 
     <div id="loginArea" class="status-panel">
-        <div style="text-align: center; margin: 50px 0;">
-            <div style="font-size: 16px; letter-spacing: 5px; color: white; font-family: 'Orbitron';">AUTHENTICATION</div>
-            <div style="font-size: 8px; margin-top: 5px;">SECURE NEURAL HANDSHAKE</div>
+        <div style="text-align: center; margin: 60px 0;">
+            <div style="font-size: 18px; letter-spacing: 8px; color: white; margin-bottom: 10px; font-family: 'Orbitron';">AUTHENTICATION</div>
+            <div style="font-size: 9px; color: var(--accent);">WAITING FOR BIOMETRIC HANDSHAKE...</div>
         </div>
-        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 18px; margin-bottom: 20px;" placeholder="CALLSIGN" maxlength="12">
-        <button class="btn" onclick="initiateLogin()">ESTABLISH LINK</button>
+        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 20px; margin-bottom: 25px; border-style: dashed;" placeholder="ENTER_CALLSIGN" maxlength="12">
+        <button class="btn" style="border-width: 2px; font-size: 16px;" onclick="initiateLogin()">ESTABLISH LINK</button>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span id="callsignLabel" style="background: var(--neon); color: #000; padding: 2px 10px; font-weight: bold; font-size: 12px;">---</span>
-            <span style="font-size: 9px;">BPM: <b id="heartRate" style="color:white">--</b></span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span id="callsignLabel" style="color: #000; border: 1px solid var(--neon); padding: 5px 15px; background: var(--neon); font-weight: bold; font-family: 'Orbitron'; font-size: 12px;">---</span>
+            <div style="display: flex; gap: 15px; color: var(--accent); font-size: 10px; align-items: center;">
+                <span>VITAL_HR: <b id="heartRate" style="color:white">--</b></span>
+                <span style="border: 1px solid var(--accent); padding: 2px 6px;">WAKE: ON</span>
+            </div>
         </div>
         
         <div class="hud-grid">
             <div class="hud-item"><label>LATITUDE</label><span id="lat">0.00000</span></div>
             <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.00000</span></div>
-            <div class="hud-item"><label>SPD</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>STATUS</label><span style="color: var(--neon);">ACTIVE</span></div>
+            <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
+            <div class="hud-item"><label>SIGNAL</label><span id="coreStatus" style="color: var(--neon);">EXCELLENT</span></div>
         </div>
 
-        <div class="terminal-log" id="logBox">> SCANNING_SATELLITE...<br>> ENCRYPTING_DATA...</div>
+        <div class="terminal-log" id="logBox">> SYSTEM_READY...</div>
         
-        <button class="btn" style="margin-top: 15px; border-color: white; color: white; font-size: 10px;" onclick="location.reload()">TERMINATE</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+            <button class="btn" style="background:rgba(255,0,0,0.1); color:#ff003c; border-color:#ff003c;">MAYDAY</button>
+            <button class="btn" style="font-size: 11px; border-color: rgba(255,255,255,0.3); color: white;" onclick="location.reload()">EXIT LINK</button>
+        </div>
     </div>
 </div>
 
@@ -170,18 +185,18 @@
         projectId: "real-time-location-30d91"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    let app = initializeApp(firebaseConfig);
+    let db = getDatabase(app);
     let myCallsign = "";
 
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'); 
-        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (90 - 60) + 60);
+        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (85 - 65) + 65);
     }, 1000);
 
     window.initiateLogin = () => {
         myCallsign = document.getElementById('idInput').value.trim().toUpperCase();
-        if(!myCallsign) return alert("CALLSIGN REQUIRED");
+        if(!myCallsign) return alert("REQUIRED: CALLSIGN");
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('trackingArea').classList.remove('hidden');
         document.getElementById('callsignLabel').innerText = myCallsign;
@@ -195,20 +210,20 @@
                 document.getElementById('lat').innerText = latitude.toFixed(6);
                 document.getElementById('lon').innerText = longitude.toFixed(6);
                 update(ref(db, "live/" + myCallsign), { lat: latitude, lon: longitude, waktu: Date.now() });
-            }, (e) => console.error(e), {enableHighAccuracy: true});
+            }, (e) => console.log(e), {enableHighAccuracy: true});
         }
     }
 
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    let particles = Array.from({length: 20}, () => ({
+    let particles = Array.from({length: 25}, () => ({
         x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-        s: Math.random() * 2, vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2
+        s: Math.random() * 2, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3
     }));
     function draw() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "rgba(0,255,65,0.2)";
+        ctx.fillStyle = "rgba(0,255,65,0.3)";
         particles.forEach(p => {
             p.x += p.vx; p.y += p.vy;
             ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
