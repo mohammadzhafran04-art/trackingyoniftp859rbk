@@ -10,10 +10,10 @@
             --neon: #00ff41;
             --neon-dim: rgba(0, 255, 65, 0.15);
             --danger: #ff003c;
-            --bg: #000a00;
+            --bg: #000800;
             --accent: #00e5ff;
             --indo-red: #ff003c;
-            --panel-bg: rgba(0, 15, 0, 0.85);
+            --panel-bg: rgba(0, 12, 0, 0.9);
         }
 
         body, html {
@@ -22,174 +22,169 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- ADVANCED BACKGROUND EFFECTS --- */
+        /* --- FX LAYERS --- */
+        .noise {
+            position: fixed; inset: 0; z-index: 1000; pointer-events: none;
+            background: url('https://media.giphy.com/media/oEI9uWUicpXHS/giphy.gif');
+            opacity: 0.03; mix-blend-mode: overlay;
+        }
+
         .indo-map-bg {
             position: fixed; inset: 0; z-index: -3;
             background-image: url('https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg');
-            background-size: cover; background-position: center; opacity: 0.12;
-            filter: grayscale(100%) brightness(0.5) sepia(100%) hue-rotate(90deg) saturate(5);
-            animation: pulseMap 12s infinite ease-in-out;
+            background-size: cover; background-position: center; opacity: 0.15;
+            filter: grayscale(100%) brightness(0.4) sepia(100%) hue-rotate(85deg) saturate(6);
+            animation: pulseMap 10s infinite alternate ease-in-out;
         }
 
         .scanline {
-            width: 100%; height: 100px; z-index: 5; position: absolute;
-            background: linear-gradient(0deg, transparent 0%, var(--neon-dim) 50%, transparent 100%);
-            opacity: 0.15; pointer-events: none; animation: scan 3s linear infinite;
+            width: 100%; height: 5px; z-index: 999; position: absolute;
+            background: rgba(0, 255, 65, 0.1); opacity: 0.2;
+            pointer-events: none; animation: scanMove 4s linear infinite;
         }
 
-        /* HUD Corners Decor */
+        /* HUD Frame Decor */
+        .hud-border {
+            position: fixed; inset: 10px; border: 1px solid var(--neon-dim);
+            pointer-events: none; z-index: 100; opacity: 0.3;
+        }
+
         .hud-corner {
-            position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 100; opacity: 0.5;
+            position: fixed; width: 40px; height: 40px; border: 3px solid var(--neon); z-index: 101;
+            box-shadow: 0 0 15px var(--neon);
         }
-        .top-left { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
-        .top-right { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
-        .bottom-left { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
-        .bottom-right { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
-
-        .hex-grid {
-            position: fixed; inset: 0; z-index: -2;
-            background-image: radial-gradient(var(--neon-dim) 1.5px, transparent 1px);
-            background-size: 40px 40px; opacity: 0.3;
-        }
+        .top-left { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+        .top-right { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+        .bottom-left { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+        .bottom-right { bottom: 0; right: 0; border-left: 0; border-top: 0; }
 
         .radar-bg {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 600px; height: 600px; border: 1px solid var(--neon-dim);
-            border-radius: 50%; z-index: -4; opacity: 0.2;
+            width: 80vh; height: 80vh; border: 1px solid var(--neon-dim);
+            border-radius: 50%; z-index: -4; opacity: 0.1;
         }
 
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; filter: blur(0.5px); }
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
 
-        /* --- UI COMPONENTS --- */
-        .ui-wrapper { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        /* --- UI ELEMENTS --- */
+        .ui-wrapper { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; }
         
         .status-panel {
-            background: var(--panel-bg); border: 1px solid var(--neon-dim);
+            background: var(--panel-bg); border: 1px solid var(--neon);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(12px);
-            box-shadow: inset 0 0 20px rgba(0,255,65,0.05);
-            clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
-            animation: panelSlide 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            position: relative; backdrop-filter: blur(15px);
+            clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
         }
 
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
         .hud-item {
-            background: rgba(0, 255, 65, 0.03);
-            border-left: 2px solid var(--neon); 
-            padding: 12px; position: relative;
-            overflow: hidden;
+            background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--neon);
+            padding: 10px; position: relative;
         }
-        .hud-item::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, var(--neon-dim), transparent);
-            transform: translateX(-100%); animation: sweep 3s infinite;
-        }
+        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 2px; }
+        .hud-item span { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 5px var(--neon); }
 
         .btn {
-            font-family: 'Orbitron'; font-weight: bold; padding: 18px;
-            text-transform: uppercase; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.05); color: var(--neon);
-            transition: all 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            font-family: 'Orbitron'; font-weight: bold; padding: 15px;
+            border: 1px solid var(--neon); cursor: pointer;
+            background: rgba(0, 255, 65, 0.1); color: var(--neon);
+            transition: 0.3s; clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
             letter-spacing: 2px;
         }
         .btn:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
         .btn-sos { background: rgba(255, 0, 60, 0.2); border-color: var(--danger); color: var(--danger); }
+        .btn-sos:hover { background: var(--danger); box-shadow: 0 0 20px var(--danger); }
 
         .terminal-log {
-            font-size: 9px; color: var(--neon); height: 100px; overflow-y: auto;
-            margin-top: 15px; border-top: 1px solid var(--neon-dim); padding-top: 10px;
-            scrollbar-width: none; line-height: 1.4;
+            font-size: 9px; color: var(--neon); height: 90px; overflow-y: auto;
+            margin-top: 10px; border-top: 1px solid var(--neon-dim); padding-top: 10px;
+            scrollbar-width: none; opacity: 0.8;
         }
 
         /* Animations */
-        @keyframes panelSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes sweep { 100% { transform: translateX(100%); } }
-        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
-        @keyframes pulseMap { 0%, 100% { transform: scale(1); opacity: 0.12; } 50% { transform: scale(1.05); opacity: 0.2; } }
-
+        @keyframes scanMove { 0% { top: -5%; } 100% { top: 105%; } }
+        @keyframes pulseMap { from { opacity: 0.1; transform: scale(1); } to { opacity: 0.2; transform: scale(1.05); } }
+        
         .hidden { display: none !important; }
+        .glitch-text { animation: glitchSkew 2s infinite linear alternate-reverse; }
+        @keyframes glitchSkew { 
+            0% { transform: skew(0deg); } 20% { transform: skew(3deg); } 21% { transform: skew(-10deg); } 22% { transform: skew(0deg); } 
+        }
     </style>
 </head>
 <body>
 
+<div class="noise"></div>
+<div class="scanline"></div>
+<div class="hud-border"></div>
 <div class="hud-corner top-left"></div>
 <div class="hud-corner top-right"></div>
 <div class="hud-corner bottom-left"></div>
 <div class="hud-corner bottom-right"></div>
 
 <div class="indo-map-bg"></div>
-<div class="scanline"></div>
-<div class="hex-grid"></div>
 <div class="radar-bg"></div>
 <canvas id="bg-canvas"></canvas>
 
 <div class="ui-wrapper">
-    <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-dim); padding-bottom: 12px; margin-bottom: 15px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 5px; border-left: 4px solid var(--indo-red);">
         <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 18px; letter-spacing: 4px; text-shadow: 0 0 10px var(--indo-red);">
-                <span style="color: var(--indo-red);">YONIF</span> 859 <span style="color:white; opacity:0.6">RBK</span>
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 18px; letter-spacing: 2px;">
+                <span style="color: var(--indo-red);">YONIF</span> 859 <span style="color:white">RBK</span>
             </div>
-            <div id="status-tag" style="font-size: 8px; color: var(--accent);">SIGNAL_LINK: <span id="pingVal">--ms</span> | <span id="v-ver">V5.2.2</span></div>
+            <div id="status-tag" style="font-size: 8px; color: var(--accent);">NET_STATUS: <span id="pingVal">STABLE</span> | LINK: OK</div>
         </div>
         <div style="text-align: right;">
-            <div id="clock" style="font-family: 'Orbitron'; font-size: 16px; color: white; text-shadow: 0 0 5px var(--neon);">00:00:00</div>
-            <div id="batStatus" style="font-size: 8px; color: var(--accent);">PWR_CORE: --%</div>
+            <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
+            <div id="batStatus" style="font-size: 8px; color: var(--accent);">PWR_LVL: --%</div>
         </div>
     </header>
 
-    <div id="loginArea" class="status-panel" style="justify-content: center;">
-        <div style="text-align: center; margin-bottom: 35px;">
-            <div style="font-size: 12px; letter-spacing: 8px; color: white; margin-bottom: 5px;">AWAITING AUTH</div>
-            <div style="font-size: 9px; color: var(--neon); opacity: 0.6;">IDENTIFIKASI UNIT NEURAL-LINK</div>
-        </div>
-        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 18px; margin-bottom: 25px; border-style: dashed;" placeholder="CALLSIGN" maxlength="12">
-        <button class="btn" onclick="initiateLogin()">INITIALIZE TRACKING</button>
+    <div id="loginArea" class="status-panel" style="justify-content: center; align-items: center;">
+        <div class="glitch-text" style="font-size: 10px; letter-spacing: 10px; color: white; margin-bottom: 20px;">[ AUTHENTICATION REQUIRED ]</div>
+        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 16px; margin-bottom: 20px; width: 80%;" placeholder="INPUT CALLSIGN" maxlength="12">
+        <button class="btn" onclick="initiateLogin()" style="width: 80%;">INITIALIZE LINK</button>
     </div>
 
     <div id="loadingArea" class="status-panel hidden">
-        <div style="text-align: center; margin-top: 40px;">
-            <div id="loadMsg" style="font-size: 14px; letter-spacing: 6px; color: white; font-family: 'Orbitron';">ENCRYPTING LINK</div>
-            <div style="width: 100%; height: 4px; background: rgba(0,255,65,0.1); margin: 25px 0; position: relative; overflow: hidden;">
-                <div id="progressFill" style="height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 15px var(--neon); transition: width 0.1s;"></div>
+        <div style="text-align: center; margin-top: 50px;">
+            <div id="loadMsg" style="font-size: 12px; letter-spacing: 5px; color: white; font-family: 'Orbitron';">SYNCING NEURAL</div>
+            <div style="width: 100%; height: 2px; background: rgba(0,255,65,0.1); margin: 30px 0;">
+                <div id="progressFill" style="height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon);"></div>
             </div>
-            <div class="terminal-log" id="miniLog" style="text-align: left; height: 160px; font-family: 'Share Tech Mono';"></div>
+            <div class="terminal-log" id="miniLog" style="text-align: left; height: 120px;"></div>
         </div>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 9px; align-items: center;">
-            <span id="callsignLabel" style="color: black; background: var(--neon); padding: 4px 15px; font-weight: bold; letter-spacing: 2px; box-shadow: 0 0 10px var(--neon);">---</span>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="color:var(--accent)">TEMP: <b id="tempVal">28°C</b></span>
-                <canvas id="pulseCanvas" width="80" height="25" style="border-bottom: 1px solid var(--neon-dim)"></canvas>
-                <span>BPM: <b id="heartRate" style="color:white">--</b></span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span id="callsignLabel" style="color: black; background: var(--neon); padding: 3px 10px; font-weight: bold; font-size: 12px;">---</span>
+            <div style="text-align: right; display: flex; align-items: center; gap: 8px;">
+                <canvas id="pulseCanvas" width="60" height="20"></canvas>
+                <span style="font-size: 14px; color: white; font-family: 'Orbitron';" id="heartRate">--</span>
             </div>
         </div>
         
         <div class="hud-grid">
-            <div class="hud-item"><label>CORE.LATITUDE</label><span id="lat">0.00000</span></div>
-            <div class="hud-item"><label>CORE.LONGITUDE</label><span id="lon">0.00000</span></div>
-            <div class="hud-item"><label>V-VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>AZIMUTH.DIR</label><span id="heading" style="color:var(--accent)">0° N</span></div>
-            
-            <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div>
-                        <label>ENV_TELEMETRY</label>
-                        <span id="alt" style="font-size: 11px;">ALT: 0M | ACC: --M</span>
-                    </div>
-                    <div id="atmosStatus" style="font-size: 6px; color: var(--accent); text-align: right; opacity: 0.7;">
-                        O2_SAT: 98%<br>RAD_LVL: 0.02μSv
-                    </div>
+            <div class="hud-item"><label>LOC.LAT</label><span id="lat">0.0000</span></div>
+            <div class="hud-item"><label>LOC.LON</label><span id="lon">0.0000</span></div>
+            <div class="hud-item"><label>MOVE.SPD</label><span id="spd">0.0 KM/H</span></div>
+            <div class="hud-item"><label>COMPASS</label><span id="heading" style="color:var(--accent)">0° N</span></div>
+            <div class="hud-item" style="grid-column: span 2;">
+                <label>ENVIRONMENT & BIOMETRIC</label>
+                <div style="display: flex; justify-content: space-between;">
+                    <span id="alt" style="font-size: 11px;">ALT: 0M | ACC: 0M</span>
+                    <span id="tempVal" style="color:var(--accent)">28.4°C</span>
                 </div>
             </div>
         </div>
 
-        <div class="terminal-log" id="logBox">> ESTABLISHING SAT-LINK...</div>
+        <div class="terminal-log" id="logBox">> SCANNING FREQUENCY...</div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-            <button class="btn btn-sos" onclick="sendSOS()" style="padding: 12px;">EMERGENCY SOS</button>
-            <button class="btn" style="font-size: 10px; padding: 12px;" onclick="initiateTerminate()">DE-SYNC UNIT</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-sos" onclick="sendSOS()">S.O.S</button>
+            <button class="btn" style="font-size: 10px;" onclick="initiateTerminate()">TERMINATE</button>
         </div>
     </div>
 </div>
@@ -209,122 +204,84 @@
     };
 
     const app = initializeApp(firebaseConfig), db = getDatabase(app);
-    let myCallsign = "", lastCmdTime = 0, watchId = null;
+    let myCallsign = "", watchId = null;
 
-    // --- PULSE ENGINE (ADVANCED) ---
+    // --- PULSE ANIMATION ---
     const pCanvas = document.getElementById('pulseCanvas'), pCtx = pCanvas.getContext('2d');
-    let points = Array(20).fill(12);
-    function drawPulse() {
-        pCtx.clearRect(0,0, pCanvas.width, pCanvas.height);
-        pCtx.strokeStyle = "#00ff41"; pCtx.lineWidth = 1.5;
-        pCtx.shadowBlur = 5; pCtx.shadowColor = "#00ff41";
+    let pX = 0;
+    function animatePulse() {
+        pCtx.fillStyle = "rgba(0, 10, 0, 0.1)"; pCtx.fillRect(0,0,60,20);
+        pCtx.strokeStyle = "#00ff41"; pCtx.lineWidth = 1;
         pCtx.beginPath();
-        pCtx.moveTo(0, points[0]);
-        for(let i=1; i<points.length; i++) {
-            pCtx.lineTo((pCanvas.width/points.length)*i, points[i]);
-        }
+        pCtx.moveTo(pX, 10);
+        pX = (pX + 2) % 60;
+        pCtx.lineTo(pX, 10 + (Math.random() - 0.5) * 10);
         pCtx.stroke();
-        points.shift();
-        points.push(12 + (Math.random() - 0.5) * (Math.random() > 0.9 ? 15 : 4));
-        setTimeout(() => requestAnimationFrame(drawPulse), 100);
+        requestAnimationFrame(animatePulse);
     }
-    drawPulse();
+    animatePulse();
 
-    // --- NETWORK MONITOR ---
-    function monitorNetwork() {
-        const start = Date.now();
-        const connectedRef = ref(db, ".info/connected");
-        onValue(connectedRef, (snap) => {
-            if (snap.val() === true) {
-                const latency = Date.now() - start;
-                document.getElementById('pingVal').innerText = latency + "ms";
-                document.getElementById('pingVal').style.color = latency > 200 ? "var(--danger)" : "var(--accent)";
-            }
-        });
-    }
-
-    // --- SYSTEM CLOCK & BATTERY ---
+    // --- SYSTEM LOGIC ---
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
         if(myCallsign) {
-            document.getElementById('heartRate').innerText = Math.floor(Math.random() * (75 - 65) + 65);
+            document.getElementById('heartRate').innerText = Math.floor(Math.random() * (72 - 60) + 60) + " BPM";
             document.getElementById('tempVal').innerText = (28 + Math.random()).toFixed(1) + "°C";
         }
-        if(navigator.getBattery) {
-            navigator.getBattery().then(b => {
-                const lvl = Math.round(b.level * 100);
-                document.getElementById('batStatus').innerText = `PWR_CORE: ${lvl}%`;
-                document.getElementById('batStatus').style.color = lvl < 15 ? "var(--danger)" : "var(--accent)";
-            });
-        }
+        if(navigator.getBattery) navigator.getBattery().then(b => {
+            document.getElementById('batStatus').innerText = `PWR_LVL: ${Math.round(b.level*100)}%`;
+        });
     }, 1000);
 
-    // --- SENSORS ---
-    window.addEventListener('deviceorientation', (e) => {
-        if(e.alpha) {
-            const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-            const d = dirs[Math.round(e.alpha / 45) % 8];
-            document.getElementById('heading').innerText = `${Math.round(e.alpha)}° ${d}`;
-        }
-    });
-
-    // --- MATRIX ENGINE ---
-    const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
-    let drops = [];
-    function initCanvas() {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        drops = Array(Math.floor(canvas.width/20)).fill(1);
-    }
-    function drawMatrix() {
-        ctx.fillStyle = "rgba(0, 10, 0, 0.15)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgba(0, 255, 65, 0.25)"; ctx.font = "14px monospace";
-        drops.forEach((y, i) => {
-            const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-            ctx.fillText(text, i * 20, y * 20);
-            if (y * 20 > canvas.height && Math.random() > 0.98) drops[i] = 0;
-            drops[i]++;
-        });
-        requestAnimationFrame(drawMatrix);
-    }
-    initCanvas(); drawMatrix();
-
-    // --- LOGIC ---
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) return;
         myCallsign = val;
-        document.getElementById('loginArea').classList.add('hidden');
-        document.getElementById('loadingArea').classList.remove('hidden');
-        
-        startSequence(["INIT_NEURAL_LINK", "BYPASSING_MIL_GATEWAY", "SYNCING_GALILEO_SAT", "CALIBRATING_BIO_SENSORS"], 70, () => {
-            document.getElementById('loadingArea').classList.add('hidden');
-            document.getElementById('trackingArea').classList.remove('hidden');
+        switchPanel('loginArea', 'loadingArea');
+        startSequence(["ENCRYPTING_ID", "BOOTING_SAT_MODULE", "BYPASSING_MIL_FIREWALL", "NEURAL_SYNC_SUCCESS"], 50, () => {
+            switchPanel('loadingArea', 'trackingArea');
             document.getElementById('callsignLabel').innerText = myCallsign;
-            monitorNetwork();
             startTracking();
+        });
+    };
+
+    window.initiateTerminate = () => {
+        if(!confirm("CONFIRM NEURAL DISCONNECT?")) return;
+        switchPanel('trackingArea', 'loadingArea');
+        document.getElementById('loadMsg').innerText = "WIPING DATA";
+        if(watchId) navigator.geolocation.clearWatch(watchId);
+        
+        startSequence(["DELETING_LOGS", "DISCONNECTING_GPS", "SHUTTING_DOWN_CORE", "GOODBYE_SOLDIER"], 40, () => {
+            location.reload();
         });
     };
 
     function startSequence(msgs, speed, cb) {
         let p = 0;
-        const fill = document.getElementById('progressFill'), log = document.getElementById('miniLog');
+        const bar = document.getElementById('progressFill'), log = document.getElementById('miniLog');
+        log.innerHTML = "";
         const itv = setInterval(() => {
-            p += 2; fill.style.width = p + "%";
+            p += 2; bar.style.width = p + "%";
             let idx = Math.floor((p/100) * msgs.length);
             if(msgs[idx] && !log.innerHTML.includes(msgs[idx])) {
                 log.innerHTML += `<div>> ${msgs[idx]}... [OK]</div>`;
                 log.scrollTop = log.scrollHeight;
             }
-            if(p >= 100) { clearInterval(itv); setTimeout(cb, 600); }
+            if(p >= 100) { clearInterval(itv); setTimeout(cb, 500); }
         }, speed);
+    }
+
+    function switchPanel(oldId, newId) {
+        document.getElementById(oldId).classList.add('hidden');
+        document.getElementById(newId).classList.remove('hidden');
     }
 
     function startTracking() {
         if (navigator.geolocation) {
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
-                document.getElementById('lat').innerText = latitude.toFixed(6);
-                document.getElementById('lon').innerText = longitude.toFixed(6);
+                document.getElementById('lat').innerText = latitude.toFixed(4);
+                document.getElementById('lon').innerText = longitude.toFixed(4);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
                 document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}M | ACC: ${Math.round(accuracy)}M`;
                 
@@ -335,16 +292,29 @@
         }
     }
 
-    window.initiateTerminate = () => {
-        if(confirm("ASYNC NEURAL LINK?")) location.reload();
+    window.sendSOS = () => {
+        update(ref(db, "live/" + myCallsign), { sos: true });
+        document.getElementById('logBox').innerHTML += `<br><span style="color:var(--danger)">> EMERGENCY SOS BROADCASTED!</span>`;
     };
 
-    window.sendSOS = () => {
-        document.body.style.animation = "glitch 0.1s infinite";
-        update(ref(db, "live/" + myCallsign), { sos: true });
-        document.getElementById('logBox').innerHTML += `<br><span style="color:red">> SOS_SENT_TO_COMMAND</span>`;
-        setTimeout(() => document.body.style.animation = "", 2000);
-    };
+    // --- MATRIX BG ---
+    const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
+    let drops = [];
+    function initMatrix() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        drops = Array(Math.floor(canvas.width/20)).fill(1);
+    }
+    function drawMatrix() {
+        ctx.fillStyle = "rgba(0, 8, 0, 0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "rgba(0, 255, 65, 0.15)"; ctx.font = "15px monospace";
+        drops.forEach((y, i) => {
+            ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
+            if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        });
+        requestAnimationFrame(drawMatrix);
+    }
+    initMatrix(); drawMatrix();
 </script>
 </body>
 </html>
