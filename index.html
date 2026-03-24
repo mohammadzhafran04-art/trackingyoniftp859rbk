@@ -8,12 +8,14 @@
     <style>
         :root {
             --neon: #00ff41;
-            --neon-dim: rgba(0, 255, 65, 0.15);
+            --neon-glow: rgba(0, 255, 65, 0.4);
+            --neon-dim: rgba(0, 255, 65, 0.08);
             --danger: #ff003c;
-            --bg: #000800;
+            --danger-glow: rgba(255, 0, 60, 0.4);
+            --bg: #000500;
             --accent: #00e5ff;
             --indo-red: #ff003c;
-            --panel-bg: rgba(0, 12, 0, 0.9);
+            --panel-bg: rgba(0, 15, 0, 0.85);
         }
 
         body, html {
@@ -22,176 +24,180 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- FX LAYERS --- */
+        /* --- IMMERSIVE LAYERS --- */
         .noise {
             position: fixed; inset: 0; z-index: 1000; pointer-events: none;
             background: url('https://media.giphy.com/media/oEI9uWUicpXHS/giphy.gif');
-            opacity: 0.03; mix-blend-mode: overlay;
+            opacity: 0.02; mix-blend-mode: overlay;
         }
 
         .indo-map-bg {
             position: fixed; inset: 0; z-index: -3;
             background-image: url('https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg');
-            background-size: cover; background-position: center; opacity: 0.15;
-            filter: grayscale(100%) brightness(0.4) sepia(100%) hue-rotate(85deg) saturate(6);
-            animation: pulseMap 10s infinite alternate ease-in-out;
+            background-size: cover; background-position: center; opacity: 0.12;
+            filter: grayscale(100%) brightness(0.3) contrast(1.2) sepia(100%) hue-rotate(90deg);
+            animation: mapPulse 15s infinite alternate ease-in-out;
         }
 
         .scanline {
-            width: 100%; height: 5px; z-index: 999; position: absolute;
-            background: rgba(0, 255, 65, 0.1); opacity: 0.2;
-            pointer-events: none; animation: scanMove 4s linear infinite;
+            width: 100%; height: 10px; z-index: 999; position: absolute;
+            background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
+            pointer-events: none; animation: scanlineMove 6s linear infinite;
         }
 
-        /* HUD Frame Decor */
-        .hud-border {
-            position: fixed; inset: 10px; border: 1px solid var(--neon-dim);
-            pointer-events: none; z-index: 100; opacity: 0.3;
+        /* HUD ELEMENTS */
+        .hud-frame {
+            position: fixed; inset: 15px; border: 1px solid var(--neon-dim);
+            pointer-events: none; z-index: 90;
         }
-
         .hud-corner {
-            position: fixed; width: 40px; height: 40px; border: 3px solid var(--neon); z-index: 101;
-            box-shadow: 0 0 15px var(--neon);
+            position: fixed; width: 35px; height: 35px; border: 2px solid var(--neon); z-index: 101;
+            filter: drop-shadow(0 0 5px var(--neon));
         }
-        .top-left { top: 0; left: 0; border-right: 0; border-bottom: 0; }
-        .top-right { top: 0; right: 0; border-left: 0; border-bottom: 0; }
-        .bottom-left { bottom: 0; left: 0; border-right: 0; border-top: 0; }
-        .bottom-right { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+        .tl { top: 15px; left: 15px; border-right: 0; border-bottom: 0; }
+        .tr { top: 15px; right: 15px; border-left: 0; border-bottom: 0; }
+        .bl { bottom: 15px; left: 15px; border-right: 0; border-top: 0; }
+        .br { bottom: 15px; right: 15px; border-left: 0; border-top: 0; }
 
-        .radar-bg {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80vh; height: 80vh; border: 1px solid var(--neon-dim);
-            border-radius: 50%; z-index: -4; opacity: 0.1;
-        }
-
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-
-        /* --- UI ELEMENTS --- */
-        .ui-wrapper { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; }
+        /* --- MAIN UI --- */
+        .ui-wrapper { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 40px 25px 25px; box-sizing: border-box; }
         
         .status-panel {
-            background: var(--panel-bg); border: 1px solid var(--neon);
+            background: var(--panel-bg); border: 1px solid rgba(0, 255, 65, 0.3);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(15px);
-            clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
+            position: relative; backdrop-filter: blur(12px);
+            clip-path: polygon(0 0, 93% 0, 100% 7%, 100% 100%, 7% 100%, 0 93%);
+            box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.05);
+            animation: panelIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
         .hud-item {
-            background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--neon);
-            padding: 10px; position: relative;
+            background: rgba(0, 255, 65, 0.03); border-right: 1px solid var(--neon-dim);
+            border-bottom: 1px solid var(--neon-dim); padding: 12px; position: relative;
+            overflow: hidden;
         }
-        .hud-item label { font-size: 8px; color: var(--accent); display: block; margin-bottom: 2px; }
-        .hud-item span { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 5px var(--neon); }
+        .hud-item::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 2px; background: var(--neon);
+        }
+        .hud-item label { font-size: 9px; color: var(--accent); opacity: 0.7; display: block; margin-bottom: 4px; letter-spacing: 1px; }
+        .hud-item span { font-size: 16px; font-weight: 700; color: #fff; font-family: 'Orbitron'; }
 
         .btn {
-            font-family: 'Orbitron'; font-weight: bold; padding: 15px;
+            font-family: 'Orbitron'; font-weight: 700; padding: 16px;
             border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.1); color: var(--neon);
-            transition: 0.3s; clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
-            letter-spacing: 2px;
+            background: rgba(0, 255, 65, 0.08); color: var(--neon);
+            transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            letter-spacing: 2px; font-size: 12px;
         }
-        .btn:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
-        .btn-sos { background: rgba(255, 0, 60, 0.2); border-color: var(--danger); color: var(--danger); }
-        .btn-sos:hover { background: var(--danger); box-shadow: 0 0 20px var(--danger); }
+        .btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 25px var(--neon-glow); }
+        .btn-sos { border-color: var(--danger); color: var(--danger); background: rgba(255, 0, 60, 0.1); }
+        .btn-sos:hover { background: var(--danger); box-shadow: 0 0 25px var(--danger-glow); }
 
         .terminal-log {
-            font-size: 9px; color: var(--neon); height: 90px; overflow-y: auto;
-            margin-top: 10px; border-top: 1px solid var(--neon-dim); padding-top: 10px;
-            scrollbar-width: none; opacity: 0.8;
+            font-size: 10px; color: var(--neon); height: 100px; overflow-y: auto;
+            margin-top: 15px; border-top: 1px solid var(--neon-dim); padding-top: 12px;
+            scrollbar-width: none; opacity: 0.8; line-height: 1.5;
         }
 
-        /* Animations */
-        @keyframes scanMove { 0% { top: -5%; } 100% { top: 105%; } }
-        @keyframes pulseMap { from { opacity: 0.1; transform: scale(1); } to { opacity: 0.2; transform: scale(1.05); } }
-        
+        /* --- ANIMATIONS --- */
+        @keyframes scanlineMove { 0% { top: -10%; } 100% { top: 110%; } }
+        @keyframes mapPulse { from { opacity: 0.1; transform: scale(1); } to { opacity: 0.18; transform: scale(1.08); } }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes systemShake { 0%, 100% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(2px, -2px); } }
+
         .hidden { display: none !important; }
-        .glitch-text { animation: glitchSkew 2s infinite linear alternate-reverse; }
-        @keyframes glitchSkew { 
-            0% { transform: skew(0deg); } 20% { transform: skew(3deg); } 21% { transform: skew(-10deg); } 22% { transform: skew(0deg); } 
-        }
+        .glitch-active { animation: systemShake 0.1s infinite; }
+        
+        .progress-container { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 35px 0; border-radius: 2px; overflow: hidden; }
+        #progressFill { height: 100%; background: linear-gradient(90deg, transparent, var(--neon), var(--accent)); width: 0%; box-shadow: 0 0 15px var(--neon); transition: width 0.1s ease; }
     </style>
 </head>
-<body>
+<body id="mainBody">
 
 <div class="noise"></div>
 <div class="scanline"></div>
-<div class="hud-border"></div>
-<div class="hud-corner top-left"></div>
-<div class="hud-corner top-right"></div>
-<div class="hud-corner bottom-left"></div>
-<div class="hud-corner bottom-right"></div>
+<div class="hud-frame"></div>
+<div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div><div class="hud-corner br"></div>
 
 <div class="indo-map-bg"></div>
-<div class="radar-bg"></div>
 <canvas id="bg-canvas"></canvas>
 
 <div class="ui-wrapper">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 5px; border-left: 4px solid var(--indo-red);">
-        <div>
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 18px; letter-spacing: 2px;">
-                <span style="color: var(--indo-red);">YONIF</span> 859 <span style="color:white">RBK</span>
+    <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div style="border-left: 3px solid var(--indo-red); padding-left: 12px;">
+            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 20px; letter-spacing: 3px; line-height: 1;">
+                <span style="color: var(--indo-red);">YONIF</span> 859 <span style="color:white; opacity: 0.8;">RBK</span>
             </div>
-            <div id="status-tag" style="font-size: 8px; color: var(--accent);">NET_STATUS: <span id="pingVal">STABLE</span> | LINK: OK</div>
+            <div id="status-tag" style="font-size: 9px; color: var(--accent); margin-top: 5px;">
+                <span style="display:inline-block; width:6px; height:6px; background:var(--neon); border-radius:50%; margin-right:5px; animation: pulse 1s infinite;"></span>
+                SYSTEM_LIVE | PING: <span id="pingVal">--ms</span>
+            </div>
         </div>
-        <div style="text-align: right;">
-            <div id="clock" style="font-family: 'Orbitron'; font-size: 14px; color: white;">00:00:00</div>
-            <div id="batStatus" style="font-size: 8px; color: var(--accent);">PWR_LVL: --%</div>
+        <div style="text-align: right; font-family: 'Orbitron';">
+            <div id="clock" style="font-size: 16px; color: #fff; text-shadow: 0 0 10px var(--neon-glow);">00:00:00</div>
+            <div id="batStatus" style="font-size: 9px; color: var(--accent);">CORE_PWR: --%</div>
         </div>
     </header>
 
     <div id="loginArea" class="status-panel" style="justify-content: center; align-items: center;">
-        <div class="glitch-text" style="font-size: 10px; letter-spacing: 10px; color: white; margin-bottom: 20px;">[ AUTHENTICATION REQUIRED ]</div>
-        <input type="text" id="idInput" class="btn" style="text-align: center; font-size: 16px; margin-bottom: 20px; width: 80%;" placeholder="INPUT CALLSIGN" maxlength="12">
-        <button class="btn" onclick="initiateLogin()" style="width: 80%;">INITIALIZE LINK</button>
+        <div style="text-align: center; width: 85%;">
+            <div style="font-size: 11px; letter-spacing: 6px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">NEURAL_LINK INTERFACE</div>
+            <h2 style="font-family: 'Orbitron'; margin: 0 0 30px 0; font-size: 18px; color: #fff;">IDENTITY REQUIRED</h2>
+            <input type="text" id="idInput" class="btn" style="text-align: center; width: 100%; border-style: dashed; margin-bottom: 20px; text-transform: uppercase;" placeholder="ENTER CALLSIGN">
+            <button class="btn" onclick="initiateLogin()" style="width: 100%;">CONNECT TO U-LINK</button>
+        </div>
     </div>
 
     <div id="loadingArea" class="status-panel hidden">
-        <div style="text-align: center; margin-top: 50px;">
-            <div id="loadMsg" style="font-size: 12px; letter-spacing: 5px; color: white; font-family: 'Orbitron';">SYNCING NEURAL</div>
-            <div style="width: 100%; height: 2px; background: rgba(0,255,65,0.1); margin: 30px 0;">
-                <div id="progressFill" style="height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 20px var(--neon);"></div>
+        <div style="padding: 40px 20px;">
+            <div id="loadMsg" style="font-size: 14px; font-family: 'Orbitron'; text-align: center; color: #fff; letter-spacing: 4px;">INITIALIZING</div>
+            <div class="progress-container">
+                <div id="progressFill"></div>
             </div>
-            <div class="terminal-log" id="miniLog" style="text-align: left; height: 120px;"></div>
+            <div class="terminal-log" id="miniLog"></div>
         </div>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <span id="callsignLabel" style="color: black; background: var(--neon); padding: 3px 10px; font-weight: bold; font-size: 12px;">---</span>
-            <div style="text-align: right; display: flex; align-items: center; gap: 8px;">
-                <canvas id="pulseCanvas" width="60" height="20"></canvas>
-                <span style="font-size: 14px; color: white; font-family: 'Orbitron';" id="heartRate">--</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,255,65,0.05); padding: 8px 12px;">
+            <div id="callsignLabel" style="font-family: 'Orbitron'; font-weight: 700; color: #000; background: var(--neon); padding: 2px 12px; font-size: 13px;">GHOST-01</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="text-align: right;">
+                    <div style="font-size: 8px; color: var(--accent);">BIOMETRIC</div>
+                    <div style="font-size: 14px; color: #fff; font-family: 'Orbitron';" id="heartRate">-- BPM</div>
+                </div>
+                <canvas id="pulseCanvas" width="50" height="25"></canvas>
             </div>
         </div>
         
         <div class="hud-grid">
-            <div class="hud-item"><label>LOC.LAT</label><span id="lat">0.0000</span></div>
-            <div class="hud-item"><label>LOC.LON</label><span id="lon">0.0000</span></div>
-            <div class="hud-item"><label>MOVE.SPD</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>COMPASS</label><span id="heading" style="color:var(--accent)">0° N</span></div>
+            <div class="hud-item"><label>position.lat</label><span id="lat">0.00000</span></div>
+            <div class="hud-item"><label>position.lon</label><span id="lon">0.00000</span></div>
+            <div class="hud-item"><label>vector.speed</label><span id="spd">0.0 km/h</span></div>
+            <div class="hud-item"><label>vector.dir</label><span id="heading" style="color:var(--accent)">0° N</span></div>
             <div class="hud-item" style="grid-column: span 2;">
-                <label>ENVIRONMENT & BIOMETRIC</label>
-                <div style="display: flex; justify-content: space-between;">
-                    <span id="alt" style="font-size: 11px;">ALT: 0M | ACC: 0M</span>
-                    <span id="tempVal" style="color:var(--accent)">28.4°C</span>
+                <label>environmental.telemetry</label>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="alt" style="font-size: 12px;">ALT: 0m | ACC: 0m</span>
+                    <span id="tempVal" style="color:var(--accent); font-size: 12px;">28.5°C</span>
                 </div>
             </div>
         </div>
 
-        <div class="terminal-log" id="logBox">> SCANNING FREQUENCY...</div>
+        <div class="terminal-log" id="logBox">> ENCRYPTED CHANNEL ESTABLISHED...</div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-            <button class="btn btn-sos" onclick="sendSOS()">S.O.S</button>
-            <button class="btn" style="font-size: 10px;" onclick="initiateTerminate()">TERMINATE</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto;">
+            <button class="btn btn-sos" onclick="sendSOS()">SIGNAL SOS</button>
+            <button class="btn" style="font-size: 10px; border-color: rgba(0,255,65,0.3);" onclick="initiateTerminate()">DE-SYNC</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onDisconnect, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, update, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
@@ -206,39 +212,49 @@
     const app = initializeApp(firebaseConfig), db = getDatabase(app);
     let myCallsign = "", watchId = null;
 
-    // --- PULSE ANIMATION ---
+    // --- PULSE ENGINE ---
     const pCanvas = document.getElementById('pulseCanvas'), pCtx = pCanvas.getContext('2d');
-    let pX = 0;
-    function animatePulse() {
-        pCtx.fillStyle = "rgba(0, 10, 0, 0.1)"; pCtx.fillRect(0,0,60,20);
-        pCtx.strokeStyle = "#00ff41"; pCtx.lineWidth = 1;
+    let offset = 0;
+    function drawPulse() {
+        pCtx.clearRect(0,0,50,25);
+        pCtx.strokeStyle = "#00ff41"; pCtx.lineWidth = 1.5;
         pCtx.beginPath();
-        pCtx.moveTo(pX, 10);
-        pX = (pX + 2) % 60;
-        pCtx.lineTo(pX, 10 + (Math.random() - 0.5) * 10);
+        for(let i=0; i<50; i++) {
+            let y = 12 + Math.sin((i+offset)*0.5) * (i%15==0 ? 10 : 2);
+            pCtx.lineTo(i, y);
+        }
         pCtx.stroke();
-        requestAnimationFrame(animatePulse);
+        offset++;
+        requestAnimationFrame(drawPulse);
     }
-    animatePulse();
+    drawPulse();
 
-    // --- SYSTEM LOGIC ---
+    // --- SYSTEM CORE ---
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
         if(myCallsign) {
-            document.getElementById('heartRate').innerText = Math.floor(Math.random() * (72 - 60) + 60) + " BPM";
+            document.getElementById('heartRate').innerText = Math.floor(65 + Math.random() * 10) + " BPM";
             document.getElementById('tempVal').innerText = (28 + Math.random()).toFixed(1) + "°C";
         }
         if(navigator.getBattery) navigator.getBattery().then(b => {
-            document.getElementById('batStatus').innerText = `PWR_LVL: ${Math.round(b.level*100)}%`;
+            document.getElementById('batStatus').innerText = `CORE_PWR: ${Math.round(b.level*100)}%`;
         });
     }, 1000);
+
+    // Monitoring Latency
+    const connectedRef = ref(db, ".info/connected");
+    onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+            document.getElementById('pingVal').innerText = Math.floor(Math.random()*40 + 20) + "ms";
+        }
+    });
 
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) return;
         myCallsign = val;
         switchPanel('loginArea', 'loadingArea');
-        startSequence(["ENCRYPTING_ID", "BOOTING_SAT_MODULE", "BYPASSING_MIL_FIREWALL", "NEURAL_SYNC_SUCCESS"], 50, () => {
+        startSequence(["HANDSHAKING_SATELLITE", "ENCRYPTING_NEURAL_PATH", "AUTHORIZING_YONIF_859", "U-LINK_ESTABLISHED"], 60, () => {
             switchPanel('loadingArea', 'trackingArea');
             document.getElementById('callsignLabel').innerText = myCallsign;
             startTracking();
@@ -246,12 +262,12 @@
     };
 
     window.initiateTerminate = () => {
-        if(!confirm("CONFIRM NEURAL DISCONNECT?")) return;
+        if(!confirm("CONFIRM NEURAL DE-SYNC?")) return;
+        document.getElementById('mainBody').classList.add('glitch-active');
         switchPanel('trackingArea', 'loadingArea');
-        document.getElementById('loadMsg').innerText = "WIPING DATA";
-        if(watchId) navigator.geolocation.clearWatch(watchId);
+        document.getElementById('loadMsg').innerText = "WIPING_SESSION";
         
-        startSequence(["DELETING_LOGS", "DISCONNECTING_GPS", "SHUTTING_DOWN_CORE", "GOODBYE_SOLDIER"], 40, () => {
+        startSequence(["CLOAKING_COORDINATES", "FLUSHING_CACHE", "TERMINATING_U-LINK", "DISCONNECTED"], 40, () => {
             location.reload();
         });
     };
@@ -267,7 +283,7 @@
                 log.innerHTML += `<div>> ${msgs[idx]}... [OK]</div>`;
                 log.scrollTop = log.scrollHeight;
             }
-            if(p >= 100) { clearInterval(itv); setTimeout(cb, 500); }
+            if(p >= 100) { clearInterval(itv); setTimeout(cb, 600); }
         }, speed);
     }
 
@@ -280,10 +296,10 @@
         if (navigator.geolocation) {
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
-                document.getElementById('lat').innerText = latitude.toFixed(4);
-                document.getElementById('lon').innerText = longitude.toFixed(4);
+                document.getElementById('lat').innerText = latitude.toFixed(5);
+                document.getElementById('lon').innerText = longitude.toFixed(5);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
-                document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}M | ACC: ${Math.round(accuracy)}M`;
+                document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}m | ACC: ${Math.round(accuracy)}m`;
                 
                 update(ref(db, "live/" + myCallsign), { 
                     lat: latitude, lon: longitude, speed: (speed||0), waktu: serverTimestamp(), sos: false 
@@ -294,10 +310,12 @@
 
     window.sendSOS = () => {
         update(ref(db, "live/" + myCallsign), { sos: true });
-        document.getElementById('logBox').innerHTML += `<br><span style="color:var(--danger)">> EMERGENCY SOS BROADCASTED!</span>`;
+        const log = document.getElementById('logBox');
+        log.innerHTML += `<br><span style="color:var(--danger)">> SOS_SENT: COMMAND NOTIFIED</span>`;
+        log.scrollTop = log.scrollHeight;
     };
 
-    // --- MATRIX BG ---
+    // --- MATRIX BG EFFECT ---
     const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
     let drops = [];
     function initMatrix() {
@@ -305,15 +323,17 @@
         drops = Array(Math.floor(canvas.width/20)).fill(1);
     }
     function drawMatrix() {
-        ctx.fillStyle = "rgba(0, 8, 0, 0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "rgba(0, 255, 65, 0.15)"; ctx.font = "15px monospace";
+        ctx.fillStyle = "rgba(0, 5, 0, 0.15)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "rgba(0, 255, 65, 0.1)"; ctx.font = "14px monospace";
         drops.forEach((y, i) => {
-            ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
-            if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            const char = Math.random() > 0.5 ? "1" : "0";
+            ctx.fillText(char, i*20, y*20);
+            if(y*20 > canvas.height && Math.random() > 0.98) drops[i] = 0;
             drops[i]++;
         });
         requestAnimationFrame(drawMatrix);
     }
+    window.onresize = initMatrix;
     initMatrix(); drawMatrix();
 </script>
 </body>
