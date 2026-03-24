@@ -4,96 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COMMAND | YONIF 859/RBK</title>
-    
     <script>
         if (localStorage.getItem("auth") !== "true") window.location.replace("login.html");
     </script>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --neon: #00ff41; --bg: #000800; --danger: #ff003c; --accent: #00e5ff;
-            --panel: rgba(0, 20, 0, 0.9);
-        }
-        body, html { 
-            margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; 
-            background: var(--bg); color: var(--neon); height: 100vh; overflow: hidden; 
-        }
-        
-        /* Grid Layout */
-        .main-ui {
-            display: grid; grid-template-columns: 320px 1fr 320px;
-            grid-template-rows: 60px 1fr; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
-        }
-
-        header {
-            grid-column: span 3; background: var(--panel); border: 1px solid var(--neon);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-            clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%);
-        }
-
-        .side-panel {
-            background: var(--panel); border: 1px solid rgba(0,255,65,0.2);
-            padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto;
-        }
-
+        :root { --neon: #00ff41; --bg: #000800; --danger: #ff003c; --accent: #00e5ff; --panel: rgba(0, 20, 0, 0.9); }
+        body, html { margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--neon); height: 100vh; overflow: hidden; }
+        .main-ui { display: grid; grid-template-columns: 320px 1fr 320px; grid-template-rows: 60px 1fr; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
+        header { grid-column: span 3; background: var(--panel); border: 1px solid var(--neon); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%); }
+        .side-panel { background: var(--panel); border: 1px solid rgba(0,255,65,0.2); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         #map { background: #000; border: 1px solid var(--neon); }
         .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.2); }
-
-        .unit-card {
-            background: rgba(0,255,65,0.05); border: 1px solid rgba(0,255,65,0.1);
-            padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s;
-        }
+        .unit-card { background: rgba(0,255,65,0.05); border: 1px solid rgba(0,255,65,0.1); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
         .unit-card:hover { background: rgba(0,255,65,0.15); border-color: var(--neon); }
         .unit-card.sos { border-color: var(--danger); animation: danger-pulse 1s infinite; }
-
         @keyframes danger-pulse { 0% { box-shadow: 0 0 5px var(--danger); } 50% { box-shadow: 0 0 20px var(--danger); } 100% { box-shadow: 0 0 5px var(--danger); } }
-
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .online { background: var(--neon); box-shadow: 0 0 8px var(--neon); }
         .offline { background: #444; }
-
-        .input-cmd {
-            background: #000; border: 1px solid var(--neon); color: var(--neon); 
-            padding: 10px; font-family: 'Share Tech Mono'; width: 100%; box-sizing: border-box;
-        }
-        
-        .btn-cmd {
-            background: var(--neon); color: #000; font-family: 'Orbitron'; font-weight: bold;
-            padding: 10px; border: none; cursor: pointer; width: 100%;
-        }
-
-        .log-area {
-            font-size: 11px; font-family: 'Share Tech Mono'; color: var(--accent);
-            height: 150px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 5px;
-        }
+        .input-cmd { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; font-family: 'Share Tech Mono'; width: 100%; box-sizing: border-box; }
+        .btn-cmd { background: var(--neon); color: #000; font-family: 'Orbitron'; font-weight: bold; padding: 10px; border: none; cursor: pointer; width: 100%; }
+        .log-area { font-size: 11px; font-family: 'Share Tech Mono'; color: var(--accent); height: 150px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 5px; }
+        #dashLoader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
+    <div id="dashLoader">
+        <div style="font-family: 'Orbitron'; font-size: 24px; color: var(--neon); letter-spacing: 5px;">INITIALIZING HQ_COMMAND</div>
+        <div id="loadStatus" style="font-size: 10px; color: var(--accent); margin-top: 10px;">BOOTING SYSTEMS...</div>
+    </div>
 
 <div class="main-ui">
     <header>
-        <div style="font-family: 'Orbitron'; font-weight: bold; letter-spacing: 2px;">
-            <span style="color:var(--danger)">HQ</span> COMMAND_DASHBOARD
-        </div>
+        <div style="font-family: 'Orbitron'; font-weight: bold; letter-spacing: 2px;"><span style="color:var(--danger)">HQ</span> COMMAND_DASHBOARD</div>
         <div id="clock" style="font-family: 'Orbitron'; font-size: 20px;">00:00:00</div>
         <button onclick="logout()" style="border: 1px solid var(--danger); background: transparent; color: var(--danger); padding: 5px 15px; cursor: pointer;">EXIT</button>
     </header>
-
     <aside class="side-panel">
         <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">ACTIVE_UNITS</div>
         <div id="unitList"></div>
     </aside>
-
     <div id="map"></div>
-
     <aside class="side-panel">
         <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">GLOBAL_DIRECTIVE</div>
         <input type="text" id="cmdInput" class="input-cmd" placeholder="TYPE COMMAND...">
         <button class="btn-cmd" onclick="broadcast()">SEND BROADCAST</button>
-        
         <div style="margin-top: 20px; font-size: 12px; font-family: 'Orbitron';">ENCRYPTED_LOG</div>
         <div id="sysLog" class="log-area"></div>
     </aside>
@@ -118,14 +75,20 @@
     const db = getDatabase(app);
     let map, markers = {};
 
-    // Init Map
+    // Startup
+    window.addEventListener('load', () => {
+        const s = document.getElementById('loadStatus');
+        setTimeout(() => s.innerText = "CONNECTING TO FIREBASE_NODE...", 1000);
+        setTimeout(() => s.innerText = "DECRYPTING UNIT_STREAM...", 2000);
+        setTimeout(() => document.getElementById('dashLoader').style.display = 'none', 3000);
+    });
+
     map = L.map('map', { zoomControl: false }).setView([-0.8194, 135.6846], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    setTimeout(() => map.invalidateSize(), 500);
 
-    // Sync Data
     onValue(ref(db, "live"), (snap) => {
         const data = snap.val();
+        if(!data) return;
         const list = document.getElementById('unitList');
         list.innerHTML = "";
         const now = Date.now();
@@ -135,25 +98,17 @@
             const isOnline = (now - unit.waktu) < 30000;
             const pos = [unit.lat, unit.lon];
 
-            // Marker Update
-            if(!markers[id]) {
-                markers[id] = L.circleMarker(pos, { radius: 8, color: '#fff', weight: 1, fillOpacity: 1 }).addTo(map);
-            }
-            markers[id].setLatLng(pos);
-            markers[id].setStyle({ fillColor: unit.sos ? "#ff003c" : "#00ff41" });
+            if(markers[id]) map.removeLayer(markers[id]);
+            markers[id] = L.circleMarker(pos, { 
+                radius: 10, color: '#fff', weight: 2, 
+                fillColor: unit.sos ? '#ff003c' : '#00ff41', fillOpacity: 1 
+            }).addTo(map).bindTooltip(id, {permanent: true, direction: 'top'});
 
-            // Card Update
             const card = document.createElement('div');
             card.className = `unit-card ${unit.sos ? 'sos' : ''}`;
-            card.innerHTML = `
-                <div style="font-family:'Orbitron'; font-size:12px;">
-                    <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span> ${id}
-                </div>
-                <div style="font-size:10px; font-family:'Share Tech Mono'; opacity:0.7;">
-                    ${unit.lat.toFixed(4)}, ${unit.lon.toFixed(4)} | ${(unit.speed*3.6).toFixed(0)} KM/H
-                </div>
-            `;
-            card.onclick = () => map.flyTo(pos, 16);
+            card.innerHTML = `<div><span class="status-dot ${isOnline ? 'online' : 'offline'}"></span> ${id}</div>
+                              <div style="font-size:10px; opacity:0.7;">${(unit.speed*3.6).toFixed(1)} KM/H | GPS_OK</div>`;
+            card.onclick = () => map.flyTo(pos, 17);
             list.appendChild(card);
         }
     });
@@ -162,23 +117,11 @@
         const text = document.getElementById('cmdInput').value;
         if(!text) return;
         set(ref(db, "commands/global"), { text: text, waktu: Date.now() });
-        addLog("BROADCAST: " + text);
         document.getElementById('cmdInput').value = "";
     };
 
-    function addLog(msg) {
-        const log = document.getElementById('sysLog');
-        log.innerHTML = `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>` + log.innerHTML;
-    }
-
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-    }, 1000);
-
-    window.logout = () => {
-        localStorage.removeItem("auth");
-        location.replace("login.html");
-    };
+    setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'), 1000);
+    window.logout = () => { localStorage.removeItem("auth"); location.replace("login.html"); };
 </script>
 </body>
 </html>
