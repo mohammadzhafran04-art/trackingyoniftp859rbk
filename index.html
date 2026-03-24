@@ -9,13 +9,12 @@
         :root {
             --neon: #00ff41;
             --neon-glow: rgba(0, 255, 65, 0.4);
-            --neon-dim: rgba(0, 255, 65, 0.08);
+            --neon-dim: rgba(0, 255, 65, 0.1);
             --danger: #ff003c;
-            --danger-glow: rgba(255, 0, 60, 0.4);
             --bg: #000500;
             --accent: #00e5ff;
             --indo-red: #ff003c;
-            --panel-bg: rgba(0, 15, 0, 0.85);
+            --panel-bg: rgba(0, 10, 0, 0.9);
         }
 
         body, html {
@@ -24,100 +23,80 @@
             height: 100vh; width: 100vw; overflow: hidden; text-transform: uppercase;
         }
 
-        /* --- IMMERSIVE LAYERS --- */
-        .noise {
-            position: fixed; inset: 0; z-index: 1000; pointer-events: none;
-            background: url('https://media.giphy.com/media/oEI9uWUicpXHS/giphy.gif');
-            opacity: 0.02; mix-blend-mode: overlay;
-        }
-
+        /* --- BACKGROUND LAYERS --- */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
         .indo-map-bg {
-            position: fixed; inset: 0; z-index: -3;
+            position: fixed; inset: 0; z-index: 0;
             background-image: url('https://raw.githubusercontent.com/mohammadzhafran04-art/trackingyoniftp859rbk/main/IMG_2984%20(1).jpg');
-            background-size: cover; background-position: center; opacity: 0.12;
-            filter: grayscale(100%) brightness(0.3) contrast(1.2) sepia(100%) hue-rotate(90deg);
-            animation: mapPulse 15s infinite alternate ease-in-out;
+            background-size: cover; background-position: center; opacity: 0.1;
+            filter: grayscale(100%) brightness(0.3) sepia(100%) hue-rotate(90deg);
         }
 
         .scanline {
-            width: 100%; height: 10px; z-index: 999; position: absolute;
-            background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
-            pointer-events: none; animation: scanlineMove 6s linear infinite;
+            width: 100%; height: 100%; z-index: 100; position: fixed; top: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* HUD ELEMENTS */
-        .hud-frame {
-            position: fixed; inset: 15px; border: 1px solid var(--neon-dim);
-            pointer-events: none; z-index: 90;
+        /* --- UI WRAPPER (FORCED FRONT) --- */
+        .ui-wrapper { 
+            position: relative; z-index: 500; /* Pastikan di atas canvas */
+            height: 100vh; display: flex; flex-direction: column; 
+            padding: 25px; box-sizing: border-box; 
         }
-        .hud-corner {
-            position: fixed; width: 35px; height: 35px; border: 2px solid var(--neon); z-index: 101;
-            filter: drop-shadow(0 0 5px var(--neon));
-        }
-        .tl { top: 15px; left: 15px; border-right: 0; border-bottom: 0; }
-        .tr { top: 15px; right: 15px; border-left: 0; border-bottom: 0; }
-        .bl { bottom: 15px; left: 15px; border-right: 0; border-top: 0; }
-        .br { bottom: 15px; right: 15px; border-left: 0; border-top: 0; }
 
-        /* --- MAIN UI --- */
-        .ui-wrapper { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 40px 25px 25px; box-sizing: border-box; }
-        
         .status-panel {
-            background: var(--panel-bg); border: 1px solid rgba(0, 255, 65, 0.3);
+            background: var(--panel-bg); border: 1px solid var(--neon);
             flex: 1; display: flex; flex-direction: column; padding: 20px;
-            position: relative; backdrop-filter: blur(12px);
-            clip-path: polygon(0 0, 93% 0, 100% 7%, 100% 100%, 7% 100%, 0 93%);
-            box-shadow: inset 0 0 30px rgba(0, 255, 65, 0.05);
-            animation: panelIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; backdrop-filter: blur(10px);
+            clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
+            box-shadow: 0 0 20px rgba(0,255,65,0.15);
         }
 
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        /* HUD Frame */
+        .hud-corner {
+            position: fixed; width: 30px; height: 30px; border: 2px solid var(--neon); z-index: 600;
+        }
+        .tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+        .tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+        .bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+        .br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .hud-item {
-            background: rgba(0, 255, 65, 0.03); border-right: 1px solid var(--neon-dim);
-            border-bottom: 1px solid var(--neon-dim); padding: 12px; position: relative;
-            overflow: hidden;
+            background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--neon);
+            padding: 10px;
         }
-        .hud-item::before {
-            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 2px; background: var(--neon);
-        }
-        .hud-item label { font-size: 9px; color: var(--accent); opacity: 0.7; display: block; margin-bottom: 4px; letter-spacing: 1px; }
-        .hud-item span { font-size: 16px; font-weight: 700; color: #fff; font-family: 'Orbitron'; }
+        .hud-item label { font-size: 8px; color: var(--accent); display: block; }
+        .hud-item span { font-size: 15px; font-weight: bold; font-family: 'Orbitron'; color: #fff; }
 
         .btn {
-            font-family: 'Orbitron'; font-weight: 700; padding: 16px;
+            font-family: 'Orbitron'; font-weight: bold; padding: 15px;
             border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.08); color: var(--neon);
-            transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            letter-spacing: 2px; font-size: 12px;
+            background: rgba(0, 255, 65, 0.1); color: var(--neon);
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            transition: 0.3s; width: 100%; margin-top: 10px;
         }
-        .btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 25px var(--neon-glow); }
-        .btn-sos { border-color: var(--danger); color: var(--danger); background: rgba(255, 0, 60, 0.1); }
-        .btn-sos:hover { background: var(--danger); box-shadow: 0 0 25px var(--danger-glow); }
+        .btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 15px var(--neon); }
+        .btn-sos { border-color: var(--danger); color: var(--danger); }
 
         .terminal-log {
-            font-size: 10px; color: var(--neon); height: 100px; overflow-y: auto;
-            margin-top: 15px; border-top: 1px solid var(--neon-dim); padding-top: 12px;
-            scrollbar-width: none; opacity: 0.8; line-height: 1.5;
+            font-size: 10px; color: var(--neon); height: 80px; overflow-y: auto;
+            border-top: 1px solid var(--neon-dim); padding-top: 10px; margin-top: 10px;
         }
 
-        /* --- ANIMATIONS --- */
-        @keyframes scanlineMove { 0% { top: -10%; } 100% { top: 110%; } }
-        @keyframes mapPulse { from { opacity: 0.1; transform: scale(1); } to { opacity: 0.18; transform: scale(1.08); } }
-        @keyframes panelIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes systemShake { 0%, 100% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(2px, -2px); } }
-
         .hidden { display: none !important; }
-        .glitch-active { animation: systemShake 0.1s infinite; }
         
-        .progress-container { width: 100%; height: 4px; background: rgba(0, 255, 65, 0.1); margin: 35px 0; border-radius: 2px; overflow: hidden; }
-        #progressFill { height: 100%; background: linear-gradient(90deg, transparent, var(--neon), var(--accent)); width: 0%; box-shadow: 0 0 15px var(--neon); transition: width 0.1s ease; }
+        /* Bar Progress */
+        .prog-bar { width: 100%; height: 4px; background: #111; margin: 20px 0; overflow: hidden; }
+        #prog-fill { height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 10px var(--neon); }
     </style>
 </head>
-<body id="mainBody">
+<body>
 
-<div class="noise"></div>
 <div class="scanline"></div>
-<div class="hud-frame"></div>
 <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
 <div class="hud-corner bl"></div><div class="hud-corner br"></div>
 
@@ -125,72 +104,57 @@
 <canvas id="bg-canvas"></canvas>
 
 <div class="ui-wrapper">
-    <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-        <div style="border-left: 3px solid var(--indo-red); padding-left: 12px;">
-            <div style="font-family: 'Orbitron'; font-weight: 700; font-size: 20px; letter-spacing: 3px; line-height: 1;">
-                <span style="color: var(--indo-red);">YONIF</span> 859 <span style="color:white; opacity: 0.8;">RBK</span>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="border-left: 4px solid var(--indo-red); padding-left: 10px;">
+            <div style="font-family: 'Orbitron'; font-size: 18px; font-weight: 700;">
+                <span style="color:var(--indo-red)">YONIF</span> 859 RBK
             </div>
-            <div id="status-tag" style="font-size: 9px; color: var(--accent); margin-top: 5px;">
-                <span style="display:inline-block; width:6px; height:6px; background:var(--neon); border-radius:50%; margin-right:5px; animation: pulse 1s infinite;"></span>
-                SYSTEM_LIVE | PING: <span id="pingVal">--ms</span>
-            </div>
+            <div style="font-size: 9px; color: var(--accent);">SIGNAL_LINK: <span id="pingVal">STABLE</span></div>
         </div>
-        <div style="text-align: right; font-family: 'Orbitron';">
-            <div id="clock" style="font-size: 16px; color: #fff; text-shadow: 0 0 10px var(--neon-glow);">00:00:00</div>
-            <div id="batStatus" style="font-size: 9px; color: var(--accent);">CORE_PWR: --%</div>
+        <div style="text-align: right;">
+            <div id="clock" style="font-family: 'Orbitron'; color: #fff;">00:00:00</div>
+            <div id="batStatus" style="font-size: 8px;">PWR: --%</div>
         </div>
     </header>
 
-    <div id="loginArea" class="status-panel" style="justify-content: center; align-items: center;">
-        <div style="text-align: center; width: 85%;">
-            <div style="font-size: 11px; letter-spacing: 6px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">NEURAL_LINK INTERFACE</div>
-            <h2 style="font-family: 'Orbitron'; margin: 0 0 30px 0; font-size: 18px; color: #fff;">IDENTITY REQUIRED</h2>
-            <input type="text" id="idInput" class="btn" style="text-align: center; width: 100%; border-style: dashed; margin-bottom: 20px; text-transform: uppercase;" placeholder="ENTER CALLSIGN">
-            <button class="btn" onclick="initiateLogin()" style="width: 100%;">CONNECT TO U-LINK</button>
+    <div id="loginArea" class="status-panel" style="justify-content: center;">
+        <div style="text-align: center;">
+            <div style="font-size: 10px; letter-spacing: 5px; opacity: 0.6; margin-bottom: 15px;">SECURE ACCESS REQUIRED</div>
+            <input type="text" id="idInput" class="btn" style="text-align: center; border-style: dashed;" placeholder="CALLSIGN">
+            <button class="btn" onclick="initiateLogin()">INITIALIZE LINK</button>
         </div>
     </div>
 
     <div id="loadingArea" class="status-panel hidden">
-        <div style="padding: 40px 20px;">
-            <div id="loadMsg" style="font-size: 14px; font-family: 'Orbitron'; text-align: center; color: #fff; letter-spacing: 4px;">INITIALIZING</div>
-            <div class="progress-container">
-                <div id="progressFill"></div>
-            </div>
+        <div style="text-align: center; margin-top: 40px;">
+            <div id="loadMsg" style="font-family: 'Orbitron';">ENCRYPTING...</div>
+            <div class="prog-bar"><div id="prog-fill"></div></div>
             <div class="terminal-log" id="miniLog"></div>
         </div>
     </div>
 
     <div id="trackingArea" class="status-panel hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,255,65,0.05); padding: 8px 12px;">
-            <div id="callsignLabel" style="font-family: 'Orbitron'; font-weight: 700; color: #000; background: var(--neon); padding: 2px 12px; font-size: 13px;">GHOST-01</div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="text-align: right;">
-                    <div style="font-size: 8px; color: var(--accent);">BIOMETRIC</div>
-                    <div style="font-size: 14px; color: #fff; font-family: 'Orbitron';" id="heartRate">-- BPM</div>
-                </div>
-                <canvas id="pulseCanvas" width="50" height="25"></canvas>
-            </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div id="callsignLabel" style="background: var(--neon); color: #000; padding: 2px 10px; font-weight: bold;">---</div>
+            <div id="heartRate" style="font-family: 'Orbitron'; font-size: 14px;">-- BPM</div>
         </div>
-        
+
         <div class="hud-grid">
-            <div class="hud-item"><label>position.lat</label><span id="lat">0.00000</span></div>
-            <div class="hud-item"><label>position.lon</label><span id="lon">0.00000</span></div>
-            <div class="hud-item"><label>vector.speed</label><span id="spd">0.0 km/h</span></div>
-            <div class="hud-item"><label>vector.dir</label><span id="heading" style="color:var(--accent)">0° N</span></div>
+            <div class="hud-item"><label>CORE.LAT</label><span id="lat">0.0000</span></div>
+            <div class="hud-item"><label>CORE.LON</label><span id="lon">0.0000</span></div>
+            <div class="hud-item"><label>V-VELOCITY</label><span id="spd">0.0 KM/H</span></div>
+            <div class="hud-item"><label>HEADING</label><span id="heading">0° N</span></div>
             <div class="hud-item" style="grid-column: span 2;">
-                <label>environmental.telemetry</label>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span id="alt" style="font-size: 12px;">ALT: 0m | ACC: 0m</span>
-                    <span id="tempVal" style="color:var(--accent); font-size: 12px;">28.5°C</span>
-                </div>
+                <label>ALTITUDE & ACCURACY</label>
+                <span id="alt" style="font-size: 11px;">ALT: 0M | ACC: 0M</span>
             </div>
         </div>
 
-        <div class="terminal-log" id="logBox">> ENCRYPTED CHANNEL ESTABLISHED...</div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto;">
-            <button class="btn btn-sos" onclick="sendSOS()">SIGNAL SOS</button>
-            <button class="btn" style="font-size: 10px; border-color: rgba(0,255,65,0.3);" onclick="initiateTerminate()">DE-SYNC</button>
+        <div class="terminal-log" id="logBox">> DATASTREAM ACTIVE...</div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto;">
+            <button class="btn btn-sos" onclick="sendSOS()">S.O.S</button>
+            <button class="btn" style="font-size: 10px;" onclick="initiateTerminate()">TERMINATE</button>
         </div>
     </div>
 </div>
@@ -204,7 +168,7 @@
         authDomain: "real-time-location-30d91.firebaseapp.com",
         databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "real-time-location-30d91",
-        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        storageBucket: "real-time-location-30d91.firebasedatabase.app",
         messagingSenderId: "1092565406651",
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
@@ -212,95 +176,62 @@
     const app = initializeApp(firebaseConfig), db = getDatabase(app);
     let myCallsign = "", watchId = null;
 
-    // --- PULSE ENGINE ---
-    const pCanvas = document.getElementById('pulseCanvas'), pCtx = pCanvas.getContext('2d');
-    let offset = 0;
-    function drawPulse() {
-        pCtx.clearRect(0,0,50,25);
-        pCtx.strokeStyle = "#00ff41"; pCtx.lineWidth = 1.5;
-        pCtx.beginPath();
-        for(let i=0; i<50; i++) {
-            let y = 12 + Math.sin((i+offset)*0.5) * (i%15==0 ? 10 : 2);
-            pCtx.lineTo(i, y);
-        }
-        pCtx.stroke();
-        offset++;
-        requestAnimationFrame(drawPulse);
-    }
-    drawPulse();
-
-    // --- SYSTEM CORE ---
+    // --- CLOCK & BATTERY ---
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-        if(myCallsign) {
-            document.getElementById('heartRate').innerText = Math.floor(65 + Math.random() * 10) + " BPM";
-            document.getElementById('tempVal').innerText = (28 + Math.random()).toFixed(1) + "°C";
-        }
+        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(60 + Math.random()*15) + " BPM";
         if(navigator.getBattery) navigator.getBattery().then(b => {
-            document.getElementById('batStatus').innerText = `CORE_PWR: ${Math.round(b.level*100)}%`;
+            document.getElementById('batStatus').innerText = `PWR: ${Math.round(b.level*100)}%`;
         });
     }, 1000);
 
-    // Monitoring Latency
-    const connectedRef = ref(db, ".info/connected");
-    onValue(connectedRef, (snap) => {
-        if (snap.val() === true) {
-            document.getElementById('pingVal').innerText = Math.floor(Math.random()*40 + 20) + "ms";
-        }
-    });
+    // --- PANEL SWITCHER ---
+    function showPanel(id) {
+        ['loginArea', 'loadingArea', 'trackingArea'].forEach(p => document.getElementById(p).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
 
     window.initiateLogin = () => {
         const val = document.getElementById('idInput').value.trim().toUpperCase();
         if(!val) return;
         myCallsign = val;
-        switchPanel('loginArea', 'loadingArea');
-        startSequence(["HANDSHAKING_SATELLITE", "ENCRYPTING_NEURAL_PATH", "AUTHORIZING_YONIF_859", "U-LINK_ESTABLISHED"], 60, () => {
-            switchPanel('loadingArea', 'trackingArea');
+        showPanel('loadingArea');
+        runSequence(["BYPASSING_MIL_GATEWAY", "SYNCING_GALILEO_SAT", "LINK_ESTABLISHED"], 60, () => {
+            showPanel('trackingArea');
             document.getElementById('callsignLabel').innerText = myCallsign;
             startTracking();
         });
     };
 
     window.initiateTerminate = () => {
-        if(!confirm("CONFIRM NEURAL DE-SYNC?")) return;
-        document.getElementById('mainBody').classList.add('glitch-active');
-        switchPanel('trackingArea', 'loadingArea');
-        document.getElementById('loadMsg').innerText = "WIPING_SESSION";
-        
-        startSequence(["CLOAKING_COORDINATES", "FLUSHING_CACHE", "TERMINATING_U-LINK", "DISCONNECTED"], 40, () => {
-            location.reload();
-        });
+        if(!confirm("DISCONNECT NEURAL LINK?")) return;
+        showPanel('loadingArea');
+        document.getElementById('loadMsg').innerText = "TERMINATING...";
+        runSequence(["WIPING_LOGS", "DISCONNECTING_GPS", "SHUTDOWN"], 40, () => location.reload());
     };
 
-    function startSequence(msgs, speed, cb) {
+    function runSequence(msgs, speed, cb) {
         let p = 0;
-        const bar = document.getElementById('progressFill'), log = document.getElementById('miniLog');
+        const fill = document.getElementById('prog-fill'), log = document.getElementById('miniLog');
         log.innerHTML = "";
         const itv = setInterval(() => {
-            p += 2; bar.style.width = p + "%";
+            p += 2; fill.style.width = p + "%";
             let idx = Math.floor((p/100) * msgs.length);
             if(msgs[idx] && !log.innerHTML.includes(msgs[idx])) {
                 log.innerHTML += `<div>> ${msgs[idx]}... [OK]</div>`;
-                log.scrollTop = log.scrollHeight;
             }
-            if(p >= 100) { clearInterval(itv); setTimeout(cb, 600); }
+            if(p >= 100) { clearInterval(itv); setTimeout(cb, 500); }
         }, speed);
-    }
-
-    function switchPanel(oldId, newId) {
-        document.getElementById(oldId).classList.add('hidden');
-        document.getElementById(newId).classList.remove('hidden');
     }
 
     function startTracking() {
         if (navigator.geolocation) {
             watchId = navigator.geolocation.watchPosition((p) => {
                 const { latitude, longitude, speed, accuracy, altitude } = p.coords;
-                document.getElementById('lat').innerText = latitude.toFixed(5);
-                document.getElementById('lon').innerText = longitude.toFixed(5);
+                document.getElementById('lat').innerText = latitude.toFixed(4);
+                document.getElementById('lon').innerText = longitude.toFixed(4);
                 document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
-                document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}m | ACC: ${Math.round(accuracy)}m`;
-                
+                document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}M | ACC: ${Math.round(accuracy)}M`;
                 update(ref(db, "live/" + myCallsign), { 
                     lat: latitude, lon: longitude, speed: (speed||0), waktu: serverTimestamp(), sos: false 
                 });
@@ -310,12 +241,10 @@
 
     window.sendSOS = () => {
         update(ref(db, "live/" + myCallsign), { sos: true });
-        const log = document.getElementById('logBox');
-        log.innerHTML += `<br><span style="color:var(--danger)">> SOS_SENT: COMMAND NOTIFIED</span>`;
-        log.scrollTop = log.scrollHeight;
+        document.getElementById('logBox').innerHTML += `<br><span style="color:var(--danger)">> SOS_BROADCASTED!</span>`;
     };
 
-    // --- MATRIX BG EFFECT ---
+    // --- MATRIX BG ---
     const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
     let drops = [];
     function initMatrix() {
@@ -324,17 +253,16 @@
     }
     function drawMatrix() {
         ctx.fillStyle = "rgba(0, 5, 0, 0.15)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "rgba(0, 255, 65, 0.1)"; ctx.font = "14px monospace";
+        ctx.fillStyle = "rgba(0, 255, 65, 0.15)"; ctx.font = "15px monospace";
         drops.forEach((y, i) => {
-            const char = Math.random() > 0.5 ? "1" : "0";
-            ctx.fillText(char, i*20, y*20);
+            ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
             if(y*20 > canvas.height && Math.random() > 0.98) drops[i] = 0;
             drops[i]++;
         });
         requestAnimationFrame(drawMatrix);
     }
-    window.onresize = initMatrix;
     initMatrix(); drawMatrix();
+    window.addEventListener('resize', initMatrix);
 </script>
 </body>
 </html>
