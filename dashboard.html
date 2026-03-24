@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COMMAND | YONIF 859/RBK</title>
     <script>
+        // Cek Autentikasi Sederhana
         if (localStorage.getItem("auth") !== "true") window.location.replace("login.html");
     </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,46 +13,71 @@
     <style>
         :root { --neon: #00ff41; --bg: #000800; --danger: #ff003c; --accent: #00e5ff; --panel: rgba(0, 20, 0, 0.9); }
         body, html { margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--neon); height: 100vh; overflow: hidden; }
+        
         .main-ui { display: grid; grid-template-columns: 320px 1fr 320px; grid-template-rows: 60px 1fr; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
-        header { grid-column: span 3; background: var(--panel); border: 1px solid var(--neon); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%); }
+        
+        header { 
+            grid-column: span 3; background: var(--panel); border: 1px solid var(--neon); 
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px; 
+            clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%); 
+        }
+
         .side-panel { background: var(--panel); border: 1px solid rgba(0,255,65,0.2); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
-        #map { background: #000; border: 1px solid var(--neon); }
+        
+        #map { background: #000; border: 1px solid var(--neon); box-shadow: inset 0 0 20px #000; }
+        
+        /* Filter Dark Mode untuk Peta */
         .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.2); }
-        .unit-card { background: rgba(0,255,65,0.05); border: 1px solid rgba(0,255,65,0.1); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+
+        .unit-card { 
+            background: rgba(0,255,65,0.05); border: 1px solid rgba(0,255,65,0.1); 
+            padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; 
+            position: relative; overflow: hidden;
+        }
         .unit-card:hover { background: rgba(0,255,65,0.15); border-color: var(--neon); }
-        .unit-card.sos { border-color: var(--danger); animation: danger-pulse 1s infinite; }
+        .unit-card.sos { border-color: var(--danger); animation: danger-pulse 1s infinite; background: rgba(255,0,60,0.1); }
+        
         @keyframes danger-pulse { 0% { box-shadow: 0 0 5px var(--danger); } 50% { box-shadow: 0 0 20px var(--danger); } 100% { box-shadow: 0 0 5px var(--danger); } }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
         .online { background: var(--neon); box-shadow: 0 0 8px var(--neon); }
         .offline { background: #444; }
-        .input-cmd { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; font-family: 'Share Tech Mono'; width: 100%; box-sizing: border-box; }
-        .btn-cmd { background: var(--neon); color: #000; font-family: 'Orbitron'; font-weight: bold; padding: 10px; border: none; cursor: pointer; width: 100%; }
-        .log-area { font-size: 11px; font-family: 'Share Tech Mono'; color: var(--accent); height: 150px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 5px; }
-        #dashLoader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+
+        .input-cmd { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; font-family: 'Share Tech Mono'; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        .btn-cmd { background: var(--neon); color: #000; font-family: 'Orbitron'; font-weight: bold; padding: 10px; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-cmd:hover { background: #fff; box-shadow: 0 0 15px var(--neon); }
+
+        .log-area { font-size: 11px; font-family: 'Share Tech Mono'; color: var(--accent); height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 8px; border: 1px solid rgba(0,229,255,0.2); }
+        
+        #dashLoader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.5s; }
     </style>
 </head>
 <body>
     <div id="dashLoader">
-        <div style="font-family: 'Orbitron'; font-size: 24px; color: var(--neon); letter-spacing: 5px;">INITIALIZING HQ_COMMAND</div>
-        <div id="loadStatus" style="font-size: 10px; color: var(--accent); margin-top: 10px;">BOOTING SYSTEMS...</div>
+        <div style="font-family: 'Orbitron'; font-size: 24px; color: var(--neon); letter-spacing: 5px; text-align: center;">INITIALIZING HQ_COMMAND<br><span style="font-size: 12px; color: #fff;">YONIF 859/RBK</span></div>
+        <div id="loadStatus" style="font-size: 10px; color: var(--accent); margin-top: 20px; font-family: 'Share Tech Mono';">BOOTING SYSTEMS...</div>
     </div>
 
 <div class="main-ui">
     <header>
         <div style="font-family: 'Orbitron'; font-weight: bold; letter-spacing: 2px;"><span style="color:var(--danger)">HQ</span> COMMAND_DASHBOARD</div>
-        <div id="clock" style="font-family: 'Orbitron'; font-size: 20px;">00:00:00</div>
-        <button onclick="logout()" style="border: 1px solid var(--danger); background: transparent; color: var(--danger); padding: 5px 15px; cursor: pointer;">EXIT</button>
+        <div id="clock" style="font-family: 'Orbitron'; font-size: 20px; color: #fff;">00:00:00</div>
+        <button onclick="logout()" style="border: 1px solid var(--danger); background: transparent; color: var(--danger); padding: 5px 15px; cursor: pointer; font-family: 'Orbitron'; font-size: 10px;">TERMINATE_SESSION</button>
     </header>
+
     <aside class="side-panel">
-        <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">ACTIVE_UNITS</div>
+        <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px; color: var(--accent);">[ ACTIVE_UNITS ]</div>
         <div id="unitList"></div>
     </aside>
+
     <div id="map"></div>
+
     <aside class="side-panel">
-        <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">GLOBAL_DIRECTIVE</div>
-        <input type="text" id="cmdInput" class="input-cmd" placeholder="TYPE COMMAND...">
+        <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px; color: var(--accent);">[ GLOBAL_DIRECTIVE ]</div>
+        <input type="text" id="cmdInput" class="input-cmd" placeholder="MASUKKAN PERINTAH...">
         <button class="btn-cmd" onclick="broadcast()">SEND BROADCAST</button>
-        <div style="margin-top: 20px; font-size: 12px; font-family: 'Orbitron';">ENCRYPTED_LOG</div>
+        
+        <div style="margin-top: 20px; font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px; color: var(--accent);">[ ENCRYPTED_LOG ]</div>
         <div id="sysLog" class="log-area"></div>
     </aside>
 </div>
@@ -75,53 +101,101 @@
     const db = getDatabase(app);
     let map, markers = {};
 
-    // Startup
+    // Efek Loading Awal
     window.addEventListener('load', () => {
         const s = document.getElementById('loadStatus');
-        setTimeout(() => s.innerText = "CONNECTING TO FIREBASE_NODE...", 1000);
-        setTimeout(() => s.innerText = "DECRYPTING UNIT_STREAM...", 2000);
-        setTimeout(() => document.getElementById('dashLoader').style.display = 'none', 3000);
+        setTimeout(() => s.innerText = "CONNECTING TO FIREBASE_NODE...", 800);
+        setTimeout(() => s.innerText = "ESTABLISHING SECURE_TUNNEL...", 1600);
+        setTimeout(() => s.innerText = "DECRYPTING UNIT_STREAM...", 2400);
+        setTimeout(() => {
+            document.getElementById('dashLoader').style.opacity = '0';
+            setTimeout(() => document.getElementById('dashLoader').style.display = 'none', 500);
+        }, 3200);
     });
 
+    // Inisialisasi Peta
     map = L.map('map', { zoomControl: false }).setView([-0.8194, 135.6846], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'YONIF 859/RBK TACTICAL MAP'
+    }).addTo(map);
 
+    // Sinkronisasi Data Live dari Firebase
     onValue(ref(db, "live"), (snap) => {
         const data = snap.val();
         if(!data) return;
+        
         const list = document.getElementById('unitList');
         list.innerHTML = "";
         const now = Date.now();
 
         for(let id in data) {
             const unit = data[id];
-            const isOnline = (now - unit.waktu) < 30000;
+            // Offline jika data lebih tua dari 40 detik
+            const isOnline = (now - unit.waktu) < 40000;
             const pos = [unit.lat, unit.lon];
 
+            // Update Marker di Peta
             if(markers[id]) map.removeLayer(markers[id]);
+            
             markers[id] = L.circleMarker(pos, { 
-                radius: 10, color: '#fff', weight: 2, 
-                fillColor: unit.sos ? '#ff003c' : '#00ff41', fillOpacity: 1 
-            }).addTo(map).bindTooltip(id, {permanent: true, direction: 'top'});
+                radius: 10, 
+                color: '#fff', 
+                weight: 2, 
+                fillColor: unit.sos ? '#ff003c' : (isOnline ? '#00ff41' : '#444'), 
+                fillOpacity: 1 
+            }).addTo(map).bindTooltip(`<b style="font-family:Orbitron">${id}</b>`, {permanent: true, direction: 'top', className: 'tactical-tooltip'});
 
+            // Update List Kartu Unit di Sidebar
             const card = document.createElement('div');
             card.className = `unit-card ${unit.sos ? 'sos' : ''}`;
-            card.innerHTML = `<div><span class="status-dot ${isOnline ? 'online' : 'offline'}"></span> ${id}</div>
-                              <div style="font-size:10px; opacity:0.7;">${(unit.speed*3.6).toFixed(1)} KM/H | GPS_OK</div>`;
-            card.onclick = () => map.flyTo(pos, 17);
+            card.innerHTML = `
+                <div style="font-family: 'Orbitron'; font-weight: bold;">
+                    <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+                    ${id}
+                </div>
+                <div style="font-size:10px; opacity:0.7; margin-top:5px; font-family: 'Share Tech Mono';">
+                    SPD: ${(unit.speed * 3.6).toFixed(1)} KM/H | GPS: OK
+                </div>
+                ${unit.sos ? '<div style="font-size:9px; color:#ff003c; font-weight:bold; margin-top:5px;">[ EMERGENCY_SOS ]</div>' : ''}
+            `;
+            
+            // Klik kartu untuk fokus ke unit di peta
+            card.onclick = () => {
+                map.flyTo(pos, 16);
+                addLog(`FOCUSING ON UNIT: ${id}`);
+            };
             list.appendChild(card);
         }
     });
 
+    // Fungsi Kirim Pesan ke Semua Unit
     window.broadcast = () => {
         const text = document.getElementById('cmdInput').value;
         if(!text) return;
-        set(ref(db, "commands/global"), { text: text, waktu: Date.now() });
+        set(ref(db, "commands/global"), { 
+            text: text, 
+            waktu: Date.now() 
+        });
+        addLog(`BROADCAST_SENT: ${text}`);
         document.getElementById('cmdInput').value = "";
     };
 
-    setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID'), 1000);
-    window.logout = () => { localStorage.removeItem("auth"); location.replace("login.html"); };
+    // Fungsi Log Sistem
+    function addLog(msg) {
+        const log = document.getElementById('sysLog');
+        const time = new Date().toLocaleTimeString('id-ID');
+        log.innerHTML = `<div style="margin-bottom:5px;">> [${time}] ${msg}</div>` + log.innerHTML;
+    }
+
+    // Jam & Logout
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
+
+    window.logout = () => { 
+        localStorage.removeItem("auth"); 
+        location.replace("login.html"); 
+    };
 </script>
 </body>
 </html>
