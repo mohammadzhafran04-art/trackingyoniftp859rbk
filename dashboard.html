@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL COMMAND | YONIF 859/RBK 2045</title>
+    <title>COMMAND | YONIF 859/RBK</title>
     
     <script>
-        // Security Layer
-        if (localStorage.getItem("auth") !== "true") {
-            window.location.replace("login.html");
-        }
+        if (localStorage.getItem("auth") !== "true") window.location.replace("login.html");
     </script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,137 +14,88 @@
 
     <style>
         :root {
-            --neon: #00ff41;
-            --neon-dim: rgba(0, 255, 65, 0.1);
-            --bg: #000500;
-            --danger: #ff003c;
-            --panel: rgba(0, 15, 0, 0.85);
-            --accent: #00e5ff;
+            --neon: #00ff41; --bg: #000800; --danger: #ff003c; --accent: #00e5ff;
+            --panel: rgba(0, 20, 0, 0.9);
         }
-
-        body, html {
-            margin: 0; padding: 0;
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--bg); color: var(--neon);
-            height: 100vh; width: 100vw; overflow: hidden;
+        body, html { 
+            margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; 
+            background: var(--bg); color: var(--neon); height: 100vh; overflow: hidden; 
         }
-
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100vh); }
-        }
-        .scan-effect {
-            position: fixed; inset: 0; 
-            background: linear-gradient(to bottom, transparent, var(--neon-dim), transparent);
-            height: 100px; width: 100%; z-index: 2000; pointer-events: none;
-            animation: scanline 6s linear infinite; opacity: 0.3;
-        }
-
-        .cyber-grid {
-            position: fixed; inset: 0; z-index: -1; opacity: 0.2;
-            background-image: linear-gradient(var(--neon-dim) 1px, transparent 1px), 
-                              linear-gradient(90deg, var(--neon-dim) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
-
+        
+        /* Grid Layout */
         .main-ui {
-            display: grid; grid-template-columns: 350px 1fr 350px;
-            grid-template-rows: 70px 1fr; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
+            display: grid; grid-template-columns: 320px 1fr 320px;
+            grid-template-rows: 60px 1fr; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
         }
 
         header {
             grid-column: span 3; background: var(--panel); border: 1px solid var(--neon);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 25px;
-            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+            clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%);
         }
 
         .side-panel {
-            background: var(--panel); border: 1px solid var(--neon-dim);
+            background: var(--panel); border: 1px solid rgba(0,255,65,0.2);
             padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto;
-            z-index: 10;
         }
 
-        #map { 
-            border: 1px solid var(--neon-dim); 
-            background: #000a00; 
-            z-index: 1;
-        }
-        
-        .leaflet-container { 
-            filter: invert(90%) hue-rotate(150deg) brightness(0.7) contrast(1.2) saturate(0.5); 
-            background: #000 !important;
-        }
+        #map { background: #000; border: 1px solid var(--neon); }
+        .leaflet-container { filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.2); }
 
-        .personnel-card {
-            background: rgba(0, 255, 65, 0.05); border: 1px solid var(--neon-dim);
-            padding: 12px; cursor: pointer; transition: 0.3s; position: relative; margin-bottom: 5px;
+        .unit-card {
+            background: rgba(0,255,65,0.05); border: 1px solid rgba(0,255,65,0.1);
+            padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s;
         }
-        .personnel-card:hover { 
-            background: var(--neon-dim); border-color: var(--neon); 
-        }
-        
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .online { background: var(--neon); box-shadow: 0 0 10px var(--neon); }
+        .unit-card:hover { background: rgba(0,255,65,0.15); border-color: var(--neon); }
+        .unit-card.sos { border-color: var(--danger); animation: danger-pulse 1s infinite; }
+
+        @keyframes danger-pulse { 0% { box-shadow: 0 0 5px var(--danger); } 50% { box-shadow: 0 0 20px var(--danger); } 100% { box-shadow: 0 0 5px var(--danger); } }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online { background: var(--neon); box-shadow: 0 0 8px var(--neon); }
         .offline { background: #444; }
 
-        .btn-command {
-            background: var(--neon-dim); border: 1px solid var(--neon);
-            color: var(--neon); padding: 10px; cursor: pointer; font-family: 'Orbitron';
+        .input-cmd {
+            background: #000; border: 1px solid var(--neon); color: var(--neon); 
+            padding: 10px; font-family: 'Share Tech Mono'; width: 100%; box-sizing: border-box;
+        }
+        
+        .btn-cmd {
+            background: var(--neon); color: #000; font-family: 'Orbitron'; font-weight: bold;
+            padding: 10px; border: none; cursor: pointer; width: 100%;
         }
 
-        .terminal-log {
-            font-size: 11px; font-family: 'Share Tech Mono'; background: rgba(0,5,0,0.9);
-            padding: 10px; height: 180px; overflow-y: auto; border: 1px solid var(--neon-dim);
-            color: var(--accent);
+        .log-area {
+            font-size: 11px; font-family: 'Share Tech Mono'; color: var(--accent);
+            height: 150px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 5px;
         }
-
-        #loadingArea {
-            position: fixed; inset: 0; background: var(--bg);
-            z-index: 9999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            transition: opacity 0.5s ease;
-        }
-
-        .hidden { display: none !important; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="scan-effect"></div>
-<div class="cyber-grid"></div>
-
-<div id="loadingArea">
-    <div id="loadingText" style="font-family: 'Orbitron'; font-size: 20px; letter-spacing: 8px; color: var(--neon);">NEURAL_OS V4.3</div>
-    <div style="width: 300px; height: 2px; background: rgba(0,255,65,0.1); margin: 20px 0;">
-        <div id="progressFill" style="height: 100%; background: var(--neon); width: 0%; transition: 0.3s;"></div>
-    </div>
-    <div id="loadMsg" style="font-family: 'Share Tech Mono'; font-size: 10px; text-transform: uppercase;">Initializing Uplink...</div>
-</div>
-
-<div class="main-ui hidden" id="dashboardContent">
+<div class="main-ui">
     <header>
-        <div style="font-family: 'Orbitron'; letter-spacing: 2px;">
-            <span style="color:var(--neon); animation: blink 1s infinite;">●</span> COMMAND DASHBOARD
+        <div style="font-family: 'Orbitron'; font-weight: bold; letter-spacing: 2px;">
+            <span style="color:var(--danger)">HQ</span> COMMAND_DASHBOARD
         </div>
-        <div id="clock" style="font-family: 'Orbitron'; font-size: 22px; color: var(--accent);">00:00:00</div>
-        <button id="logoutBtn" style="background:transparent; border:1px solid var(--danger); color:var(--danger); font-family:'Orbitron'; padding:5px 15px; cursor:pointer;">DISCONNECT</button>
+        <div id="clock" style="font-family: 'Orbitron'; font-size: 20px;">00:00:00</div>
+        <button onclick="logout()" style="border: 1px solid var(--danger); background: transparent; color: var(--danger); padding: 5px 15px; cursor: pointer;">EXIT</button>
     </header>
 
     <aside class="side-panel">
-        <h3 style="font-size: 12px; font-family: 'Orbitron'; color: var(--accent); border-bottom: 1px solid var(--neon-dim); padding-bottom: 5px;">ACTIVE UNITS</h3>
+        <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">ACTIVE_UNITS</div>
         <div id="unitList"></div>
     </aside>
 
     <div id="map"></div>
 
     <aside class="side-panel">
-        <h3 style="font-size: 12px; font-family: 'Orbitron'; color: var(--accent); border-bottom: 1px solid var(--neon-dim); padding-bottom: 5px;">DIRECTIVE CONTROL</h3>
-        <input type="text" id="cmdInput" placeholder="ENTER DIRECTIVE..." style="background:rgba(0,0,0,0.5); border:1px solid var(--neon); color:var(--neon); padding:10px; font-family:'Share Tech Mono'; outline:none;">
-        <button class="btn-command" id="broadcastBtn">BROADCAST COMMAND</button>
+        <div style="font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">GLOBAL_DIRECTIVE</div>
+        <input type="text" id="cmdInput" class="input-cmd" placeholder="TYPE COMMAND...">
+        <button class="btn-cmd" onclick="broadcast()">SEND BROADCAST</button>
         
-        <h3 style="font-size: 12px; font-family: 'Orbitron'; color: var(--accent); margin-top: 15px;">ENCRYPTED LOG</h3>
-        <div class="terminal-log" id="sysLog">> WAITING_FOR_DATA...</div>
+        <div style="margin-top: 20px; font-size: 12px; font-family: 'Orbitron';">ENCRYPTED_LOG</div>
+        <div id="sysLog" class="log-area"></div>
     </aside>
 </div>
 
@@ -161,7 +109,7 @@
         authDomain: "real-time-location-30d91.firebaseapp.com",
         databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "real-time-location-30d91",
-        storageBucket: "real-time-location-30d91.firebasestorage.app",
+        storageBucket: "real-time-location-30d91.appspot.com",
         messagingSenderId: "1092565406651",
         appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
     };
@@ -170,127 +118,67 @@
     const db = getDatabase(app);
     let map, markers = {};
 
-    window.addEventListener('DOMContentLoaded', () => {
-        let prog = 0;
-        const bar = document.getElementById('progressFill');
-        const loader = setInterval(() => {
-            prog += Math.random() * 25;
-            if(prog > 100) prog = 100;
-            bar.style.width = prog + "%";
-            if(prog === 100) {
-                clearInterval(loader);
-                setTimeout(initDashboard, 500);
+    // Init Map
+    map = L.map('map', { zoomControl: false }).setView([-0.8194, 135.6846], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    setTimeout(() => map.invalidateSize(), 500);
+
+    // Sync Data
+    onValue(ref(db, "live"), (snap) => {
+        const data = snap.val();
+        const list = document.getElementById('unitList');
+        list.innerHTML = "";
+        const now = Date.now();
+
+        for(let id in data) {
+            const unit = data[id];
+            const isOnline = (now - unit.waktu) < 30000;
+            const pos = [unit.lat, unit.lon];
+
+            // Marker Update
+            if(!markers[id]) {
+                markers[id] = L.circleMarker(pos, { radius: 8, color: '#fff', weight: 1, fillOpacity: 1 }).addTo(map);
             }
-        }, 100);
+            markers[id].setLatLng(pos);
+            markers[id].setStyle({ fillColor: unit.sos ? "#ff003c" : "#00ff41" });
+
+            // Card Update
+            const card = document.createElement('div');
+            card.className = `unit-card ${unit.sos ? 'sos' : ''}`;
+            card.innerHTML = `
+                <div style="font-family:'Orbitron'; font-size:12px;">
+                    <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span> ${id}
+                </div>
+                <div style="font-size:10px; font-family:'Share Tech Mono'; opacity:0.7;">
+                    ${unit.lat.toFixed(4)}, ${unit.lon.toFixed(4)} | ${(unit.speed*3.6).toFixed(0)} KM/H
+                </div>
+            `;
+            card.onclick = () => map.flyTo(pos, 16);
+            list.appendChild(card);
+        }
     });
 
-    function initDashboard() {
-        document.getElementById('loadingArea').classList.add('hidden');
-        document.getElementById('dashboardContent').classList.remove('hidden');
-        
-        // Setup Map
-        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-0.8194, 135.6846], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-        
-        // PENTING: Memaksa Leaflet refresh ukuran agar tidak blank saat UI muncul
-        setTimeout(() => { map.invalidateSize(); }, 200);
-
-        setInterval(() => { 
-            const d = new Date();
-            document.getElementById('clock').innerText = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0') + ":" + d.getSeconds().toString().padStart(2, '0'); 
-        }, 1000);
-        
-        syncUnits();
-    }
-
-    function syncUnits() {
-        onValue(ref(db, "live"), (snapshot) => {
-            const data = snapshot.val();
-            const listArea = document.getElementById('unitList');
-            if(!data) return;
-            
-            listArea.innerHTML = "";
-            const now = Date.now();
-
-            for(let id in data) {
-                const unit = data[id];
-                
-                // --- FIX VARIABEL: Di database kamu pake 'lat' dan 'lon', bukan 'latitude' ---
-                const uLat = unit.lat || unit.latitude;
-                const uLon = unit.lon || unit.longitude;
-                // --------------------------------------------------------------------------
-
-                const isOnline = (now - (unit.waktu || unit.timestamp)) < 20000; 
-
-                if(uLat && uLon) {
-                    if(!markers[id]) {
-                        markers[id] = L.circleMarker([uLat, uLon], {
-                            radius: 10,
-                            fillColor: unit.sos ? "#ff003c" : "#00ff41",
-                            color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.8
-                        }).addTo(map).bindPopup(`<b>UNIT: ${id}</b>`);
-                    } else {
-                        markers[id].setLatLng([uLat, uLon]);
-                        markers[id].setStyle({ fillColor: unit.sos ? "#ff003c" : "#00ff41" });
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = "personnel-card";
-                    card.onclick = () => {
-                        map.flyTo([uLat, uLon], 17);
-                        markers[id].openPopup();
-                    };
-                    
-                    card.innerHTML = `
-                        <div style="font-family:'Orbitron'; font-size:11px;">
-                            <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
-                            ${id} ${unit.sos ? '<span style="color:var(--danger)">[SOS]</span>' : ''}
-                        </div>
-                        <div style="font-size:9px; opacity:0.6; margin-top:4px; font-family:'Share Tech Mono'">
-                            POS: ${uLat.toFixed(4)}, ${uLon.toFixed(4)}
-                        </div>
-                    `;
-                    listArea.appendChild(card);
-                }
-            }
-        });
-    }
-
-    document.getElementById('broadcastBtn').addEventListener('click', () => {
-        const text = document.getElementById('cmdInput').value.trim();
+    window.broadcast = () => {
+        const text = document.getElementById('cmdInput').value;
         if(!text) return;
-        set(ref(db, "commands/global"), { text: text, timestamp: Date.now() })
-            .then(() => {
-                addLog("SENT_GLOBAL_CMD: " + text);
-                document.getElementById('cmdInput').value = "";
-            });
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        const loadingArea = document.getElementById('loadingArea');
-        const loadMsg = document.getElementById('loadMsg');
-        const progBar = document.getElementById('progressFill');
-        
-        loadingArea.classList.remove('hidden');
-        loadMsg.innerText = "Terminating Neural Link...";
-        progBar.style.width = "0%";
-        
-        let p = 0;
-        const outInterval = setInterval(() => {
-            p += 10;
-            progBar.style.width = p + "%";
-            if(p >= 100) {
-                clearInterval(outInterval);
-                localStorage.removeItem("auth");
-                window.location.replace("login.html");
-            }
-        }, 50);
-    });
+        set(ref(db, "commands/global"), { text: text, waktu: Date.now() });
+        addLog("BROADCAST: " + text);
+        document.getElementById('cmdInput').value = "";
+    };
 
     function addLog(msg) {
         const log = document.getElementById('sysLog');
         log.innerHTML = `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>` + log.innerHTML;
     }
+
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
+
+    window.logout = () => {
+        localStorage.removeItem("auth");
+        location.replace("login.html");
+    };
 </script>
 </body>
 </html>
