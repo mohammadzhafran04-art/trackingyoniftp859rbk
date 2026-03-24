@@ -14,15 +14,12 @@
             margin: 0; padding: 0; background: var(--bg); color: var(--neon); 
             font-family: 'Share Tech Mono', monospace; height: 100vh; overflow: hidden; text-transform: uppercase;
         }
-        /* HUD FX */
         .scanline {
             width: 100%; height: 100%; z-index: 1000; position: fixed; top: 0; pointer-events: none;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
             background-size: 100% 3px, 3px 100%; opacity: 0.5;
         }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.3; }
-        
-        /* UI Components */
         .ui-wrapper { position: relative; z-index: 1100; height: 100vh; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .status-panel {
             background: var(--panel-bg); border: 1px solid var(--neon); flex: 1; display: flex; flex-direction: column; 
@@ -34,7 +31,6 @@
         .hud-item { background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--neon); padding: 12px; }
         .hud-item label { font-size: 9px; color: var(--accent); display: block; margin-bottom: 4px; }
         .hud-item span { font-size: 16px; font-weight: bold; font-family: 'Orbitron'; color: #fff; }
-
         .btn {
             font-family: 'Orbitron'; padding: 15px; border: 1px solid var(--neon); cursor: pointer;
             background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: 0.3s; width: 100%;
@@ -43,13 +39,26 @@
         .btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
         .btn-sos { border-color: var(--danger); color: var(--danger); background: rgba(255,0,60,0.1); }
         .btn-sos.active { background: var(--danger); color: #fff; animation: blink 0.5s infinite; }
-
         .terminal-log { font-size: 10px; height: 100px; overflow-y: auto; border-top: 1px solid rgba(0,255,65,0.2); padding-top: 10px; margin-top: auto; }
         .hidden { display: none !important; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        /* LOADING STYLES */
+        .loader-overlay {
+            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-family: 'Orbitron'; color: var(--neon);
+        }
+        .loading-bar { width: 240px; height: 4px; background: rgba(0,255,65,0.1); margin-top: 20px; position: relative; overflow: hidden; }
+        .loading-bar-inner { position: absolute; left: 0; top: 0; height: 100%; background: var(--neon); width: 0%; transition: 0.1s; box-shadow: 0 0 15px var(--neon); }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
+    <div id="loader" class="loader-overlay hidden">
+        <div id="loaderText" style="letter-spacing: 2px;">SYNCING NEURAL_LINK...</div>
+        <div class="loading-bar"><div id="barInner" class="loading-bar-inner"></div></div>
+    </div>
+
     <div class="scanline"></div>
     <canvas id="bg-canvas"></canvas>
 
@@ -96,7 +105,7 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
                 <button id="sosBtn" class="btn btn-sos" onclick="toggleSOS()">SEND S.O.S</button>
-                <button class="btn" style="border-color: #555; color: #888;" onclick="location.reload()">TERMINATE</button>
+                <button class="btn" style="border-color: #555; color: #888;" onclick="terminateLink()">TERMINATE</button>
             </div>
         </div>
     </div>
@@ -119,26 +128,45 @@
         const db = getDatabase(app);
         let myCallsign = "", watchId = null, isSOS = false;
 
-        // UI Updates
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-            if(myCallsign) {
-                document.getElementById('heartRate').innerText = Math.floor(70 + Math.random()*20) + " BPM";
-            }
-            if(navigator.getBattery) navigator.getBattery().then(b => {
-                document.getElementById('batStatus').innerText = `PWR: ${Math.round(b.level*100)}%`;
-            });
-        }, 1000);
+        function showLoader(text, callback) {
+            const loader = document.getElementById('loader');
+            const bar = document.getElementById('barInner');
+            document.getElementById('loaderText').innerText = text;
+            loader.classList.remove('hidden');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                bar.style.width = Math.min(progress, 100) + "%";
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loader.classList.add('hidden');
+                        bar.style.width = "0%";
+                        if(callback) callback();
+                    }, 600);
+                }
+            }, 150);
+        }
 
         window.initiateLogin = () => {
             const val = document.getElementById('idInput').value.trim().toUpperCase();
             if(!val) return alert("CALLSIGN REQUIRED");
-            myCallsign = val;
-            document.getElementById('loginArea').classList.add('hidden');
-            document.getElementById('trackingArea').classList.remove('hidden');
-            document.getElementById('callsignLabel').innerText = myCallsign;
-            startTracking();
-            listenToCommands();
+            
+            showLoader("ESTABLISHING NEURAL LINK...", () => {
+                myCallsign = val;
+                document.getElementById('loginArea').classList.add('hidden');
+                document.getElementById('trackingArea').classList.remove('hidden');
+                document.getElementById('callsignLabel').innerText = myCallsign;
+                startTracking();
+                listenToCommands();
+            });
+        };
+
+        window.terminateLink = () => {
+            showLoader("DESTRUCTING UPLINK...", () => {
+                if(watchId) navigator.geolocation.clearWatch(watchId);
+                location.reload();
+            });
         };
 
         function startTracking() {
@@ -152,7 +180,7 @@
                     
                     update(ref(db, "live/" + myCallsign), {
                         lat: latitude, lon: longitude, speed: (speed || 0),
-                        waktu: serverTimestamp(), sos: isSOS, heading: heading || 0
+                        waktu: Date.now(), sos: isSOS, heading: heading || 0
                     });
                 }, (err) => {
                     addLog("GPS_ERROR: " + err.message);
@@ -181,7 +209,15 @@
             log.innerHTML = `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>` + log.innerHTML;
         }
 
-        // Background Matrix FX
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+            if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(70 + Math.random()*20) + " BPM";
+            if(navigator.getBattery) navigator.getBattery().then(b => {
+                document.getElementById('batStatus').innerText = `PWR: ${Math.round(b.level*100)}%`;
+            });
+        }, 1000);
+
+        // Matrix FX
         const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
         let drops = [];
         function initMatrix() {
