@@ -30,6 +30,13 @@
             animation: pulseMap 8s infinite ease-in-out;
         }
 
+        /* NEW: Scanline Effect */
+        .scanline {
+            width: 100%; height: 100px; z-index: 5; position: absolute;
+            background: linear-gradient(0deg, transparent 0%, var(--neon-dim) 50%, transparent 100%);
+            opacity: 0.1; pointer-events: none; animation: scan 4s linear infinite;
+        }
+
         .hex-grid {
             position: fixed; inset: 0; z-index: -2;
             background-image: radial-gradient(var(--neon-dim) 1px, transparent 1px);
@@ -57,6 +64,7 @@
 
         @keyframes radarPing { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         @keyframes pulseMap { 0%, 100% { transform: scale(1); opacity: 0.15; } 50% { transform: scale(1.03); opacity: 0.22; } }
+        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
 
         .sos-active { animation: glitch 0.2s infinite; }
         @keyframes glitch {
@@ -90,6 +98,7 @@
             background: rgba(0, 255, 65, 0.05); color: var(--neon);
             transition: all 0.2s; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
         }
+        .btn:active { background: var(--neon); color: black; }
         .btn-sos { background: rgba(255, 0, 60, 0.15); border-color: var(--danger); color: var(--danger); }
 
         .terminal-log {
@@ -98,12 +107,18 @@
             scrollbar-width: none;
         }
 
+        /* NEW: Heartbeat graph */
+        .pulse-viz {
+            height: 30px; width: 100px; margin-left: 10px; opacity: 0.6;
+        }
+
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="indo-map-bg"></div>
+<div class="scanline"></div>
 <div class="hex-grid"></div>
 <div class="radar-bg"></div>
 <canvas id="bg-canvas"></canvas>
@@ -145,7 +160,8 @@
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 9px; align-items: center;">
             <span id="callsignLabel" style="color: black; background: var(--neon); padding: 3px 12px; font-weight: bold; letter-spacing: 2px;">---</span>
             <div style="display: flex; align-items: center;">
-                <span style="margin-right: 10px;">HDG: <b id="heading" style="color:white">0° N</b></span>
+                <span>TEMP: <b id="tempVal" style="color:var(--accent)">28°C</b></span>
+                <canvas id="pulseCanvas" class="pulse-viz"></canvas>
                 <span>BPM: <b id="heartRate" style="color:white">--</b></span>
             </div>
         </div>
@@ -154,10 +170,12 @@
             <div class="hud-item"><label>GEO.LATITUDE</label><span id="lat">0.00000</span></div>
             <div class="hud-item"><label>GEO.LONGITUDE</label><span id="lon">0.00000</span></div>
             <div class="hud-item"><label>NODE.VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-            <div class="hud-item"><label>SIGNAL.CORE</label><span id="sig">LINKED</span></div>
+            <div class="hud-item"><label>HEADING.COMPASS</label><span id="heading" style="color:var(--accent)">0° N</span></div>
+            
             <div class="hud-item" style="grid-column: span 2; border-left-color: var(--accent);">
                 <label>ENVIRONMENTAL TELEMETRY</label>
                 <span id="alt" style="font-size: 11px;">ALT: 0M | ACCURACY: --</span>
+                <div id="atmosStatus" style="font-size: 7px; margin-top: 4px; color: var(--neon-dim);">ATMOS: STABLE | O2: 20.9% | RAD: 0.12 mSv</div>
             </div>
         </div>
 
@@ -212,13 +230,28 @@
         error: () => playSound(150, 'sawtooth', 0.5, 0.2)
     };
 
+    // --- PULSE VISUALIZER (NEW) ---
+    const pCanvas = document.getElementById('pulseCanvas'), pCtx = pCanvas.getContext('2d');
+    let offset = 0;
+    function drawPulse() {
+        pCtx.clearRect(0,0, pCanvas.width, pCanvas.height);
+        pCtx.strokeStyle = "#00ff41"; pCtx.lineWidth = 2;
+        pCtx.beginPath();
+        for(let x=0; x<pCanvas.width; x++) {
+            const y = 15 + Math.sin((x+offset)*0.2) * (Math.random() > 0.9 ? 10 : 2);
+            pCtx.lineTo(x, y);
+        }
+        pCtx.stroke(); offset += 2;
+        requestAnimationFrame(drawPulse);
+    }
+    drawPulse();
+
     // --- REAL BATTERY & CLOCK ---
     function updateBattery() {
         if(navigator.getBattery) {
             navigator.getBattery().then(battery => {
                 const level = Math.round(battery.level * 100);
                 document.getElementById('batStatus').innerText = `PWR: ${level}%`;
-                // Warna peringatan jika baterai rendah
                 document.getElementById('batStatus').style.color = level < 20 ? "var(--danger)" : "var(--accent)";
             });
         }
@@ -226,12 +259,19 @@
 
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-        if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
+        if(myCallsign) {
+            document.getElementById('heartRate').innerText = Math.floor(Math.random() * (78 - 62) + 62);
+            document.getElementById('tempVal').innerText = (27 + Math.random()).toFixed(1) + "°C";
+        }
         updateBattery();
     }, 1000);
 
     window.addEventListener('deviceorientation', (e) => {
-        if(e.alpha) document.getElementById('heading').innerText = `${Math.round(e.alpha)}°`;
+        if(e.alpha) {
+            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            const dir = directions[Math.round(e.alpha / 45) % 8];
+            document.getElementById('heading').innerText = `${Math.round(e.alpha)}° ${dir}`;
+        }
     });
 
     // --- MATRIX BG ---
@@ -243,7 +283,7 @@
     }
     function drawMatrix() {
         ctx.fillStyle = "rgba(0, 5, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgba(0, 255, 65, 0.3)"; ctx.font = "16px monospace";
+        ctx.fillStyle = "rgba(0, 255, 65, 0.2)"; ctx.font = "16px monospace";
         drops.forEach((y, i) => {
             const text = "01NKRI2065".charAt(Math.floor(Math.random() * 10));
             ctx.fillText(text, i * 16, y * 16);
@@ -264,9 +304,9 @@
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('loadingArea').classList.remove('hidden');
         document.getElementById('loadMsg').innerText = "ESTABLISHING LINK";
-        document.getElementById('miniLog').innerHTML = ""; // Reset log
+        document.getElementById('miniLog').innerHTML = ""; 
 
-        startSequence(["ENCRYPTING_BIO_LINK", "BYPASSING_FIREWALL", "SAT_LINK_ESTABLISHED"], 80, () => {
+        startSequence(["ENCRYPTING_BIO_LINK", "BYPASSING_FIREWALL", "SAT_LINK_ESTABLISHED", "WEATHER_SYNC_COMPLETE"], 80, () => {
             sfx.success();
             document.getElementById('loadingArea').classList.add('hidden');
             document.getElementById('trackingArea').classList.remove('hidden');
@@ -280,12 +320,9 @@
         sfx.click();
         if(confirm("CONFIRM NEURAL DISCONNECT?")) {
             if(watchId) navigator.geolocation.clearWatch(watchId);
-            
             document.getElementById('trackingArea').classList.add('hidden');
             document.getElementById('loadingArea').classList.remove('hidden');
             document.getElementById('loadMsg').innerText = "DE-SYNCING";
-            document.getElementById('miniLog').innerHTML = ""; // Clear log for logout
-
             startSequence(["WIPING_ENCRYPTION_KEYS", "DISCONNECTING_SAT_CORE", "NEURAL_LINK_SEVERED"], 50, () => {
                 location.reload();
             });
@@ -323,7 +360,9 @@
                     lat: latitude, lon: longitude, speed: (speed||0), waktu: Date.now(), sos: false 
                 });
                 onDisconnect(ref(db, "live/" + myCallsign)).update({ waktu: Date.now() - 60000 });
-            }, null, { enableHighAccuracy: true });
+            }, (err) => {
+                document.getElementById('logBox').innerHTML += `<br><span style="color:red">> GPS_SIGNAL_LOST: ${err.message}</span>`;
+            }, { enableHighAccuracy: true });
         }
     }
 
