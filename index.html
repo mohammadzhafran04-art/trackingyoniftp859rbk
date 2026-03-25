@@ -181,14 +181,13 @@
                     const alt = p.coords.altitude || 0;
                     const hdg = p.coords.heading || 0;
                     
-                    // UI Update
                     document.getElementById('lat').innerText = lat.toFixed(5);
                     document.getElementById('lon').innerText = lon.toFixed(5);
                     document.getElementById('spd').innerText = (spd * 3.6).toFixed(1) + " KM/H";
                     document.getElementById('alt').innerText = `ALT: ${Math.round(alt)}M | ACC: ${Math.round(acc)}M`;
                     document.getElementById('heading').innerText = Math.round(hdg) + "°";
                     
-                    // Database Update
+                    // FIXED PATH: Pastikan mengarah ke folder live/
                     const dataObj = {
                         lat: lat, 
                         lon: lon, 
@@ -199,7 +198,7 @@
                         accuracy: acc
                     };
 
-                    update(ref(db, `live/${myCallsign}`), dataObj)
+                    update(ref(db, "live/" + myCallsign), dataObj)
                         .catch(err => {
                             addLog("SYNC_ERR: " + err.code);
                         });
@@ -207,8 +206,6 @@
                 }, (err) => {
                     let errorType = "GPS_ERROR";
                     if (err.code === 1) errorType = "PERMISSION_DENIED";
-                    if (err.code === 2) errorType = "POSITION_UNAVAILABLE";
-                    if (err.code === 3) errorType = "TIMEOUT";
                     addLog(`CRITICAL: ${errorType}`);
                 }, { 
                     enableHighAccuracy: true,
@@ -224,6 +221,8 @@
             isSOS = !isSOS;
             document.getElementById('sosBtn').classList.toggle('active', isSOS);
             document.getElementById('sosBtn').innerText = isSOS ? "CANCEL S.O.S" : "SEND S.O.S";
+            
+            // FIXED PATH
             update(ref(db, "live/" + myCallsign), { sos: isSOS });
             addLog(isSOS ? "SOS_BROADCAST_ACTIVE" : "SOS_DEACTIVATED");
         };
@@ -245,7 +244,6 @@
             if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(70 + Math.random()*20) + " BPM";
         }, 1000);
 
-        // Background Animation Matrix
         const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
         let drops = [];
         function initMatrix() {
