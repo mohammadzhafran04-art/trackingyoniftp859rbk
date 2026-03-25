@@ -49,7 +49,7 @@
         }
         .loading-bar { width: 240px; height: 4px; background: rgba(0,255,65,0.1); margin-top: 20px; position: relative; overflow: hidden; }
         .loading-bar-inner { position: absolute; left: 0; top: 0; height: 100%; background: var(--neon); width: 0%; transition: 0.1s; box-shadow: 0 0 15px var(--neon); }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes blink { 0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--danger); } 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
@@ -150,7 +150,6 @@
         window.initiateLogin = () => {
             const val = document.getElementById('idInput').value.trim().toUpperCase();
             if(!val) return alert("CALLSIGN REQUIRED");
-            // Validasi karakter Firebase (tidak boleh ada . # $ [ ])
             if (/[.#$\[\]]/.test(val)) return alert("CALLSIGN INVALID (NO SPECIAL CHARS)");
 
             showLoader("ESTABLISHING NEURAL LINK...", () => {
@@ -172,38 +171,52 @@
 
         function startTracking() {
             if (navigator.geolocation) {
-                // watchPosition lebih stabil untuk update database real-time
+                addLog("INITIALIZING_GPS...");
+                
                 watchId = navigator.geolocation.watchPosition((p) => {
-                    const { latitude, longitude, speed, accuracy, altitude, heading } = p.coords;
+                    const lat = p.coords.latitude || 0;
+                    const lon = p.coords.longitude || 0;
+                    const spd = p.coords.speed || 0;
+                    const acc = p.coords.accuracy || 0;
+                    const alt = p.coords.altitude || 0;
+                    const hdg = p.coords.heading || 0;
                     
                     // UI Update
-                    document.getElementById('lat').innerText = latitude.toFixed(5);
-                    document.getElementById('lon').innerText = longitude.toFixed(5);
-                    document.getElementById('spd').innerText = (speed ? (speed * 3.6).toFixed(1) : "0.0") + " KM/H";
-                    document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}M | ACC: ${Math.round(accuracy)}M`;
+                    document.getElementById('lat').innerText = lat.toFixed(5);
+                    document.getElementById('lon').innerText = lon.toFixed(5);
+                    document.getElementById('spd').innerText = (spd * 3.6).toFixed(1) + " KM/H";
+                    document.getElementById('alt').innerText = `ALT: ${Math.round(alt)}M | ACC: ${Math.round(acc)}M`;
+                    document.getElementById('heading').innerText = Math.round(hdg) + "°";
                     
                     // Database Update
                     const dataObj = {
-                        lat: latitude, 
-                        lon: longitude, 
-                        speed: (speed || 0),
+                        lat: lat, 
+                        lon: lon, 
+                        speed: spd,
                         waktu: Date.now(), 
                         sos: isSOS, 
-                        heading: heading || 0
+                        heading: hdg,
+                        accuracy: acc
                     };
 
-                    update(ref(db, "live/" + myCallsign), dataObj)
-                        .catch(err => addLog("SYNC_ERR: " + err.message));
+                    update(ref(db, `live/${myCallsign}`), dataObj)
+                        .catch(err => {
+                            addLog("SYNC_ERR: " + err.code);
+                        });
 
                 }, (err) => {
-                    addLog("GPS_ERROR: " + err.message);
+                    let errorType = "GPS_ERROR";
+                    if (err.code === 1) errorType = "PERMISSION_DENIED";
+                    if (err.code === 2) errorType = "POSITION_UNAVAILABLE";
+                    if (err.code === 3) errorType = "TIMEOUT";
+                    addLog(`CRITICAL: ${errorType}`);
                 }, { 
                     enableHighAccuracy: true,
                     maximumAge: 0,
-                    timeout: 10000 
+                    timeout: 15000 
                 });
             } else {
-                addLog("BROWSER_UNSUPPORTED_GPS");
+                addLog("HARDWARE_UNSUPPORTED");
             }
         }
 
@@ -218,7 +231,7 @@
         function listenToCommands() {
             onValue(ref(db, "commands/global"), (snap) => {
                 const cmd = snap.val();
-                if(cmd) addLog(`CMD_IN: ${cmd.text}`);
+                if(cmd && cmd.text) addLog(`CMD_IN: ${cmd.text}`);
             });
         }
 
