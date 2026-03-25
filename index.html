@@ -187,7 +187,6 @@
                     document.getElementById('alt').innerText = `ALT: ${Math.round(alt)}M | ACC: ${Math.round(acc)}M`;
                     document.getElementById('heading').innerText = Math.round(hdg) + "°";
                     
-                    // FIXED PATH: Pastikan mengarah ke folder live/
                     const dataObj = {
                         lat: lat, 
                         lon: lon, 
@@ -222,7 +221,6 @@
             document.getElementById('sosBtn').classList.toggle('active', isSOS);
             document.getElementById('sosBtn').innerText = isSOS ? "CANCEL S.O.S" : "SEND S.O.S";
             
-            // FIXED PATH
             update(ref(db, "live/" + myCallsign), { sos: isSOS });
             addLog(isSOS ? "SOS_BROADCAST_ACTIVE" : "SOS_DEACTIVATED");
         };
