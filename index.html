@@ -16,7 +16,7 @@
         }
         .scanline {
             width: 100%; height: 100%; z-index: 1000; position: fixed; top: 0; pointer-events: none;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
             background-size: 100% 3px, 3px 100%; opacity: 0.5;
         }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.3; }
@@ -150,6 +150,9 @@
         window.initiateLogin = () => {
             const val = document.getElementById('idInput').value.trim().toUpperCase();
             if(!val) return alert("CALLSIGN REQUIRED");
+            // Validasi karakter Firebase (tidak boleh ada . # $ [ ])
+            if (/[.#$\[\]]/.test(val)) return alert("CALLSIGN INVALID (NO SPECIAL CHARS)");
+
             showLoader("ESTABLISHING NEURAL LINK...", () => {
                 myCallsign = val;
                 document.getElementById('loginArea').classList.add('hidden');
@@ -169,24 +172,38 @@
 
         function startTracking() {
             if (navigator.geolocation) {
+                // watchPosition lebih stabil untuk update database real-time
                 watchId = navigator.geolocation.watchPosition((p) => {
                     const { latitude, longitude, speed, accuracy, altitude, heading } = p.coords;
+                    
+                    // UI Update
                     document.getElementById('lat').innerText = latitude.toFixed(5);
                     document.getElementById('lon').innerText = longitude.toFixed(5);
-                    document.getElementById('spd').innerText = (speed ? speed * 3.6 : 0).toFixed(1) + " KM/H";
+                    document.getElementById('spd').innerText = (speed ? (speed * 3.6).toFixed(1) : "0.0") + " KM/H";
                     document.getElementById('alt').innerText = `ALT: ${Math.round(altitude || 0)}M | ACC: ${Math.round(accuracy)}M`;
                     
-                    update(ref(db, "live/" + myCallsign), {
+                    // Database Update
+                    const dataObj = {
                         lat: latitude, 
                         lon: longitude, 
                         speed: (speed || 0),
                         waktu: Date.now(), 
                         sos: isSOS, 
                         heading: heading || 0
-                    });
+                    };
+
+                    update(ref(db, "live/" + myCallsign), dataObj)
+                        .catch(err => addLog("SYNC_ERR: " + err.message));
+
                 }, (err) => {
                     addLog("GPS_ERROR: " + err.message);
-                }, { enableHighAccuracy: true });
+                }, { 
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 10000 
+                });
+            } else {
+                addLog("BROWSER_UNSUPPORTED_GPS");
             }
         }
 
@@ -215,6 +232,7 @@
             if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(70 + Math.random()*20) + " BPM";
         }, 1000);
 
+        // Background Animation Matrix
         const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
         let drops = [];
         function initMatrix() {
@@ -231,6 +249,7 @@
             });
             requestAnimationFrame(drawMatrix);
         }
+        window.addEventListener('resize', initMatrix);
         initMatrix(); drawMatrix();
     </script>
 </body>
