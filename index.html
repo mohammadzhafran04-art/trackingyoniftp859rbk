@@ -3,263 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tactical Edge V5.5 | NEURO-LINK</title>
+    <title>Tracker | YONIF 859 RBK</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon: #00ff41; --neon-glow: rgba(0, 255, 65, 0.4); --danger: #ff003c;
-            --bg: #000500; --accent: #00e5ff; --panel-bg: rgba(0, 15, 0, 0.95);
-        }
-        body, html { 
-            margin: 0; padding: 0; background: var(--bg); color: var(--neon); 
-            font-family: 'Share Tech Mono', monospace; height: 100vh; overflow: hidden; text-transform: uppercase;
-        }
-        .scanline {
-            width: 100%; height: 100%; z-index: 1000; position: fixed; top: 0; pointer-events: none;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
-            background-size: 100% 3px, 3px 100%; opacity: 0.5;
-        }
-        #bg-canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.3; }
+        :root { --neon: #00ff41; --danger: #ff003c; --bg: #000500; --accent: #00e5ff; --panel-bg: rgba(0, 15, 0, 0.95); }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', monospace; height: 100vh; overflow: hidden; text-transform: uppercase; }
+        .scanline { width: 100%; height: 100%; z-index: 1000; position: fixed; top: 0; pointer-events: none; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,255,0,0.03)); background-size: 100% 3px, 3px 100%; opacity: 0.5; }
         .ui-wrapper { position: relative; z-index: 1100; height: 100vh; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .status-panel {
-            background: var(--panel-bg); border: 1px solid var(--neon); flex: 1; display: flex; flex-direction: column; 
-            padding: 20px; position: relative; backdrop-filter: blur(15px);
-            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
-            box-shadow: inset 0 0 30px rgba(0,255,65,0.1);
-        }
+        .status-panel { background: var(--panel-bg); border: 1px solid var(--neon); flex: 1; display: flex; flex-direction: column; padding: 20px; backdrop-filter: blur(15px); clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%); box-shadow: inset 0 0 30px rgba(0,255,65,0.1); }
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .hud-item { background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--neon); padding: 12px; }
         .hud-item label { font-size: 9px; color: var(--accent); display: block; margin-bottom: 4px; }
         .hud-item span { font-size: 16px; font-weight: bold; font-family: 'Orbitron'; color: #fff; }
-        .btn {
-            font-family: 'Orbitron'; padding: 15px; border: 1px solid var(--neon); cursor: pointer;
-            background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: 0.3s; width: 100%;
-            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-        }
+        .btn { font-family: 'Orbitron'; padding: 15px; border: 1px solid var(--neon); cursor: pointer; background: rgba(0, 255, 65, 0.1); color: var(--neon); transition: 0.3s; width: 100%; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
         .btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
-        .btn-sos { border-color: var(--danger); color: var(--danger); background: rgba(255,0,60,0.1); }
         .btn-sos.active { background: var(--danger); color: #fff; animation: blink 0.5s infinite; }
         .terminal-log { font-size: 10px; height: 100px; overflow-y: auto; border-top: 1px solid rgba(0,255,65,0.2); padding-top: 10px; margin-top: auto; }
         .hidden { display: none !important; }
-        
-        .loader-overlay {
-            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-family: 'Orbitron'; color: var(--neon);
-        }
-        .loading-bar { width: 240px; height: 4px; background: rgba(0,255,65,0.1); margin-top: 20px; position: relative; overflow: hidden; }
-        .loading-bar-inner { position: absolute; left: 0; top: 0; height: 100%; background: var(--neon); width: 0%; transition: 0.1s; box-shadow: 0 0 15px var(--neon); }
-        @keyframes blink { 0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--danger); } 50% { opacity: 0.3; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
-    <div id="loader" class="loader-overlay hidden">
-        <div id="loaderText" style="letter-spacing: 2px;">SYNCING NEURAL_LINK...</div>
-        <div class="loading-bar"><div id="barInner" class="loading-bar-inner"></div></div>
-    </div>
-
     <div class="scanline"></div>
-    <canvas id="bg-canvas"></canvas>
-
     <div class="ui-wrapper">
         <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-            <div>
-                <div style="font-family: 'Orbitron'; font-size: 20px; border-left: 4px solid var(--danger); padding-left: 10px;">
-                    <span style="color:var(--danger)">YONIF</span> 859 RBK
-                </div>
-                <div id="pingVal" style="font-size: 9px; color: var(--accent); margin-left: 14px;">SYS_UPLINK: ACTIVE</div>
-            </div>
-            <div style="text-align: right; font-family: 'Orbitron';">
-                <div id="clock">00:00:00</div>
-                <div id="batStatus" style="font-size: 10px; color: var(--neon-glow);">PWR: --%</div>
-            </div>
+            <div style="font-family: 'Orbitron'; font-size: 18px; border-left: 4px solid var(--danger); padding-left: 10px;">YONIF 859 RBK</div>
+            <div id="clock" style="font-family: 'Orbitron';">00:00:00</div>
         </header>
 
         <div id="loginArea" class="status-panel" style="justify-content: center; align-items: center;">
-            <div style="width: 80%; text-align: center;">
-                <div style="font-size: 10px; letter-spacing: 4px; margin-bottom: 20px; opacity: 0.7;">NEURAL ID REQUIRED</div>
-                <input type="text" id="idInput" class="btn" style="text-align: center; border-style: dashed; margin-bottom: 10px;" placeholder="ENTER CALLSIGN">
-                <button class="btn" onclick="initiateLogin()">ESTABLISH LINK</button>
-            </div>
+            <input type="text" id="idInput" class="btn" style="text-align: center; margin-bottom: 10px;" placeholder="ENTER CALLSIGN">
+            <button class="btn" onclick="initiateLogin()">ESTABLISH LINK</button>
         </div>
 
         <div id="trackingArea" class="status-panel hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div id="callsignLabel" style="background: var(--neon); color: #000; padding: 4px 12px; font-weight: bold; font-family: 'Orbitron';">---</div>
-                <div id="heartRate" style="font-family: 'Orbitron'; color: var(--danger); font-size: 14px;">-- BPM</div>
-            </div>
-
+            <div id="callsignLabel" style="background: var(--neon); color: #000; padding: 4px 12px; font-weight: bold; font-family: 'Orbitron'; width: fit-content;">---</div>
             <div class="hud-grid">
                 <div class="hud-item"><label>LATITUDE</label><span id="lat">0.0000</span></div>
                 <div class="hud-item"><label>LONGITUDE</label><span id="lon">0.0000</span></div>
-                <div class="hud-item"><label>VELOCITY</label><span id="spd">0.0 KM/H</span></div>
-                <div class="hud-item"><label>BEARING</label><span id="heading">0°</span></div>
-                <div class="hud-item" style="grid-column: span 2;">
-                    <label>ALTITUDE / ACCURACY</label>
-                    <span id="alt" style="font-size: 12px;">ALT: 0M | ACC: 0M</span>
-                </div>
+                <div class="hud-item"><label>SPD (KM/H)</label><span id="spd">0.0</span></div>
+                <div class="hud-item"><label>ACCURACY</label><span id="acc">0M</span></div>
             </div>
-
-            <div class="terminal-log" id="logBox">> SESSION_STARTED...</div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                <button id="sosBtn" class="btn btn-sos" onclick="toggleSOS()">SEND S.O.S</button>
-                <button class="btn" style="border-color: #555; color: #888;" onclick="terminateLink()">TERMINATE</button>
-            </div>
+            <div class="terminal-log" id="logBox">> READY_FOR_UPLINK...</div>
+            <button id="sosBtn" class="btn" style="margin-top:10px; border-color:var(--danger); color:var(--danger)" onclick="toggleSOS()">SEND S.O.S</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAwRrHaHepQtAGLj9JrC3vlJG37o3j9CPY",
-            authDomain: "real-time-location-30d91.firebaseapp.com",
             databaseURL: "https://real-time-location-30d91-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "real-time-location-30d91",
-            storageBucket: "real-time-location-30d91.appspot.com",
-            messagingSenderId: "1092565406651",
-            appId: "1:1092565406651:web:5895c20a8c7169cb7b6a9e"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        let myCallsign = "", watchId = null, isSOS = false;
-
-        function showLoader(text, callback) {
-            const loader = document.getElementById('loader');
-            const bar = document.getElementById('barInner');
-            document.getElementById('loaderText').innerText = text;
-            loader.classList.remove('hidden');
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 20;
-                bar.style.width = Math.min(progress, 100) + "%";
-                if(progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        loader.classList.add('hidden');
-                        bar.style.width = "0%";
-                        if(callback) callback();
-                    }, 500);
-                }
-            }, 100);
-        }
+        let myCallsign = "", isSOS = false;
 
         window.initiateLogin = () => {
             const val = document.getElementById('idInput').value.trim().toUpperCase();
-            if(!val) return alert("CALLSIGN REQUIRED");
-            if (/[.#$\[\]]/.test(val)) return alert("CALLSIGN INVALID (NO SPECIAL CHARS)");
-
-            showLoader("ESTABLISHING NEURAL LINK...", () => {
-                myCallsign = val;
-                document.getElementById('loginArea').classList.add('hidden');
-                document.getElementById('trackingArea').classList.remove('hidden');
-                document.getElementById('callsignLabel').innerText = myCallsign;
-                startTracking();
-                listenToCommands();
-            });
-        };
-
-        window.terminateLink = () => {
-            showLoader("DESTRUCTING UPLINK...", () => {
-                if(watchId) navigator.geolocation.clearWatch(watchId);
-                location.reload();
-            });
+            if(!val) return alert("REQ CALLSIGN");
+            myCallsign = val;
+            document.getElementById('loginArea').classList.add('hidden');
+            document.getElementById('trackingArea').classList.remove('hidden');
+            document.getElementById('callsignLabel').innerText = myCallsign;
+            startTracking();
         };
 
         function startTracking() {
-            if (navigator.geolocation) {
-                addLog("INITIALIZING_GPS...");
-                
-                watchId = navigator.geolocation.watchPosition((p) => {
-                    const lat = p.coords.latitude || 0;
-                    const lon = p.coords.longitude || 0;
-                    const spd = p.coords.speed || 0;
-                    const acc = p.coords.accuracy || 0;
-                    const alt = p.coords.altitude || 0;
-                    const hdg = p.coords.heading || 0;
-                    
-                    document.getElementById('lat').innerText = lat.toFixed(5);
-                    document.getElementById('lon').innerText = lon.toFixed(5);
-                    document.getElementById('spd').innerText = (spd * 3.6).toFixed(1) + " KM/H";
-                    document.getElementById('alt').innerText = `ALT: ${Math.round(alt)}M | ACC: ${Math.round(acc)}M`;
-                    document.getElementById('heading').innerText = Math.round(hdg) + "°";
-                    
-                    const dataObj = {
-                        lat: lat, 
-                        lon: lon, 
-                        speed: spd,
-                        waktu: Date.now(), 
-                        sos: isSOS, 
-                        heading: hdg,
-                        accuracy: acc
-                    };
+            navigator.geolocation.watchPosition(p => {
+                const data = {
+                    lat: p.coords.latitude, lon: p.coords.longitude,
+                    speed: p.coords.speed || 0, waktu: Date.now(),
+                    sos: isSOS, accuracy: p.coords.accuracy
+                };
+                document.getElementById('lat').innerText = data.lat.toFixed(5);
+                document.getElementById('lon').innerText = data.lon.toFixed(5);
+                document.getElementById('spd').innerText = (data.speed * 3.6).toFixed(1);
+                document.getElementById('acc').innerText = Math.round(data.accuracy) + "M";
 
-                    update(ref(db, "live/" + myCallsign), dataObj)
-                        .catch(err => {
-                            addLog("SYNC_ERR: " + err.code);
-                        });
-
-                }, (err) => {
-                    let errorType = "GPS_ERROR";
-                    if (err.code === 1) errorType = "PERMISSION_DENIED";
-                    addLog(`CRITICAL: ${errorType}`);
-                }, { 
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 15000 
-                });
-            } else {
-                addLog("HARDWARE_UNSUPPORTED");
-            }
+                update(ref(db, "live/" + myCallsign), data)
+                    .then(() => addLog("SYNC_OK"))
+                    .catch(e => addLog("ERR_DB"));
+            }, e => addLog("GPS_ERR"), { enableHighAccuracy: true });
         }
 
         window.toggleSOS = () => {
             isSOS = !isSOS;
             document.getElementById('sosBtn').classList.toggle('active', isSOS);
-            document.getElementById('sosBtn').innerText = isSOS ? "CANCEL S.O.S" : "SEND S.O.S";
-            
             update(ref(db, "live/" + myCallsign), { sos: isSOS });
-            addLog(isSOS ? "SOS_BROADCAST_ACTIVE" : "SOS_DEACTIVATED");
         };
 
-        function listenToCommands() {
-            onValue(ref(db, "commands/global"), (snap) => {
-                const cmd = snap.val();
-                if(cmd && cmd.text) addLog(`CMD_IN: ${cmd.text}`);
-            });
+        function addLog(m) {
+            const b = document.getElementById('logBox');
+            b.innerHTML = `<div>> ${m}</div>` + b.innerHTML;
         }
 
-        function addLog(msg) {
-            const log = document.getElementById('logBox');
-            log.innerHTML = `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>` + log.innerHTML;
-        }
-
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-            if(myCallsign) document.getElementById('heartRate').innerText = Math.floor(70 + Math.random()*20) + " BPM";
-        }, 1000);
-
-        const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
-        let drops = [];
-        function initMatrix() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            drops = Array(Math.floor(canvas.width/20)).fill(1);
-        }
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 5, 0, 0.1)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = "#00ff41"; ctx.font = "14px monospace";
-            drops.forEach((y, i) => {
-                ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
-                if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            });
-            requestAnimationFrame(drawMatrix);
-        }
-        window.addEventListener('resize', initMatrix);
-        initMatrix(); drawMatrix();
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 </html>
